@@ -9,26 +9,10 @@ import {
   X,
   Sun,
   Moon,
-  Image as ImageIcon,
-  Images,
-  FileText,
-  FileDown,
-  FileImage,
-  FileCheck,
-  RefreshCw,
-  Files,
-  FileMinus,
-  Layers,
-  PenTool,
-  UserCheck,
-  Table as TableIcon,
-  Presentation,
-  Stamp,
-  Lock,
-  Unlock,
 } from "lucide-react";
 import { RetroView } from "../types";
 import { useTheme } from "../context/ThemeContext";
+import ModuleIconBadge from "./ModuleIconBadge";
 
 interface HeaderNavProps {
   currentView: RetroView;
@@ -206,53 +190,6 @@ const NAV_ITEMS: NavModuleItem[] = [
     iconBg: "#b86b35",
   },
 ];
-
-function renderNavIcon(view: RetroView) {
-  const iconClass = "w-4 h-4 transition-transform duration-200 group-hover:scale-110";
-  const iconStyle = { color: "#ffffff" };
-  switch (view) {
-    case "compress_img":
-      return <ImageIcon className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "compress_pdf":
-      return <FileDown className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "convert_img":
-      return <RefreshCw className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "image_to_pdf":
-      return <FileImage className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "merge_pdf":
-      return <Files className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "pdf_to_images":
-      return <Images className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "remove_pdf_pages":
-      return <FileMinus className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "organize_pdf":
-      return <Layers className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "watermark_pdf":
-      return <Stamp className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "word_to_pdf":
-      return <FileCheck className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "word_to_jpg":
-      return <ImageIcon className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "pdf_to_word":
-      return <FileText className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "excel_to_pdf":
-    case "pdf_to_excel":
-      return <TableIcon className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "ppt_to_pdf":
-    case "pdf_to_ppt":
-      return <Presentation className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "lock_pdf":
-      return <Lock className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "unlock_pdf":
-      return <Unlock className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "sign_pdf":
-      return <PenTool className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "passport_photo":
-      return <UserCheck className={iconClass} style={iconStyle} aria-hidden="true" />;
-    default:
-      return <FileText className={iconClass} style={iconStyle} aria-hidden="true" />;
-  }
-}
 
 export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps) {
   const { theme, toggleTheme } = useTheme();
@@ -515,15 +452,7 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
                                 : "bg-black text-zinc-100 border-zinc-800 hover:border-white hover:bg-zinc-900"
                             }`}
                           >
-                            <span
-                              className="module-icon-badge w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110"
-                              style={{
-                                backgroundColor: item.iconBg,
-                                color: "#ffffff",
-                              }}
-                            >
-                              {renderNavIcon(item.view)}
-                            </span>
+                            <ModuleIconBadge view={item.view} size="sm" />
                             <span className="truncate">{item.title}</span>
                           </a>
                         );

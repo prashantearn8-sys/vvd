@@ -5,29 +5,13 @@
 
 import React, { useState, useMemo } from "react";
 import {
-  Image as ImageIcon,
-  Images,
-  FileText,
-  FileDown,
-  FileImage,
-  FileCheck,
-  RefreshCw,
-  Files,
-  FileMinus,
-  Layers,
-  PenTool,
-  UserCheck,
-  Table as TableIcon,
-  Presentation,
-  Stamp,
-  Lock,
-  Unlock,
   Search,
   ArrowRight,
   LayoutGrid,
   List,
 } from "lucide-react";
 import { RetroView } from "../types";
+import ModuleIconBadge from "./ModuleIconBadge";
 
 interface HomeViewProps {
   searchQuery: string;
@@ -239,100 +223,6 @@ const CATEGORY_TABS: { key: CategoryFilter; label: string }[] = [
   { key: "SIGN", label: "SIGN & SECURITY" },
 ];
 
-function getActionIconBg(view: RetroView): string {
-  switch (view) {
-    case "sign_pdf":
-      return "#4a78a6"; // Steel Blue
-    case "compress_img":
-      return "#3b8a6e"; // Muted Sage Emerald
-    case "compress_pdf":
-      return "#c25953"; // Terracotta Crimson
-    case "convert_img":
-      return "#d08238"; // Warm Ochre Amber
-    case "image_to_pdf":
-      return "#c86a42"; // Burnt Sienna Orange
-    case "merge_pdf":
-      return "#38839e"; // Deep Cerulean Teal
-    case "pdf_to_images":
-      return "#885da6"; // Muted Amethyst Purple
-    case "remove_pdf_pages":
-      return "#b84d5c"; // Dusty Rose Red
-    case "organize_pdf":
-      return "#3a8882"; // Deep Pine Teal
-    case "watermark_pdf":
-      return "#46829e"; // Slate Cyan
-    case "word_to_pdf":
-      return "#4868a8"; // Cobalt Slate Blue
-    case "word_to_jpg":
-      return "#5c64a8"; // Muted Indigo Slate
-    case "pdf_to_word":
-      return "#3c7ea6"; // Ocean Steel Blue
-    case "excel_to_pdf":
-      return "#2f7d58"; // Forest Spreadsheet Green
-    case "pdf_to_excel":
-      return "#35856c"; // Jade Grid Green
-    case "ppt_to_pdf":
-      return "#c46238"; // Copper Slide Orange
-    case "pdf_to_ppt":
-      return "#b86b35"; // Warm Bronze Amber
-    case "lock_pdf":
-      return "#9e6b3b"; // Brass Padlock Ochre
-    case "unlock_pdf":
-      return "#4a8c6f"; // Mint Security Sage
-    case "passport_photo":
-      return "#5c8c46"; // Olive Moss Green
-    default:
-      return "#4a78a6";
-  }
-}
-
-function renderActionIcon(view: RetroView) {
-  const iconClass = "w-5 h-5 transition-transform duration-200 group-hover:scale-105";
-  const iconStyle = { color: "#ffffff" };
-  switch (view) {
-    case "compress_img":
-      return <ImageIcon className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "compress_pdf":
-      return <FileDown className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "convert_img":
-      return <RefreshCw className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "image_to_pdf":
-      return <FileImage className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "merge_pdf":
-      return <Files className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "pdf_to_images":
-      return <Images className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "remove_pdf_pages":
-      return <FileMinus className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "organize_pdf":
-      return <Layers className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "watermark_pdf":
-      return <Stamp className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "word_to_pdf":
-      return <FileCheck className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "word_to_jpg":
-      return <ImageIcon className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "pdf_to_word":
-      return <FileText className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "excel_to_pdf":
-    case "pdf_to_excel":
-      return <TableIcon className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "ppt_to_pdf":
-    case "pdf_to_ppt":
-      return <Presentation className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "lock_pdf":
-      return <Lock className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "unlock_pdf":
-      return <Unlock className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "sign_pdf":
-      return <PenTool className={iconClass} style={iconStyle} aria-hidden="true" />;
-    case "passport_photo":
-      return <UserCheck className={iconClass} style={iconStyle} aria-hidden="true" />;
-    default:
-      return <FileText className={iconClass} style={iconStyle} aria-hidden="true" />;
-  }
-}
-
 export default function HomeView({ searchQuery, onSearchChange, onSelectView }: HomeViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("ALL");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -448,7 +338,6 @@ export default function HomeView({ searchQuery, onSearchChange, onSelectView }: 
           className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4"
         >
           {filteredActions.map((action, idx) => {
-            const iconBg = getActionIconBg(action.view);
             return (
               <a
                 key={action.id}
@@ -465,18 +354,7 @@ export default function HomeView({ searchQuery, onSearchChange, onSelectView }: 
               >
                 <div>
                   <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-                    <div
-                      className="module-icon-badge w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-110 group-hover:-rotate-3"
-                      style={{
-                        backgroundColor: iconBg,
-                        color: "#ffffff",
-                      }}
-                    >
-                      {renderActionIcon(action.view)}
-                    </div>
-                    <span className="hidden sm:inline-block text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold uppercase truncate max-w-[90px]">
-                      {action.category}
-                    </span>
+                    <ModuleIconBadge view={action.view} size="md" />
                   </div>
                   <h3 className="font-sans font-bold text-xs sm:text-base uppercase tracking-tight text-white mb-1 sm:mb-2 transition-colors duration-200 line-clamp-2 min-h-[2rem] sm:min-h-0">
                     {action.title}
@@ -498,7 +376,6 @@ export default function HomeView({ searchQuery, onSearchChange, onSelectView }: 
       ) : (
         <div key={`list_${selectedCategory}`} className="flex flex-col gap-2 sm:gap-2.5">
           {filteredActions.map((action, idx) => {
-            const iconBg = getActionIconBg(action.view);
             return (
               <a
                 key={action.id}
@@ -514,23 +391,12 @@ export default function HomeView({ searchQuery, onSearchChange, onSelectView }: 
                 className="module-card-interactive animate-card-enter bg-black border-2 border-zinc-800 rounded-xl p-3 sm:p-3.5 hover:border-white flex items-center justify-between gap-3 group cursor-pointer hover:bg-zinc-950 no-underline text-inherit shadow-[2px_2px_0_0_#27272a] hover:shadow-[3px_3px_0_0_#ffffff] active:scale-[0.99]"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className="module-icon-badge w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-lg shrink-0 transition-transform duration-300 group-hover:scale-105"
-                    style={{
-                      backgroundColor: iconBg,
-                      color: "#ffffff",
-                    }}
-                  >
-                    {renderActionIcon(action.view)}
-                  </div>
+                  <ModuleIconBadge view={action.view} size="md" />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-sans font-bold text-xs sm:text-sm md:text-base uppercase tracking-tight text-white truncate">
                         {action.title}
                       </h3>
-                      <span className="hidden xs:inline-block text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold uppercase shrink-0">
-                        {action.tag}
-                      </span>
                     </div>
                     <p className="text-[10px] sm:text-xs text-zinc-400 font-mono truncate max-w-xs sm:max-w-md md:max-w-xl">
                       {action.desc}
