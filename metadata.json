@@ -1,0 +1,6 @@
+{
+  "name": "MONO-TRANSCODER",
+  "description": "Compress and convert images and PDFs in your browser. Nothing is uploaded. Fast, private local tools for JPG, PNG, WebP, and PDF files.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,26 @@
+# MONO-TRANSCODER
+
+MONO-TRANSCODER is a 100% client-side, privacy-first image and PDF converter & compressor that executes entirely in your local browser memory with zero server uploads.
+
+## Official Website
+- URL: https://monotranscoder.runs-on.dev/
+
+## Available Client-Side Tools (13 Modules)
+- [Sign PDF Document](https://monotranscoder.runs-on.dev/sign-pdf): Draw, type, or stamp signatures onto any PDF page locally.
+- [Compress Image File](https://monotranscoder.runs-on.dev/compress-image): Shrink JPG, PNG, WebP, and AVIF images to your target KB size.
+- [Compress PDF](https://monotranscoder.runs-on.dev/compress-pdf): Reduce PDF file size with stream compression and image downsampling.
+- [Convert Image Format](https://monotranscoder.runs-on.dev/convert-image): Convert images between PNG, JPG, WebP, and AVIF formats instantly.
+- [Image to PDF Converter](https://monotranscoder.runs-on.dev/image-to-pdf): Combine single or multiple images into a clean, custom-aligned PDF.
+- [Merge PDF Documents](https://monotranscoder.runs-on.dev/merge-pdf): Join multiple PDF files together with drag-and-drop sorting.
+- [PDF to Images](https://monotranscoder.runs-on.dev/pdf-to-images): Export PDF pages as high-quality images or batch download as ZIP.
+- [Remove PDF Pages](https://monotranscoder.runs-on.dev/remove-pdf-pages): Preview thumbnails and delete unwanted PDF pages losslessly.
+- [Organize PDF Pages](https://monotranscoder.runs-on.dev/organize-pdf): Reorder, rotate, duplicate, or delete PDF pages visually.
+- [Word to PDF Converter](https://monotranscoder.runs-on.dev/word-to-pdf): Convert Word (.docx, .rtf, .txt) files into paginated PDFs.
+- [Word to JPG Converter](https://monotranscoder.runs-on.dev/word-to-jpg): Render Word (.docx, .rtf, .txt) pages into high-res JPG images.
+- [PDF to Word Converter](https://monotranscoder.runs-on.dev/pdf-to-word): Extract PDF text and layouts into an editable Word (.docx) file.
+- [Passport Photo Maker](https://monotranscoder.runs-on.dev/passport-photo): Remove backgrounds, set backdrop color, and export 300 DPI photos.
+
+## Policies & Support
+- [Privacy Policy](https://monotranscoder.runs-on.dev/privacy)
+- [Terms of Service](https://monotranscoder.runs-on.dev/terms)
+- [Support / Buy Me A Coffee](https://monotranscoder.runs-on.dev/buy-me-a-coffee)
