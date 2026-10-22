@@ -3,7 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      if (typeof window !== "undefined" && window.location.hostname.endsWith(".netlify.app")) {
+        window.location.replace(
+          "https://monotranscoder.runs-on.dev" +
+            window.location.pathname +
+            window.location.search +
+            window.location.hash
+        );
+      }
+    </script>
     <meta name="google-site-verification" content="zoItMRwQuzoxVNZ6JNSi78d9JA-U2hFOGRld1SwtQ7k" />
+    <meta name="msvalidate.01" content="EE312B0BBF26D82C3CD036CAB4F1D796" />
     <title>MONO-TRANSCODER: Free Image Compressor (KB) &amp; Private PDF Converter</title>
     <meta name="description" content="Free online Image Compressor (20KB, 50KB, 100KB) and complete PDF &amp; Office toolkit. Merge, Compress, Sign, Word/Excel/PPT to PDF in your browser—100% private with zero uploads." />
     <meta name="keywords" content="image compressor, compress image to 20kb, compress image to 50kb, compress image to 100kb, ilovepdf, ilovepdf alternative, pi7, pi7 image compressor, pdf compressor, merge pdf, jpg to pdf, word to pdf, pdf to word, sign pdf, passport photo maker, private pdf tools" />

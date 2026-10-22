@@ -594,6 +594,49 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          {/* CRAWLABLE INTERNAL TOOL LINKS FOR SEARCH ENGINE INDEXING */}
+          <div className="max-w-[1800px] mx-auto mt-6 pt-5 border-t border-zinc-900/80">
+            <nav aria-label="All File Conversion & Compression Tools" className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1.5 text-[10px] text-zinc-500">
+              <span className="text-zinc-400 font-bold uppercase tracking-wider mr-1">TOOLS_INDEX:</span>
+              {[
+                { label: "Image Compressor (KB)", view: "compress_img" as RetroView, href: "/compress-image" },
+                { label: "Compress PDF", view: "compress_pdf" as RetroView, href: "/compress-pdf" },
+                { label: "Merge PDF", view: "merge_pdf" as RetroView, href: "/merge-pdf" },
+                { label: "Sign PDF", view: "sign_pdf" as RetroView, href: "/sign-pdf" },
+                { label: "JPG to PDF", view: "image_to_pdf" as RetroView, href: "/image-to-pdf" },
+                { label: "Convert Image", view: "convert_img" as RetroView, href: "/convert-image" },
+                { label: "PDF to JPG", view: "pdf_to_images" as RetroView, href: "/pdf-to-images" },
+                { label: "Remove PDF Pages", view: "remove_pdf_pages" as RetroView, href: "/remove-pdf-pages" },
+                { label: "Organize PDF", view: "organize_pdf" as RetroView, href: "/organize-pdf" },
+                { label: "Word to PDF", view: "word_to_pdf" as RetroView, href: "/word-to-pdf" },
+                { label: "Word to JPG", view: "word_to_jpg" as RetroView, href: "/word-to-jpg" },
+                { label: "PDF to Word", view: "pdf_to_word" as RetroView, href: "/pdf-to-word" },
+                { label: "Excel to PDF", view: "excel_to_pdf" as RetroView, href: "/excel-to-pdf" },
+                { label: "PowerPoint to PDF", view: "ppt_to_pdf" as RetroView, href: "/powerpoint-to-pdf" },
+                { label: "PDF to PowerPoint", view: "pdf_to_ppt" as RetroView, href: "/pdf-to-powerpoint" },
+                { label: "PDF to Excel", view: "pdf_to_excel" as RetroView, href: "/pdf-to-excel" },
+                { label: "Watermark PDF", view: "watermark_pdf" as RetroView, href: "/watermark-pdf" },
+                { label: "Lock PDF", view: "lock_pdf" as RetroView, href: "/lock-pdf" },
+                { label: "Unlock PDF", view: "unlock_pdf" as RetroView, href: "/unlock-pdf" },
+                { label: "Passport Photo Maker", view: "passport_photo" as RetroView, href: "/passport-photo" },
+              ].map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSelectView(item.view);
+                  }}
+                  className={`hover:text-zinc-200 transition-colors underline decoration-zinc-800 hover:decoration-zinc-400 underline-offset-2 ${
+                    currentView === item.view ? "text-white font-bold decoration-white" : ""
+                  }`}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          </div>
         </footer>
         </div>
       </FileDropProvider>

@@ -58,6 +58,10 @@ function seoAndPrerenderPlugin(): Plugin {
               `<meta name="description" content="${meta.description}" />`
             )
             .replace(
+              /<meta name="keywords" content=".*?" \/>/,
+              `<meta name="keywords" content="${meta.keywords}" />`
+            )
+            .replace(
               /<meta property="og:title" content=".*?" \/>/,
               `<meta property="og:title" content="${meta.ogTitle}" />`
             )

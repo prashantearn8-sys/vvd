@@ -2,6 +2,22 @@
   command = "npm run build"
   publish = "dist"
 
+[[edge_functions]]
+  path = "/*"
+  function = "canonical-redirect"
+
+[[redirects]]
+  from = "https://monotranscoder.netlify.app/*"
+  to = "https://monotranscoder.runs-on.dev/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://mono-transcoder.netlify.app/*"
+  to = "https://monotranscoder.runs-on.dev/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -11,6 +27,17 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/BingSiteAuth.xml"
+  [headers.values]
+    Content-Type = "application/xml; charset=utf-8"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Content-Type = "application/xml; charset=utf-8"
 
 [[headers]]
   for = "/*"
