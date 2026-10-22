@@ -30,6 +30,7 @@ interface QuickActionItem {
   path: string;
   category: CategoryFilter;
   tag: string;
+  keywords: string;
 }
 
 const QUICK_ACTIONS: QuickActionItem[] = [
@@ -41,6 +42,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/sign-pdf",
     category: "SIGN",
     tag: "SIGNATURE STUDIO",
+    keywords: "esign pdf electronic signature stamp sign document ilovepdf sign",
   },
   {
     id: "action-compress-img",
@@ -50,6 +52,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/compress-image",
     category: "IMAGE",
     tag: "IMAGE OPTIMIZER",
+    keywords: "image compressor reduce image size in kb 10kb 20kb 50kb 100kb 200kb pi7 image compressor iloveimg photo resizer shrink jpg png",
   },
   {
     id: "action-compress-pdf",
@@ -59,6 +62,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/compress-pdf",
     category: "PDF",
     tag: "PDF ENGINE",
+    keywords: "pdf compressor reduce pdf size in kb 100kb 200kb 300kb 500kb ilovepdf compress pi7 pdf shrink pdf file size",
   },
   {
     id: "action-convert-img",
@@ -68,6 +72,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/convert-image",
     category: "IMAGE",
     tag: "FORMAT ENCODER",
+    keywords: "image converter png to jpg jpg to png webp to jpg avif to jpg format changer pi7 iloveimg",
   },
   {
     id: "action-image-to-pdf",
@@ -77,6 +82,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/image-to-pdf",
     category: "PDF",
     tag: "PAGE COMPILER",
+    keywords: "jpg to pdf png to pdf photo to pdf combine images into pdf ilovepdf pi7",
   },
   {
     id: "action-merge-pdf",
@@ -86,6 +92,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/merge-pdf",
     category: "PDF",
     tag: "DOCUMENT JOINER",
+    keywords: "combine pdf join pdf binder ilovepdf merge pi7 merge pdf files",
   },
   {
     id: "action-pdf-to-images",
@@ -95,6 +102,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/pdf-to-images",
     category: "PDF",
     tag: "RASTER EXTRACTOR",
+    keywords: "pdf to jpg pdf to png extract images from pdf pages ilovepdf",
   },
   {
     id: "action-remove-pdf-pages",
@@ -104,6 +112,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/remove-pdf-pages",
     category: "PDF",
     tag: "PAGE EXTRACTOR",
+    keywords: "delete pdf pages split pdf cut pages ilovepdf remove pages",
   },
   {
     id: "action-organize-pdf",
@@ -113,6 +122,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/organize-pdf",
     category: "PDF",
     tag: "PAGE ORGANIZER",
+    keywords: "rearrange pdf sort pdf rotate pdf pages ilovepdf organize",
   },
   {
     id: "action-watermark-pdf",
@@ -122,6 +132,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/watermark-pdf",
     category: "PDF",
     tag: "WATERMARK STUDIO",
+    keywords: "add watermark stamp text logo confidential draft ilovepdf",
   },
   {
     id: "action-word-to-pdf",
@@ -131,6 +142,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/word-to-pdf",
     category: "WORD",
     tag: "DOCX TYPESETTER",
+    keywords: "docx to pdf doc to pdf microsoft word converter ilovepdf",
   },
   {
     id: "action-word-to-jpg",
@@ -140,6 +152,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/word-to-jpg",
     category: "WORD",
     tag: "CANVAS RENDERER",
+    keywords: "docx to jpg word to image doc to png",
   },
   {
     id: "action-pdf-to-word",
@@ -149,6 +162,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/pdf-to-word",
     category: "WORD",
     tag: "DOCX EXTRACTOR",
+    keywords: "pdf to docx editable word document ilovepdf pdf to word",
   },
   {
     id: "action-excel-to-pdf",
@@ -158,6 +172,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/excel-to-pdf",
     category: "WORD",
     tag: "XLSX TYPESETTER",
+    keywords: "xlsx to pdf csv to pdf spreadsheet to pdf ilovepdf",
   },
   {
     id: "action-pdf-to-excel",
@@ -167,6 +182,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/pdf-to-excel",
     category: "WORD",
     tag: "GRID EXTRACTOR",
+    keywords: "pdf to xlsx pdf to csv table extractor ilovepdf",
   },
   {
     id: "action-ppt-to-pdf",
@@ -176,6 +192,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/powerpoint-to-pdf",
     category: "WORD",
     tag: "SLIDE COMPILER",
+    keywords: "pptx to pdf ppt to pdf slides to pdf presentation ilovepdf",
   },
   {
     id: "action-pdf-to-ppt",
@@ -185,6 +202,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/pdf-to-powerpoint",
     category: "WORD",
     tag: "PPTX BUILDER",
+    keywords: "pdf to pptx pdf to slides presentation converter ilovepdf",
   },
   {
     id: "action-lock-pdf",
@@ -194,6 +212,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/lock-pdf",
     category: "SIGN",
     tag: "PDF ENCRYPTOR",
+    keywords: "protect pdf password encrypt security ilovepdf protect",
   },
   {
     id: "action-unlock-pdf",
@@ -203,6 +222,7 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/unlock-pdf",
     category: "SIGN",
     tag: "PDF DECRYPTOR",
+    keywords: "remove pdf password decrypt pdf ilovepdf unlock",
   },
   {
     id: "action-passport-photo",
@@ -212,11 +232,12 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     path: "/passport-photo",
     category: "SIGN",
     tag: "BIOMETRIC STUDIO",
+    keywords: "passport size photo maker id photo background remover suit overlay pi7",
   },
 ];
 
 const CATEGORY_TABS: { key: CategoryFilter; label: string }[] = [
-  { key: "ALL", label: `ALL TOOLS (${QUICK_ACTIONS.length})` },
+  { key: "ALL", label: "ALL TOOLS" },
   { key: "PDF", label: "PDF TOOLS" },
   { key: "WORD", label: "WORD & OFFICE" },
   { key: "IMAGE", label: "IMAGE TOOLS" },
@@ -237,7 +258,8 @@ export default function HomeView({ searchQuery, onSearchChange, onSelectView }: 
         act.title.toLowerCase().includes(q) ||
         act.desc.toLowerCase().includes(q) ||
         act.tag.toLowerCase().includes(q) ||
-        act.view.toLowerCase().includes(q)
+        act.view.toLowerCase().includes(q) ||
+        act.keywords.toLowerCase().includes(q)
       );
     });
   }, [searchQuery, selectedCategory]);
@@ -347,7 +369,7 @@ export default function HomeView({ searchQuery, onSearchChange, onSelectView }: 
                   onSelectView(action.view);
                 }}
                 style={{
-                  animationDelay: `${Math.min(idx * 20, 200)}ms`,
+                  animationDelay: `${Math.min(idx * 8, 80)}ms`,
                 }}
                 aria-label={`Launch ${action.title} tool`}
                 className="module-card-interactive animate-card-enter bg-black border-2 border-zinc-800 rounded-xl p-3 sm:p-4 md:p-5 hover:border-white flex flex-col justify-between group cursor-pointer hover:bg-zinc-950 no-underline text-inherit shadow-[2px_2px_0_0_#27272a] hover:shadow-[3px_3px_0_0_#ffffff] active:scale-[0.98]"
@@ -356,7 +378,7 @@ export default function HomeView({ searchQuery, onSearchChange, onSelectView }: 
                   <div className="flex items-center justify-between mb-2.5 sm:mb-4">
                     <ModuleIconBadge view={action.view} size="md" />
                   </div>
-                  <h3 className="font-sans font-bold text-xs sm:text-base uppercase tracking-tight text-white mb-1 sm:mb-2 transition-colors duration-200 line-clamp-2 min-h-[2rem] sm:min-h-0">
+                  <h3 className="font-sans font-bold text-xs sm:text-base uppercase tracking-tight text-white mb-1 sm:mb-2 transition-colors duration-150 line-clamp-2 min-h-[2rem] sm:min-h-0">
                     {action.title}
                   </h3>
                   <p className="text-[10px] sm:text-xs text-zinc-400 font-mono leading-tight sm:leading-snug mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3">
@@ -365,9 +387,9 @@ export default function HomeView({ searchQuery, onSearchChange, onSelectView }: 
                 </div>
 
                 {/* Action Button */}
-                <div className="w-full text-center py-2 sm:py-2.5 px-2 bg-white text-black group-hover:bg-zinc-200 text-[10px] sm:text-xs font-mono font-bold uppercase border-2 border-white transition-all duration-200 flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg shadow-[1px_1px_0_0_#ffffff] sm:shadow-[2px_2px_0_0_#ffffff]">
+                <div className="w-full text-center py-2 sm:py-2.5 px-2 bg-white text-black group-hover:bg-zinc-200 text-[10px] sm:text-xs font-mono font-bold uppercase border-2 border-white transition-all duration-150 flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg shadow-[1px_1px_0_0_#ffffff] sm:shadow-[2px_2px_0_0_#ffffff]">
                   <span>LAUNCH</span>
-                  <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform duration-200 group-hover:translate-x-1 shrink-0" aria-hidden="true" />
+                  <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform duration-150 group-hover:translate-x-1 shrink-0" aria-hidden="true" />
                 </div>
               </a>
             );
@@ -385,7 +407,7 @@ export default function HomeView({ searchQuery, onSearchChange, onSelectView }: 
                   onSelectView(action.view);
                 }}
                 style={{
-                  animationDelay: `${Math.min(idx * 15, 180)}ms`,
+                  animationDelay: `${Math.min(idx * 6, 60)}ms`,
                 }}
                 aria-label={`Launch ${action.title} tool`}
                 className="module-card-interactive animate-card-enter bg-black border-2 border-zinc-800 rounded-xl p-3 sm:p-3.5 hover:border-white flex items-center justify-between gap-3 group cursor-pointer hover:bg-zinc-950 no-underline text-inherit shadow-[2px_2px_0_0_#27272a] hover:shadow-[3px_3px_0_0_#ffffff] active:scale-[0.99]"

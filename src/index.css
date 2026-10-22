@@ -22,62 +22,70 @@
   --font-sans: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  --animate-fade-in: fade-in 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-slide-up: slide-up 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-card-enter: card-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  --animate-fade-in: fade-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slide-up: slide-up 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-card-enter: card-enter 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-spin-slow: spin 12s linear infinite;
 
   @keyframes fade-in {
     from {
       opacity: 0;
-      transform: translateY(8px) scale(0.992);
+      transform: translate3d(0, 5px, 0) scale3d(0.995, 0.995, 1);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
     }
   }
 
   @keyframes slide-up {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translate3d(0, 8px, 0);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
   }
 
   @keyframes card-enter {
     from {
       opacity: 0;
-      transform: translateY(10px) scale(0.975);
+      transform: translate3d(0, 6px, 0) scale3d(0.99, 0.99, 1);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
     }
   }
 }
 
 @layer utilities {
-  /* Tactile Interactive Card Lift & Press Physics */
+  .gpu-layer {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  /* Tactile Interactive Card Lift & Press Physics (60/120fps GPU Composited) */
   .module-card-interactive {
     transition:
-      transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1),
-      border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
-      background-color 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 150ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 150ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
   }
 
   .module-card-interactive:hover {
-    transform: translateY(-3px);
+    transform: translate3d(0, -3px, 0);
   }
 
   .module-card-interactive:active {
-    transform: translateY(0px) scale(0.99);
+    transform: translate3d(0, 0, 0) scale3d(0.988, 0.988, 1);
   }
 
   /* Subtle colorful cyber-grid canvas */
@@ -597,4 +605,152 @@ html.dark .hover\:border-zinc-600:hover,
 html.dark .hover\:border-zinc-500:hover {
   border-color: #525252 !important;
 }
+
+/* ============================================================================
+   CELESTIAL SUNRISE (DARK -> LIGHT) & COSMIC NIGHTFALL (LIGHT -> DARK) FX
+   ============================================================================ */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+@keyframes celestial-wash-fade {
+  0% {
+    opacity: 0;
+  }
+  28% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-celestial-wash {
+  animation: celestial-wash-fade 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes solar-corona-spin {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale3d(0.2, 0.2, 1) rotate(-18deg);
+  }
+  30% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale3d(1.5, 1.5, 1) rotate(20deg);
+  }
+}
+
+.animate-solar-corona {
+  animation: solar-corona-spin 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes solar-mote-fly {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1);
+  }
+  28% {
+    opacity: 1;
+    transform: translate3d(calc(var(--mote-tx) * 0.4), calc(var(--mote-ty) * 0.4), 0) scale3d(1.15, 1.15, 1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--mote-tx), var(--mote-ty), 0) scale3d(0.2, 0.2, 1);
+  }
+}
+
+.animate-solar-mote {
+  animation: solar-mote-fly 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes lunar-halo-expand {
+  0% {
+    opacity: 0.9;
+    transform: translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale3d(12, 12, 1);
+  }
+}
+
+.animate-lunar-halo {
+  animation: lunar-halo-expand 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes nightfall-star-twinkle {
+  0% {
+    opacity: 0;
+    transform: scale3d(0.2, 0.2, 1);
+  }
+  35% {
+    opacity: 1;
+    transform: scale3d(1.3, 1.3, 1);
+  }
+  70% {
+    opacity: 0.85;
+    transform: scale3d(1, 1, 1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale3d(0.1, 0.1, 1);
+  }
+}
+
+.animate-nightfall-star {
+  animation: nightfall-star-twinkle 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes shooting-star-streak {
+  0% {
+    opacity: 0;
+    transform: rotate(-32deg) translate3d(60px, 0, 0) scaleX(0.25);
+  }
+  25% {
+    opacity: 1;
+    transform: rotate(-32deg) translate3d(0, 0, 0) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-32deg) translate3d(-360px, 0, 0) scaleX(0.35);
+  }
+}
+
+.animate-shooting-star {
+  animation: shooting-star-streak 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Only suppress color/background transitions during the 1-frame View Transition snapshot */
+html.vt-no-color-transitions *,
+html.vt-no-color-transitions *::before,
+html.vt-no-color-transitions *::after {
+  transition-property: transform, opacity !important;
+}
+
+/* Fallback smooth fade for browsers without View Transitions API */
+html.theme-smooth-fade,
+html.theme-smooth-fade body,
+html.theme-smooth-fade #application-root {
+  transition:
+    background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 220ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+
+
+
 

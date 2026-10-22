@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Coffee,
   Copy,
@@ -14,6 +14,9 @@ import {
   Smartphone,
   Lock,
   Zap,
+  X,
+  ExternalLink,
+  ArrowRight,
 } from "lucide-react";
 import { useToast } from "../context/ToastContext";
 import { sanitizeTextInput } from "../utils/sanitizer";
@@ -72,17 +75,6 @@ function PaytmIcon({ className = "w-6 h-4" }: { className?: string }) {
   );
 }
 
-function UpiBadgeIcon({ className = "w-7 h-4" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 42 20" fill="none" aria-hidden="true">
-      <rect width="42" height="20" rx="4" fill="#FFFFFF" />
-      <path d="M11 4.5L17.5 10L11 15.5H7.5L14 10L7.5 4.5H11Z" fill="#097939" />
-      <path d="M18.5 4.5L25 10L18.5 15.5H15L21.5 10L15 4.5H18.5Z" fill="#ED7824" />
-      <text x="27" y="14" fill="#18181B" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="900" fontSize="9" letterSpacing="0.5">UPI</text>
-    </svg>
-  );
-}
-
 interface BuyMeCoffeeSectionProps {
   onContactClick?: () => void;
   isContactOpen?: boolean;
@@ -118,15 +110,24 @@ export default function BuyMeCoffeeSection({ onContactClick, isContactOpen }: Bu
   const [copiedVpa, setCopiedVpa] = useState<boolean>(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [isGeneratingQr, setIsGeneratingQr] = useState<boolean>(false);
+  const [showQrModal, setShowQrModal] = useState<boolean>(false);
+  const [modalTitle, setModalTitle] = useState<string>("SCAN WITH ANY UPI APP");
+  const [showFallbackHelper, setShowFallbackHelper] = useState<boolean>(false);
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentAmount = isCustom
-    ? Math.max(1, parseInt(customAmount, 10) || 1000)
+    ? Math.max(0, parseInt(customAmount, 10) || 0)
     : PRESETS.find((p) => p.amount === selectedPreset)?.amount || 200;
+  const isPayDisabled = currentAmount <= 0;
 
-  // Generate UPI URI with sanitized note text (prevents CRLF and protocol parameter injection)
-  const noteText =
-    sanitizeTextInput(supporterMessage.trim(), 100) || "Support MONO-TRANSCODER";
-  const upiUri = `upi://pay?pa=${encodeURIComponent(UPI_CONFIG.vpa)}&pn=${encodeURIComponent(UPI_CONFIG.name)}&am=${currentAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(noteText)}`;
+  // Clean noteText to be strictly alphanumeric and spaces only (max 50 chars), safe for ALL Indian UPI apps & banks
+  const rawNote = supporterMessage.trim() ? sanitizeTextInput(supporterMessage.trim(), 50) : "";
+  const cleanNote = rawNote.replace(/[^a-zA-Z0-9 ]/g, " ").trim();
+  const noteText = cleanNote || "Support MonoTranscoder";
+
+  const formattedAmount = currentAmount.toFixed(2);
+  const queryParams = `pa=${encodeURIComponent(UPI_CONFIG.vpa)}&pn=${encodeURIComponent(UPI_CONFIG.name)}&am=${formattedAmount}&cu=INR&tn=${encodeURIComponent(noteText)}`;
+  const standardUpi = `upi://pay?${queryParams}`;
 
   // Generate real-time vector QR code client-side (lazy-loaded)
   useEffect(() => {
@@ -135,8 +136,8 @@ export default function BuyMeCoffeeSection({ onContactClick, isContactOpen }: Bu
 
     import("qrcode")
       .then((QRCode) =>
-        QRCode.toDataURL(upiUri, {
-          width: 340,
+        QRCode.toDataURL(standardUpi, {
+          width: 380,
           margin: 1,
           color: {
             dark: "#000000",
@@ -161,16 +162,61 @@ export default function BuyMeCoffeeSection({ onContactClick, isContactOpen }: Bu
     return () => {
       isCurrent = false;
     };
-  }, [upiUri]);
+  }, [standardUpi]);
+
+  // Clean up any pending timer
+  useEffect(() => {
+    return () => {
+      if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleCopyVpa = async () => {
     try {
       await navigator.clipboard.writeText(UPI_CONFIG.vpa);
       setCopiedVpa(true);
-      showToast("Receiver UPI ID copied!", "success");
+      showToast("Receiver UPI ID (prashant5494@slc) copied!", "success");
       setTimeout(() => setCopiedVpa(false), 2200);
     } catch {
       showToast("Unable to copy UPI ID", "error");
+    }
+  };
+
+  const isMobilePlatform = () => {
+    if (typeof navigator === "undefined") return false;
+    return (
+      /Android|iPhone|iPad|iPod|Mobile|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      ) ||
+      (typeof window !== "undefined" &&
+        window.matchMedia &&
+        window.matchMedia("(max-width: 768px)").matches &&
+        navigator.maxTouchPoints > 0)
+    );
+  };
+
+  const isAndroid = () => {
+    if (typeof navigator === "undefined") return false;
+    return /Android/i.test(navigator.userAgent);
+  };
+
+  const triggerDeepLink = (url: string) => {
+    try {
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_self";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        if (document.body.contains(a)) {
+          document.body.removeChild(a);
+        }
+      }, 150);
+    } catch {
+      window.location.href = url;
     }
   };
 
@@ -178,392 +224,661 @@ export default function BuyMeCoffeeSection({ onContactClick, isContactOpen }: Bu
     appKey: "gpay" | "phonepe" | "paytm" | "universal",
     appName: string
   ) => {
-    const isAndroid =
-      typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent);
-    const isIOS =
-      typeof navigator !== "undefined" &&
-      /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const isMobile = isAndroid || isIOS;
+    if (isPayDisabled) return;
+    const mobile = isMobilePlatform();
 
-    if (!isMobile) {
-      showToast(
-        `Launching ${appName}... On desktop, please scan the QR code to the right with your phone.`,
-        "info"
-      );
-    } else {
-      showToast(`Redirecting to ${appName}...`, "success");
+    if (!mobile) {
+      // Desktop: Seamless QR Modal with auto-copied UPI ID
+      handleCopyVpa();
+      setModalTitle(`PAY WITH ${appName.toUpperCase()}`);
+      setShowQrModal(true);
+
+      const qrElement = document.getElementById("upi-qr-card");
+      if (qrElement) {
+        qrElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        qrElement.classList.add("ring-2", "ring-amber-400");
+        setTimeout(() => {
+          qrElement.classList.remove("ring-2", "ring-amber-400");
+        }, 2200);
+      }
+      return;
     }
 
-    const queryParams = `pa=${encodeURIComponent(UPI_CONFIG.vpa)}&pn=${encodeURIComponent(UPI_CONFIG.name)}&am=${currentAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(noteText)}`;
-    const standardUpi = `upi://pay?${queryParams}`;
+    // Mobile platform handling
+    showToast(`Opening ${appName}...`, "info");
+    setShowFallbackHelper(false);
 
     let targetUri = standardUpi;
 
-    if (appKey === "gpay") {
-      if (isAndroid) {
-        targetUri = `intent://pay?${queryParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;S.browser_fallback_url=${encodeURIComponent(standardUpi)};end`;
-      } else {
-        targetUri = `tez://upi/pay?${queryParams}`;
-      }
-    } else if (appKey === "phonepe") {
-      if (isAndroid) {
-        targetUri = `intent://pay?${queryParams}#Intent;scheme=upi;package=com.phonepe.app;S.browser_fallback_url=${encodeURIComponent(standardUpi)};end`;
+    if (appKey === "phonepe") {
+      // PhonePe Android intent or direct URI scheme
+      if (isAndroid()) {
+        targetUri = `intent://pay?${queryParams}#Intent;scheme=phonepe;package=com.phonepe.app;end`;
       } else {
         targetUri = `phonepe://pay?${queryParams}`;
       }
+    } else if (appKey === "gpay") {
+      // Google Pay Android intent or iOS tez scheme
+      if (isAndroid()) {
+        targetUri = `intent://pay?${queryParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+      } else {
+        targetUri = `tez://upi/pay?${queryParams}`;
+      }
     } else if (appKey === "paytm") {
-      if (isAndroid) {
-        targetUri = `intent://pay?${queryParams}#Intent;scheme=upi;package=net.one97.paytm;S.browser_fallback_url=${encodeURIComponent(standardUpi)};end`;
+      // Paytm Android intent or iOS paytmmp scheme
+      if (isAndroid()) {
+        targetUri = `intent://pay?${queryParams}#Intent;scheme=paytmmp;package=net.one97.paytm;end`;
       } else {
         targetUri = `paytmmp://pay?${queryParams}`;
       }
     } else {
-      targetUri = standardUpi;
+      // Universal: Android intent invokes Android native UPI Chooser dialog for all apps
+      if (isAndroid()) {
+        targetUri = `intent://pay?${queryParams}#Intent;scheme=upi;end`;
+      } else {
+        targetUri = standardUpi;
+      }
     }
 
-    try {
-      window.location.href = targetUri;
-    } catch {
-      window.location.href = standardUpi;
+    triggerDeepLink(targetUri);
+
+    // Fallback attempt: if intent fails or app doesn't open within 1500ms
+    if (fallbackTimerRef.current) {
+      clearTimeout(fallbackTimerRef.current);
     }
 
-    if (appKey !== "universal") {
-      setTimeout(() => {
-        if (typeof document !== "undefined" && document.hasFocus()) {
-          try {
-            window.location.href = standardUpi;
-          } catch (e) {
-            console.warn("UPI intent fallback error:", e);
-          }
+    fallbackTimerRef.current = setTimeout(() => {
+      if (typeof document !== "undefined" && document.hasFocus()) {
+        // App didn't take focus; try standard UPI scheme as backup
+        if (targetUri !== standardUpi) {
+          triggerDeepLink(standardUpi);
         }
-      }, 1500);
-    }
+        setShowFallbackHelper(true);
+      }
+    }, 1600);
   };
 
   return (
-    <section
-      id="buy-me-a-coffee"
-      aria-label="Direct UPI Contribution"
-      className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
-    >
-      {/* Left 7 Cols: Contribution Studio & Parameters */}
-      <div className="lg:col-span-7 bg-zinc-950 border-2 border-zinc-800 rounded-xl p-6 space-y-6">
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-          <h3 className="font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 text-white">
-            <Coffee className="w-4 h-4 text-orange-400" /> CONTRIBUTION_PARAMETERS.CFG
-          </h3>
-          <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase">
-            CURRENCY: INR (₹)
-          </span>
-        </div>
+    <>
+      <section
+        id="buy-me-a-coffee"
+        aria-label="Direct UPI Contribution"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
+      >
+        {/* Left 7 Cols: Contribution Studio & Parameters */}
+        <div className="lg:col-span-7 bg-zinc-950 border-2 border-zinc-800 rounded-xl p-4 sm:p-6 space-y-5 sm:space-y-6">
+          <div className="flex items-center justify-between gap-2 border-b border-zinc-800 pb-3">
+            <h3 className="font-mono font-bold text-[11px] sm:text-xs uppercase tracking-tight sm:tracking-wider flex items-center gap-1.5 text-white min-w-0">
+              <Coffee className="w-4 h-4 text-orange-400 shrink-0" />
+              <span className="truncate">CONTRIBUTION_PARAMETERS.CFG</span>
+            </h3>
+          </div>
 
-        {/* Preset Options */}
-        <div className="space-y-2.5">
-          <label className="block text-[11px] font-mono font-bold uppercase text-zinc-400">
-            SELECT CONTRIBUTION AMOUNT:
-          </label>
+          {/* Preset Options */}
+          <div className="space-y-2.5">
+            <label className="block text-[11px] font-mono font-bold uppercase text-zinc-400">
+              SELECT CONTRIBUTION AMOUNT:
+            </label>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {PRESETS.map((preset) => {
-              const isSelected = !isCustom && selectedPreset === preset.amount;
-              return (
-                <button
-                  key={preset.amount}
-                  type="button"
-                  onClick={() => {
-                    setSelectedPreset(preset.amount);
-                    setIsCustom(false);
-                  }}
-                  className={`relative p-3 rounded-lg border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
-                    isSelected
-                      ? "bg-white text-black border-white shadow-[2px_2px_0px_0px_#ffffff]"
-                      : "bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600"
-                  }`}
-                >
-                  {preset.popular && (
-                    <span
-                      className={`text-[9px] font-mono font-bold uppercase mb-1 ${
-                        isSelected ? "text-zinc-900 font-extrabold" : "text-zinc-300 font-bold"
-                      }`}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {PRESETS.map((preset) => {
+                const isSelected = !isCustom && selectedPreset === preset.amount;
+                return (
+                  <button
+                    key={preset.amount}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPreset(preset.amount);
+                      setIsCustom(false);
+                    }}
+                    className={`relative h-[86px] sm:h-[92px] p-3 rounded-xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
+                      isSelected
+                        ? "bg-white text-black border-white shadow-[2px_2px_0px_0px_#ffffff]"
+                        : "bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600"
+                    }`}
+                  >
+                    {preset.popular && (
+                      <span
+                        className={`absolute top-2 right-2 text-[8px] font-mono font-extrabold uppercase px-1.5 py-0.5 rounded leading-none ${
+                          isSelected
+                            ? "bg-amber-400 text-black"
+                            : "bg-zinc-900 text-amber-400 border border-zinc-700"
+                        }`}
+                      >
+                        POPULAR
+                      </span>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <Coffee
+                        className={`w-4 h-4 shrink-0 ${
+                          isSelected ? "text-amber-600" : "text-amber-400"
+                        }`}
+                      />
+                      <span
+                        className={`font-sans font-extrabold text-base sm:text-lg leading-none ${
+                          isSelected ? "text-amber-600" : "text-amber-400"
+                        }`}
+                      >
+                        {preset.displayPrice}
+                      </span>
+                    </div>
+                    <div>
+                      <div
+                        className={`text-[11px] font-mono font-bold uppercase leading-tight ${
+                          isSelected ? "text-black" : "text-white"
+                        }`}
+                      >
+                        {preset.label}
+                      </div>
+                      <div
+                        className={`text-[9px] font-mono uppercase leading-tight mt-0.5 ${
+                          isSelected ? "text-zinc-700" : "text-zinc-500"
+                        }`}
+                      >
+                        {preset.subtitle}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+
+              {/* Custom Amount Button */}
+              <button
+                type="button"
+                onClick={() => setIsCustom(true)}
+                className={`relative h-[86px] sm:h-[92px] p-3 rounded-xl border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
+                  isCustom
+                    ? "bg-white text-black border-white shadow-[2px_2px_0px_0px_#ffffff]"
+                    : "bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600"
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <Sliders
+                    className={`w-4 h-4 shrink-0 ${
+                      isCustom ? "text-amber-600" : "text-amber-400"
+                    }`}
+                  />
+                  <span
+                    className={`font-sans font-extrabold text-base sm:text-lg leading-none truncate ${
+                      isCustom ? "text-amber-600" : "text-amber-400"
+                    }`}
+                  >
+                    {isCustom && customAmount
+                      ? `₹${customAmount}`
+                      : isCustom
+                      ? "₹0"
+                      : "CUSTOM"}
+                  </span>
+                </div>
+                <div>
+                  <div
+                    className={`text-[11px] font-mono font-bold uppercase leading-tight ${
+                      isCustom ? "text-black" : "text-white"
+                    }`}
+                  >
+                    CUSTOM_AMT
+                  </div>
+                  <div
+                    className={`text-[9px] font-mono uppercase leading-tight mt-0.5 ${
+                      isCustom ? "text-zinc-700" : "text-zinc-500"
+                    }`}
+                  >
+                    ANY_AMOUNT
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            {/* Redesigned Custom Amount Input Box (Mobile-Optimized) */}
+            {isCustom && (
+              <div className="mt-3 p-3.5 sm:p-4 rounded-xl bg-black border-2 border-zinc-700 space-y-2.5 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="custom-amount-field"
+                    className="text-[10px] sm:text-[11px] font-mono font-bold uppercase text-zinc-400"
+                  >
+                    ENTER CUSTOM AMOUNT
+                  </label>
+                  <span
+                    className={`text-[10px] font-mono font-bold uppercase ${
+                      isPayDisabled ? "text-zinc-500" : "text-amber-400"
+                    }`}
+                  >
+                    ACTIVE: ₹{currentAmount} INR
+                  </span>
+                </div>
+
+                {/* Integrated Full-Width Currency Input Bar */}
+                <div className="relative flex items-center bg-zinc-950 border-2 border-zinc-700 focus-within:border-white rounded-xl overflow-hidden transition-colors">
+                  <div className="pl-3.5 pr-2.5 py-2.5 flex items-center justify-center text-amber-400 font-sans font-extrabold text-lg sm:text-xl select-none border-r border-zinc-800 bg-zinc-900/60">
+                    ₹
+                  </div>
+                  <input
+                    id="custom-amount-field"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={customAmount}
+                    onChange={(e) => {
+                      const numericOnly = e.target.value.replace(/[^0-9]/g, "");
+                      setCustomAmount(numericOnly);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                      }
+                    }}
+                    placeholder="0"
+                    className="w-full px-3 py-2.5 bg-transparent text-white font-mono font-extrabold text-base sm:text-lg focus:outline-none placeholder:text-zinc-600"
+                    aria-label="Custom contribution in rupees"
+                    autoFocus
+                  />
+                  {customAmount && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomAmount("")}
+                      aria-label="Clear custom amount"
+                      className="p-1.5 mr-1 text-zinc-500 hover:text-white rounded-md cursor-pointer shrink-0"
                     >
-                      [RECOMMENDED]
-                    </span>
+                      <X className="w-4 h-4" />
+                    </button>
                   )}
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Coffee
-                      className={`w-4 h-4 ${
-                        isSelected ? "text-amber-600" : "text-amber-400"
-                      }`}
-                    />
-                    <span className={`font-sans font-bold text-base ${isSelected ? "text-amber-600 font-extrabold" : "text-amber-400"}`}>
-                      {preset.displayPrice}
-                    </span>
+                  <div className="px-3 py-2.5 flex items-center justify-center border-l border-zinc-800 bg-zinc-900/60 text-xs font-mono font-bold text-emerald-400 shrink-0 whitespace-nowrap select-none">
+                    INR (₹)
                   </div>
-                  <div>
-                    <div className={`text-[11px] font-mono font-bold uppercase ${isSelected ? "text-black" : "text-white"}`}>
-                      {preset.label}
-                    </div>
-                    <div
-                      className={`text-[9px] font-mono uppercase ${
-                        isSelected ? "text-zinc-700" : "text-zinc-500"
-                      }`}
-                    >
-                      {preset.subtitle}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+                </div>
+              </div>
+            )}
+          </div>
 
-            {/* Custom Amount Button */}
+          {/* Supporter details input */}
+          <div className="space-y-3 pt-2 border-t border-zinc-800">
+            <div>
+              <label
+                htmlFor="supporter-name-input"
+                className="block text-[11px] font-mono font-bold uppercase text-zinc-400 mb-1"
+              >
+                YOUR NAME OR HANDLE (OPTIONAL):
+              </label>
+              <input
+                id="supporter-name-input"
+                type="text"
+                maxLength={50}
+                value={supporterName}
+                onChange={(e) =>
+                  setSupporterName(sanitizeTextInput(e.target.value, 50))
+                }
+                placeholder="e.g. ridhi / anonymous / arya"
+                className="w-full p-2.5 bg-black border-2 border-zinc-700 text-white rounded-lg text-xs font-mono placeholder:text-zinc-600 focus:outline-none focus:border-white"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="supporter-message-input"
+                className="block text-[11px] font-mono font-bold uppercase text-zinc-400 mb-1"
+              >
+                MESSAGE OR FEATURE NOTE (OPTIONAL):
+              </label>
+              <input
+                id="supporter-message-input"
+                type="text"
+                maxLength={100}
+                value={supporterMessage}
+                onChange={(e) =>
+                  setSupporterMessage(sanitizeTextInput(e.target.value, 100))
+                }
+                placeholder="e.g. Love the fast image & PDF conversion!"
+                className="w-full p-2.5 bg-black border-2 border-zinc-700 text-white rounded-lg text-xs font-mono placeholder:text-zinc-600 focus:outline-none focus:border-white"
+              />
+            </div>
+          </div>
+
+          {/* Action buttons: App Redirects & QR Launcher */}
+          <div className="pt-3 border-t border-zinc-800 space-y-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {/* Google Pay Button */}
+              <button
+                type="button"
+                disabled={isPayDisabled}
+                onClick={() => handleLaunchApp("gpay", "Google Pay")}
+                aria-label="Pay using Google Pay"
+                className={`py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
+                  isPayDisabled
+                    ? "opacity-40 cursor-not-allowed pointer-events-none"
+                    : "hover:border-emerald-400 hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#34A853] active:translate-y-0.5"
+                }`}
+              >
+                <GooglePayIcon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
+                <span className="truncate group-hover:text-emerald-300 transition-colors">
+                  GPay
+                </span>
+              </button>
+
+              {/* PhonePe Button (Enhanced Intent & Scheme Launch) */}
+              <button
+                type="button"
+                id="phonepe-pay-button"
+                disabled={isPayDisabled}
+                onClick={() => handleLaunchApp("phonepe", "PhonePe")}
+                aria-label="Pay using PhonePe"
+                className={`py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
+                  isPayDisabled
+                    ? "opacity-40 cursor-not-allowed pointer-events-none"
+                    : "hover:border-purple-500 hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#5F259F] active:translate-y-0.5"
+                }`}
+              >
+                <PhonePeIcon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
+                <span className="truncate group-hover:text-purple-300 transition-colors">
+                  PhonePe
+                </span>
+              </button>
+
+              {/* Paytm Button */}
+              <button
+                type="button"
+                disabled={isPayDisabled}
+                onClick={() => handleLaunchApp("paytm", "Paytm")}
+                aria-label="Pay using Paytm"
+                className={`py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
+                  isPayDisabled
+                    ? "opacity-40 cursor-not-allowed pointer-events-none"
+                    : "hover:border-[#00BAF2] hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#00BAF2] active:translate-y-0.5"
+                }`}
+              >
+                <PaytmIcon className="w-5 h-3.5 shrink-0 transition-transform group-hover:scale-110" />
+                <span className="truncate group-hover:text-cyan-300 transition-colors">
+                  Paytm
+                </span>
+              </button>
+
+              {/* Mobile QR Button: Dedicated trigger to instantly reveal the QR code */}
+              <button
+                type="button"
+                id="mobile-show-qr-button"
+                disabled={isPayDisabled}
+                onClick={() => {
+                  if (isPayDisabled) return;
+                  setModalTitle("UPI QR CODE");
+                  setShowQrModal(true);
+                  handleCopyVpa();
+                }}
+                aria-label="Show UPI QR Code"
+                title="Show UPI QR Code"
+                className={`py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
+                  isPayDisabled
+                    ? "opacity-40 cursor-not-allowed pointer-events-none"
+                    : "hover:border-pink-400 hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#ec4899] active:translate-y-0.5"
+                }`}
+              >
+                <QrCode className="w-4 h-4 text-pink-400 shrink-0 transition-transform group-hover:scale-110" />
+                <span className="truncate text-white transition-colors">
+                  QR CODE
+                </span>
+              </button>
+            </div>
+
+            {/* Primary Action: Universal PAY WITH ANY UPI Button */}
             <button
               type="button"
-              onClick={() => setIsCustom(true)}
-              className={`relative p-3 rounded-lg border-2 text-left transition-all cursor-pointer flex flex-col justify-between ${
-                isCustom
-                  ? "bg-white text-black border-white shadow-[2px_2px_0px_0px_#ffffff]"
-                  : "bg-black text-zinc-300 border-zinc-800 hover:border-zinc-600"
+              id="pay-with-any-upi-btn"
+              disabled={isPayDisabled}
+              onClick={() => handleLaunchApp("universal", "UPI App")}
+              className={`w-full py-3.5 px-3 font-sans font-extrabold text-sm uppercase tracking-wider flex items-center justify-center gap-2 rounded-lg transition-all min-h-[46px] border-2 ${
+                isPayDisabled
+                  ? "bg-zinc-900 text-zinc-500 border-zinc-800 opacity-50 cursor-not-allowed shadow-none"
+                  : "bg-amber-400 hover:bg-amber-300 text-black border-black cursor-pointer shadow-[3px_3px_0px_0px_#ffffff] active:translate-y-0.5"
               }`}
             >
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Sliders
-                  className={`w-4 h-4 ${
-                    isCustom ? "text-amber-600" : "text-amber-400"
-                  }`}
-                />
-                <span className={`font-sans font-bold text-base ${isCustom ? "text-amber-600 font-extrabold" : "text-amber-400"}`}>
-                  {isCustom && customAmount
-                    ? `₹${customAmount}`
-                    : isCustom
-                    ? "₹1000"
-                    : "CUSTOM"}
-                </span>
-              </div>
-              <div>
-                <div className={`text-[11px] font-mono font-bold uppercase ${isCustom ? "text-black" : "text-white"}`}>
-                  CUSTOM_AMT
-                </div>
-                <div
-                  className={`text-[9px] font-mono uppercase ${
-                    isCustom ? "text-zinc-700" : "text-zinc-500"
-                  }`}
-                >
-                  ANY_AMOUNT
-                </div>
-              </div>
+              <Zap
+                className={`w-4 h-4 shrink-0 ${
+                  isPayDisabled ? "text-zinc-500" : "text-black fill-black"
+                }`}
+              />
+              <span
+                className={`font-extrabold truncate ${
+                  isPayDisabled ? "text-zinc-500" : "text-black"
+                }`}
+              >
+                PAY WITH ANY UPI APP
+              </span>
             </button>
+
+            {/* Mobile Fallback Helper Notice if app doesn't open */}
+            {showFallbackHelper && (
+              <div className="p-3 bg-zinc-900 border border-zinc-700 rounded-lg text-xs font-mono space-y-2 animate-fade-in">
+                <div className="flex items-center justify-between text-zinc-300">
+                  <span>UPI app didn't open automatically?</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowFallbackHelper(false)}
+                    className="text-zinc-500 hover:text-white p-1"
+                    aria-label="Close message"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyVpa}
+                    className="px-2.5 py-1 bg-white text-black font-bold text-[10px] rounded flex items-center gap-1 cursor-pointer"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>
+                      COPY UPI ID (<span className="lowercase">{UPI_CONFIG.vpa}</span>)
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalTitle("SCAN TO PAY");
+                      setShowQrModal(true);
+                    }}
+                    className="px-2.5 py-1 bg-zinc-800 text-zinc-200 hover:text-white font-bold text-[10px] uppercase rounded flex items-center gap-1 cursor-pointer"
+                  >
+                    <QrCode className="w-3 h-3 text-pink-400" />
+                    <span>View QR Code</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Custom Amount Input Box */}
-          {isCustom && (
-            <div className="mt-3 p-3.5 rounded-lg bg-black border-2 border-zinc-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-zinc-300 font-bold">
-                  AMOUNT (₹):
-                </span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={customAmount}
-                  onChange={(e) => {
-                    const numericOnly = e.target.value.replace(/[^0-9]/g, "");
-                    setCustomAmount(numericOnly);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-                      e.preventDefault();
-                    }
-                  }}
-                  placeholder="e.g. 1000"
-                  className="w-32 px-2.5 py-1.5 bg-zinc-950 border-2 border-zinc-700 text-white rounded text-xs font-mono font-bold focus:outline-none focus:border-white"
-                  aria-label="Custom contribution in rupees"
-                  autoFocus
-                />
-                <span className="text-xs font-mono text-zinc-400">INR</span>
-              </div>
-              <div className="text-xs font-mono text-zinc-400">
-                TOTAL:{" "}
-                <strong className="text-white font-bold">
-                  ₹{currentAmount} INR
-                </strong>
-              </div>
+          {/* Footer contact */}
+          <div className="text-[11px] font-mono text-zinc-400 pt-3 border-t border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span>Need custom features, enterprise format tools, or help?</span>
+            <a
+              href="mailto:burnster1826@gmail.com"
+              onClick={(e) => {
+                if (onContactClick) {
+                  onContactClick();
+                }
+                try {
+                  navigator.clipboard.writeText("burnster1826@gmail.com");
+                  showToast(
+                    "Developer email (burnster1826@gmail.com) copied to clipboard!",
+                    "success"
+                  );
+                } catch {
+                  // fallback
+                }
+              }}
+              className={`cursor-pointer font-bold uppercase text-left sm:text-right underline underline-offset-3 transition-all duration-300 ${
+                isContactOpen
+                  ? "text-emerald-400 font-extrabold decoration-emerald-400"
+                  : "text-white hover:text-emerald-300 decoration-zinc-500/30 hover:decoration-emerald-300"
+              }`}
+            >
+              [CONTACT_DEVELOPER]
+            </a>
+          </div>
+        </div>
+
+        {/* Right 5 Cols: Desktop QR Terminal (visible on lg screens) */}
+        <div
+          id="upi-qr-card"
+          className="hidden lg:flex lg:col-span-5 bg-zinc-950 border-2 border-zinc-800 rounded-xl p-6 flex-col items-center text-center space-y-4 transition-all duration-300"
+        >
+          <div className="flex items-center justify-between w-full border-b border-zinc-800 pb-3">
+            <div className="flex items-center gap-1.5">
+              <QrCode className="w-4 h-4 text-pink-400" />
+              <span className="text-xs font-mono font-bold uppercase text-white tracking-wider">
+                UPI_QR_TERMINAL.DAT
+              </span>
             </div>
-          )}
-        </div>
-
-        {/* Supporter details input */}
-        <div className="space-y-3 pt-2 border-t border-zinc-800">
-          <div>
-            <label
-              htmlFor="supporter-name-input"
-              className="block text-[11px] font-mono font-bold uppercase text-zinc-400 mb-1"
-            >
-              YOUR NAME OR HANDLE (OPTIONAL):
-            </label>
-            <input
-              id="supporter-name-input"
-              type="text"
-              maxLength={50}
-              value={supporterName}
-              onChange={(e) =>
-                setSupporterName(sanitizeTextInput(e.target.value, 50))
-              }
-              placeholder="e.g. ridhi / anonymous / arya"
-              className="w-full p-2.5 bg-black border-2 border-zinc-700 text-white rounded-lg text-xs font-mono placeholder:text-zinc-600 focus:outline-none focus:border-white"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="supporter-message-input"
-              className="block text-[11px] font-mono font-bold uppercase text-zinc-400 mb-1"
-            >
-              MESSAGE OR FEATURE NOTE (OPTIONAL):
-            </label>
-            <input
-              id="supporter-message-input"
-              type="text"
-              maxLength={140}
-              value={supporterMessage}
-              onChange={(e) =>
-                setSupporterMessage(sanitizeTextInput(e.target.value, 140))
-              }
-              placeholder="e.g. Love the fast image & PDF conversion!"
-              className="w-full p-2.5 bg-black border-2 border-zinc-700 text-white rounded-lg text-xs font-mono placeholder:text-zinc-600 focus:outline-none focus:border-white"
-            />
-          </div>
-        </div>
-
-        {/* Action buttons: Direct UPI App Redirect */}
-        <div className="pt-3 border-t border-zinc-800 space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => handleLaunchApp("gpay", "Google Pay")}
-              aria-label="Pay using Google Pay"
-              className="py-2.5 px-2 bg-black border-2 border-zinc-800 hover:border-emerald-400 hover:bg-zinc-900 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all cursor-pointer group shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#34A853]"
-            >
-              <GooglePayIcon className="w-5 h-5 shrink-0 transition-transform group-hover:scale-110" />
-              <span className="truncate group-hover:text-emerald-300 transition-colors">GPay</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleLaunchApp("phonepe", "PhonePe")}
-              aria-label="Pay using PhonePe"
-              className="py-2.5 px-2 bg-black border-2 border-zinc-800 hover:border-purple-500 hover:bg-zinc-900 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all cursor-pointer group shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#5F259F]"
-            >
-              <PhonePeIcon className="w-5 h-5 shrink-0 transition-transform group-hover:scale-110" />
-              <span className="truncate group-hover:text-purple-300 transition-colors">PhonePe</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleLaunchApp("paytm", "Paytm")}
-              aria-label="Pay using Paytm"
-              className="py-2.5 px-2 bg-black border-2 border-zinc-800 hover:border-[#00BAF2] hover:bg-zinc-900 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all cursor-pointer group shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#00BAF2]"
-            >
-              <PaytmIcon className="w-6 h-4 shrink-0 transition-transform group-hover:scale-110" />
-              <span className="truncate group-hover:text-cyan-300 transition-colors">Paytm</span>
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handleLaunchApp("universal", "UPI App")}
-            className="w-full py-3.5 bg-amber-400 hover:bg-amber-300 text-black border-2 border-black font-sans font-extrabold text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#ffffff] active:translate-y-0.5 rounded-lg transition-all"
-          >
-            <Zap className="w-4 h-4 text-black fill-black shrink-0" />
-            <span className="font-extrabold text-black">PAY WITH ANY UPI APP</span>
-          </button>
-        </div>
-
-        {/* Footer contact */}
-        <div className="text-[11px] font-mono text-zinc-400 pt-3 border-t border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <span>Need custom features, enterprise format tools, or help?</span>
-          <a
-            href="mailto:burnster1826@gmail.com"
-            onClick={(e) => {
-              if (onContactClick) {
-                onContactClick();
-              }
-              try {
-                navigator.clipboard.writeText("burnster1826@gmail.com");
-                showToast("Developer email (burnster1826@gmail.com) copied to clipboard!", "success");
-              } catch {
-                // fallback
-              }
-            }}
-            className={`cursor-pointer font-bold uppercase text-left sm:text-right underline underline-offset-3 transition-all duration-300 ${
-              isContactOpen
-                ? "text-emerald-400 font-extrabold decoration-emerald-400"
-                : "text-white hover:text-emerald-300 decoration-zinc-500/30 hover:decoration-emerald-300"
-            }`}
-          >
-            [CONTACT_DEVELOPER]
-          </a>
-        </div>
-      </div>
-
-      {/* Right 5 Cols: Vector QR Code Card */}
-      <div className="lg:col-span-5 bg-zinc-950 border-2 border-zinc-800 rounded-xl p-6 flex flex-col items-center text-center space-y-4">
-        <div className="flex items-center justify-between w-full border-b border-zinc-800 pb-3">
-          <div className="flex items-center gap-1.5">
-            <QrCode className="w-4 h-4 text-pink-400" />
-            <span className="text-xs font-mono font-bold uppercase text-white tracking-wider">
-              UPI_QR_TERMINAL.DAT
+            <span className="text-xs font-mono font-bold text-black bg-orange-500 px-2.5 py-0.5 rounded shadow-[1px_1px_0_0_#ffffff]">
+              ₹{currentAmount} INR
             </span>
           </div>
-          <span className="text-xs font-mono font-bold text-black bg-orange-500 px-2.5 py-0.5 rounded shadow-[1px_1px_0_0_#ffffff]">
-            ₹{currentAmount} INR
-          </span>
-        </div>
 
-        <div className="bg-black border border-zinc-800 rounded-lg p-5 w-full flex flex-col items-center justify-center">
-          <div className="bg-white p-3 rounded border-2 border-zinc-700 shadow">
-            {isGeneratingQr || !qrDataUrl ? (
-              <div className="w-52 h-52 flex flex-col items-center justify-center font-mono text-xs text-zinc-500 gap-2">
-                <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                <span>ENCODING_QR...</span>
+          <div className="bg-black border border-zinc-800 rounded-lg p-5 w-full flex flex-col items-center justify-center">
+            <div className="bg-white p-3 rounded border-2 border-zinc-700 shadow">
+              {isGeneratingQr || !qrDataUrl ? (
+                <div className="w-52 h-52 flex flex-col items-center justify-center font-mono text-xs text-zinc-500 gap-2">
+                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  <span>ENCODING_QR...</span>
+                </div>
+              ) : (
+                <img
+                  src={qrDataUrl}
+                  alt={`UPI QR Code for ₹${currentAmount} payment`}
+                  className="w-52 h-52 object-contain block"
+                />
+              )}
+            </div>
+            <p className="text-[10px] font-mono text-zinc-400 uppercase mt-3">
+              SCAN WITH ANY UPI APP (
+              <span className="text-zinc-300 font-bold">GPAY</span> /{" "}
+              <span className="text-zinc-300 font-bold">PHONEPE</span> /{" "}
+              <span className="text-zinc-300 font-bold">PAYTM</span> /{" "}
+              <span className="text-zinc-300 font-bold">BHIM</span>)
+            </p>
+          </div>
+
+          <div className="w-full bg-black border-2 border-zinc-800 rounded-lg p-3 flex items-center justify-between text-xs font-mono">
+            <div className="text-left truncate mr-2">
+              <span className="text-zinc-500 block text-[10px]">RECEIVER_VPA:</span>
+              <strong className="text-white font-bold truncate block lowercase">
+                {UPI_CONFIG.vpa}
+              </strong>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyVpa}
+              className="px-3 py-1.5 bg-white text-black hover:bg-zinc-200 font-mono text-[10px] font-bold uppercase rounded cursor-pointer flex items-center gap-1 shrink-0 active:scale-95 transition-transform"
+            >
+              {copiedVpa ? (
+                <>
+                  <Check className="w-3 h-3 text-emerald-600" />
+                  <span className="text-emerald-600 font-bold">COPIED</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3 h-3" />
+                  <span>COPY_ID</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive QR Code Modal (Revealed on mobile via QR button & desktop click) */}
+      {showQrModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in select-none"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="qr-modal-title"
+        >
+          <div className="w-full max-w-sm bg-zinc-950 border-2 border-white rounded-2xl p-5 sm:p-6 shadow-[4px_4px_0px_0px_#ffffff] text-center space-y-4 animate-slide-up relative">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+              <div className="flex items-center gap-1.5 text-left">
+                <QrCode className="w-4 h-4 text-pink-400 shrink-0" />
+                <h3
+                  id="qr-modal-title"
+                  className="font-mono font-bold text-xs uppercase tracking-wider text-white"
+                >
+                  {modalTitle}
+                </h3>
               </div>
-            ) : (
-              <img
-                src={qrDataUrl}
-                alt={`UPI QR Code for ₹${currentAmount} payment`}
-                className="w-52 h-52 object-contain block"
-              />
-            )}
-          </div>
-          <p className="text-[10px] font-mono text-zinc-400 uppercase mt-3">
-            SCAN WITH ANY UPI APP (<span className="text-zinc-300 font-bold">GPAY</span> / <span className="text-zinc-300 font-bold">PHONEPE</span> / <span className="text-zinc-300 font-bold">PAYTM</span> / <span className="text-zinc-300 font-bold">BHIM</span>)
-          </p>
-        </div>
+              <button
+                type="button"
+                onClick={() => setShowQrModal(false)}
+                className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-300 hover:text-white hover:border-zinc-500 flex items-center justify-center cursor-pointer transition-colors"
+                aria-label="Close QR Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-        <div className="w-full bg-black border-2 border-zinc-800 rounded-lg p-3 flex items-center justify-between text-xs font-mono">
-          <div className="text-left truncate">
-            <span className="text-zinc-500 block text-[10px]">RECEIVER_VPA:</span>
-            <strong className="text-white font-bold truncate">{UPI_CONFIG.vpa}</strong>
+            {/* Amount Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-400 text-black font-mono font-bold text-xs rounded-full shadow-[1px_1px_0_0_#ffffff]">
+              <span>AMOUNT TO PAY:</span>
+              <strong className="text-sm font-extrabold">₹{currentAmount} INR</strong>
+            </div>
+
+            {/* QR Code Container */}
+            <div className="bg-black border-2 border-zinc-800 rounded-xl p-4 flex flex-col items-center justify-center">
+              <div className="bg-white p-3 rounded-lg border-2 border-zinc-800 shadow-md">
+                {isGeneratingQr || !qrDataUrl ? (
+                  <div className="w-48 h-48 flex flex-col items-center justify-center font-mono text-xs text-zinc-500 gap-2">
+                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <span>ENCODING_QR...</span>
+                  </div>
+                ) : (
+                  <img
+                    src={qrDataUrl}
+                    alt={`UPI QR Code for ₹${currentAmount}`}
+                    className="w-48 h-48 object-contain block mx-auto"
+                  />
+                )}
+              </div>
+              <p className="text-[10px] font-mono text-zinc-400 uppercase mt-2.5">
+                Scan with GPay, PhonePe, Paytm, or BHIM
+              </p>
+            </div>
+
+            {/* UPI ID Copy Bar */}
+            <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-2.5 flex items-center justify-between text-xs font-mono">
+              <div className="text-left truncate mr-2">
+                <span className="text-zinc-500 block text-[9px] uppercase">UPI ID:</span>
+                <span className="text-white font-bold truncate block lowercase">
+                  {UPI_CONFIG.vpa}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyVpa}
+                className="px-2.5 py-1 bg-white text-black hover:bg-zinc-200 font-mono text-[10px] font-bold uppercase rounded cursor-pointer flex items-center gap-1 shrink-0 active:scale-95 transition-transform"
+              >
+                {copiedVpa ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    <span className="text-emerald-600 font-bold">COPIED</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                    <span>COPY</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Close / Action Button */}
+            <button
+              type="button"
+              onClick={() => setShowQrModal(false)}
+              className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-600 rounded-lg font-mono text-xs font-bold uppercase transition-colors cursor-pointer"
+            >
+              DONE / CLOSE
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleCopyVpa}
-            className="px-3 py-1.5 bg-white text-black hover:bg-zinc-200 font-mono text-[10px] font-bold uppercase rounded cursor-pointer flex items-center gap-1 shrink-0"
-          >
-            {copiedVpa ? (
-              <>
-                <Check className="w-3 h-3 text-emerald-600" />
-                <span className="text-emerald-600 font-bold">COPIED</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3 h-3" />
-                <span>COPY_ID</span>
-              </>
-            )}
-          </button>
         </div>
-      </div>
-    </section>
+      )}
+    </>
   );
 }

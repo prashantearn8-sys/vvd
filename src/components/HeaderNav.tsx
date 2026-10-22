@@ -308,13 +308,13 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
             {/* Light / Dark Theme Toggle Button (Animated Dual-Icon Morph) */}
             <button
               type="button"
-              onClick={toggleTheme}
+              onClick={(e) => toggleTheme(e)}
               aria-label={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
               title={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
-              className="w-9 h-9 sm:w-10 sm:h-10 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-95 shrink-0 relative overflow-hidden"
+              className="w-9 h-9 sm:w-10 sm:h-10 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 shrink-0 relative overflow-hidden"
             >
               <span
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
                   theme === "dark"
                     ? "opacity-100 rotate-0 scale-100"
                     : "opacity-0 -rotate-90 scale-50 pointer-events-none"
@@ -323,7 +323,7 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
                 <Moon className="w-4 h-4 text-indigo-400" />
               </span>
               <span
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
                   theme === "light"
                     ? "opacity-100 rotate-0 scale-100"
                     : "opacity-0 rotate-90 scale-50 pointer-events-none"
@@ -342,14 +342,14 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
                 aria-controls="tools-navigation"
                 aria-label={isNavOpen ? "Hide Tool Navigation" : "Show Tool Navigation"}
                 title={isNavOpen ? "Close Tool Navigation (Esc)" : "Open Tool Navigation"}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 border active:scale-95 relative overflow-hidden ${
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] border active:scale-95 relative overflow-hidden ${
                   isNavOpen
                     ? "bg-red-600 hover:bg-red-500 border-red-500 text-white"
                     : "bg-zinc-900 hover:bg-zinc-800 border-zinc-700 hover:border-zinc-500 text-white"
                 }`}
               >
                 <span
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
                     isNavOpen
                       ? "opacity-0 rotate-90 scale-50 pointer-events-none"
                       : "opacity-100 rotate-0 scale-100"
@@ -358,7 +358,7 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
                   <Menu className="w-4 h-4 text-white" />
                 </span>
                 <span
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-250 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
                     isNavOpen
                       ? "opacity-100 rotate-0 scale-100"
                       : "opacity-0 -rotate-90 scale-50 pointer-events-none"
@@ -376,7 +376,7 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
       <div
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`grid transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`grid transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           isNavOpen
             ? "grid-rows-[1fr] opacity-100 translate-y-0 pointer-events-auto"
             : "grid-rows-[0fr] opacity-0 -translate-y-1.5 pointer-events-none"

@@ -1,6 +1,6 @@
 {
   "name": "MONO-TRANSCODER",
-  "description": "Compress and convert images and PDFs in your browser. Nothing is uploaded. Fast, private local tools for JPG, PNG, WebP, and PDF files.",
+  "description": "Free online Image Compressor (20KB, 50KB, 100KB) and complete PDF & Office toolkit. Merge, Compress, Sign, Word/Excel/PPT to PDF in your browser—100% private iLovePDF & Pi7 alternative with zero uploads.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
