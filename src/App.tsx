@@ -3,605 +3,515 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback, lazy, Suspense } from "react";
-import { Mail, Copy, Check, ExternalLink, X } from "lucide-react";
-import Helmet from "./components/Helmet";
-import HeaderNav from "./components/HeaderNav";
-import HomeView from "./components/HomeView";
-import CompressImgView from "./components/CompressImgView";
-import CompressPdfView from "./components/CompressPdfView";
-import ConvertImgView from "./components/ConvertImgView";
-import ImageToPdfView from "./components/ImageToPdfView";
-import MergePdfView from "./components/MergePdfView";
-import PdfToImagesView from "./components/PdfToImagesView";
-import RemovePdfPagesView from "./components/RemovePdfPagesView";
-import OrganizePdfView from "./components/OrganizePdfView";
-import WordToPdfView from "./components/WordToPdfView";
-import WordToJpgView from "./components/WordToJpgView";
-import PdfToWordView from "./components/PdfToWordView";
-import ExcelToPdfView from "./components/ExcelToPdfView";
-import PptToPdfView from "./components/PptToPdfView";
-import PdfToPptView from "./components/PdfToPptView";
-import PdfToExcelView from "./components/PdfToExcelView";
-import WatermarkPdfView from "./components/WatermarkPdfView";
-import LockPdfView from "./components/LockPdfView";
-import UnlockPdfView from "./components/UnlockPdfView";
-import SignPdfView from "./components/SignPdfView";
-import PassportPhotoView from "./components/PassportPhotoView";
-import DownloadDeskView from "./components/DownloadDeskView";
-import BuyMeCoffeeView from "./components/BuyMeCoffeeView";
-import PasswordModal from "./components/PasswordModal";
-import GlobalDropOverlay from "./components/GlobalDropOverlay";
-import ToolSkeletonLoader from "./components/ToolSkeletonLoader";
+import React, { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { X, Mail, Copy, Check } from "lucide-react";
 import { RetroView } from "./types";
-
-// Lazy-loaded legal & fallback views
-const PrivacyView = lazy(() => import("./components/PrivacyView"));
-const TermsView = lazy(() => import("./components/TermsView"));
-const NotFoundView = lazy(() => import("./components/NotFoundView"));
-import { cleanupAllTrackedURLs } from "./utils/urlTracker";
-import { ToastProvider } from "./context/ToastContext";
-import { AuthProvider } from "./context/AuthContext";
-import { FileDropProvider } from "./context/FileDropContext";
+import HeaderNav from "./components/HeaderNav";
+import GlobalDropOverlay from "./components/GlobalDropOverlay";
+import PasswordModal from "./components/PasswordModal";
+import Helmet from "./components/Helmet";
 import { ThemeProvider } from "./context/ThemeContext";
-import { PATH_TO_VIEW_MAP, VIEW_TO_PATH_MAP } from "./utils/routesConfig";
+import { ToastProvider } from "./context/ToastContext";
+import { FileDropProvider } from "./context/FileDropContext";
+import { AuthProvider } from "./context/AuthContext";
+import {
+  PATH_TO_VIEW,
+  VIEW_TO_PATH,
+  getPresetKBFromPath,
+  normalizePathname,
+} from "./utils/routesConfig";
 
-function getViewFromLocation(): RetroView {
+// Code-split all views via React.lazy so initial load only fetches the active route chunk
+const HomeView = React.lazy(() => import("./components/HomeView"));
+const CompressImgView = React.lazy(() => import("./components/CompressImgView"));
+const CompressPdfView = React.lazy(() => import("./components/CompressPdfView"));
+const ConvertImgView = React.lazy(() => import("./components/ConvertImgView"));
+const ImageToPdfView = React.lazy(() => import("./components/ImageToPdfView"));
+const MergePdfView = React.lazy(() => import("./components/MergePdfView"));
+const PdfToImagesView = React.lazy(() => import("./components/PdfToImagesView"));
+const RemovePdfPagesView = React.lazy(() => import("./components/RemovePdfPagesView"));
+const OrganizePdfView = React.lazy(() => import("./components/OrganizePdfView"));
+const WatermarkPdfView = React.lazy(() => import("./components/WatermarkPdfView"));
+const WordToPdfView = React.lazy(() => import("./components/WordToPdfView"));
+const WordToJpgView = React.lazy(() => import("./components/WordToJpgView"));
+const PdfToWordView = React.lazy(() => import("./components/PdfToWordView"));
+const ExcelToPdfView = React.lazy(() => import("./components/ExcelToPdfView"));
+const PdfToExcelView = React.lazy(() => import("./components/PdfToExcelView"));
+const PptToPdfView = React.lazy(() => import("./components/PptToPdfView"));
+const PdfToPptView = React.lazy(() => import("./components/PdfToPptView"));
+const LockPdfView = React.lazy(() => import("./components/LockPdfView"));
+const UnlockPdfView = React.lazy(() => import("./components/UnlockPdfView"));
+const SignPdfView = React.lazy(() => import("./components/SignPdfView"));
+const PassportPhotoView = React.lazy(() => import("./components/PassportPhotoView"));
+const DownloadDeskView = React.lazy(() => import("./components/DownloadDeskView"));
+const BuyMeCoffeeView = React.lazy(() => import("./components/BuyMeCoffeeView"));
+const PrivacyView = React.lazy(() => import("./components/PrivacyView"));
+const TermsView = React.lazy(() => import("./components/TermsView"));
+const NotFoundView = React.lazy(() => import("./components/NotFoundView"));
+
+function resolveViewFromLocation(): RetroView {
   if (typeof window === "undefined") return "home";
-  const path = window.location.pathname.toLowerCase().replace(/\/$/, "") || "/";
-  return PATH_TO_VIEW_MAP[path] || (path === "/" ? "home" : "not_found");
+  const clean = normalizePathname(window.location.pathname);
+  return PATH_TO_VIEW[clean] || "not_found";
 }
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<RetroView>(getViewFromLocation);
+  const [currentView, setCurrentView] = useState<RetroView>(resolveViewFromLocation);
+  const [presetTargetKB, setPresetTargetKB] = useState<number | undefined>(() =>
+    typeof window !== "undefined" ? getPresetKBFromPath(window.location.pathname) : undefined
+  );
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
-  const [resetKeys, setResetKeys] = useState<Record<string, number>>({});
+  const [routedFiles, setRoutedFiles] = useState<File[] | null>(null);
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
   const [copiedEmail, setCopiedEmail] = useState<boolean>(false);
 
-  const handleResetTool = useCallback((tool: string) => {
-    setResetKeys((prev) => ({ ...prev, [tool]: (prev[tool] || 0) + 1 }));
-    setPendingFile(null);
-    setPendingFiles(null);
-  }, []);
-
-  // Password prompt state for encrypted PDFs
-  const [passwordPrompt, setPasswordPrompt] = useState<{
+  // Password modal state for encrypted PDF tools
+  const [pwdModalState, setPwdModalState] = useState<{
     isOpen: boolean;
     reason: "required" | "wrong";
-    resolve: ((pwd: string | null) => void) | null;
-  }>({
-    isOpen: false,
-    reason: "required",
-    resolve: null,
-  });
+  }>({ isOpen: false, reason: "required" });
+  const pwdResolverRef = useRef<((pwd: string | null) => void) | null>(null);
 
-  // Handle browser back/forward history navigation
-  useEffect(() => {
-    const handlePopState = () => {
-      setCurrentView(getViewFromLocation());
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
-  // Clean up all object URLs when the component unmounts
-  useEffect(() => {
-    return () => {
-      cleanupAllTrackedURLs();
-    };
-  }, []);
-
-  const handleSelectView = useCallback((view: RetroView) => {
-    setCurrentView(view);
-    const targetPath = VIEW_TO_PATH_MAP[view] || "/";
-    if (window.location.pathname !== targetPath && !view.endsWith("_download")) {
-      window.history.pushState({}, "", targetPath);
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  const handleRouteWithFiles = useCallback((view: RetroView, files: File[]) => {
-    if (files.length > 0) {
-      setPendingFile(files[0]);
-      setPendingFiles(files);
-    }
-    handleSelectView(view);
-  }, [handleSelectView]);
-
-  // Password modal helper
-  const askPassword = useCallback((reason: "required" | "wrong" = "required"): Promise<string | null> => {
-    return new Promise((resolve) => {
-      setPasswordPrompt({
-        isOpen: true,
-        reason,
-        resolve,
+  const askPassword = useCallback(
+    (reason: "wrong" | "required" = "required"): Promise<string | null> => {
+      return new Promise((resolve) => {
+        pwdResolverRef.current = resolve;
+        setPwdModalState({ isOpen: true, reason });
       });
-    });
+    },
+    []
+  );
+
+  const handlePasswordSubmit = (pwd: string) => {
+    setPwdModalState((prev) => ({ ...prev, isOpen: false }));
+    if (pwdResolverRef.current) {
+      pwdResolverRef.current(pwd);
+      pwdResolverRef.current = null;
+    }
+  };
+
+  const handlePasswordCancel = () => {
+    setPwdModalState((prev) => ({ ...prev, isOpen: false }));
+    if (pwdResolverRef.current) {
+      pwdResolverRef.current(null);
+      pwdResolverRef.current = null;
+    }
+  };
+
+  const handleSelectView = useCallback((view: RetroView, preserveRoutedFiles = false) => {
+    if (!preserveRoutedFiles) {
+      setRoutedFiles(null);
+    }
+    setCurrentView(view);
+
+    if (typeof window !== "undefined") {
+      if (!view.endsWith("_download") && view !== "not_found") {
+        const targetPath = VIEW_TO_PATH[view] || "/";
+        setPresetTargetKB(getPresetKBFromPath(targetPath));
+        if (window.location.pathname !== targetPath) {
+          window.history.pushState({ view }, "", targetPath);
+        }
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }, []);
 
-  const handlePasswordSubmit = useCallback((pwd: string) => {
-    if (passwordPrompt.resolve) {
-      passwordPrompt.resolve(pwd);
-    }
-    setPasswordPrompt({ isOpen: false, reason: "required", resolve: null });
-  }, [passwordPrompt]);
+  const handleRouteWithFiles = useCallback(
+    (view: RetroView, files: File[]) => {
+      setRoutedFiles(files);
+      handleSelectView(view, true);
+    },
+    [handleSelectView]
+  );
 
-  const handlePasswordCancel = useCallback(() => {
-    if (passwordPrompt.resolve) {
-      passwordPrompt.resolve(null);
-    }
-    setPasswordPrompt({ isOpen: false, reason: "required", resolve: null });
-  }, [passwordPrompt]);
+  useEffect(() => {
+    const onPopState = () => {
+      const path = normalizePathname(window.location.pathname);
+      setPresetTargetKB(getPresetKBFromPath(path));
+      const mapped = PATH_TO_VIEW[path];
+      setCurrentView(mapped || "not_found");
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText("burnster1826@gmail.com");
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
+
+  const renderDownloadView = (toolKey: string, sourceView: RetroView) => (
+    <DownloadDeskView
+      toolKey={toolKey}
+      sourceView={sourceView}
+      onAnotherFile={() => handleSelectView(sourceView)}
+      onBack={() => handleSelectView("home")}
+      onBuyMeCoffee={() => handleSelectView("coffee")}
+    />
+  );
 
   return (
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
-        <FileDropProvider currentView={currentView} onRouteWithFiles={handleRouteWithFiles}>
-        <div
-          className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans transition-colors duration-200 relative"
-          id="application-root"
-        >
-          <Helmet currentView={currentView} path={VIEW_TO_PATH_MAP[currentView]} />
+          <FileDropProvider currentView={currentView} onRouteWithFiles={handleRouteWithFiles}>
+            <Helmet view={currentView} />
+            <div
+              id="application-root"
+              className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-white selection:text-black"
+            >
+              <HeaderNav currentView={currentView} onSelectView={handleSelectView} />
+              <GlobalDropOverlay currentView={currentView} onSelectView={handleSelectView} />
 
-          {/* GLOBAL FULL-SCREEN DRAG AND DROP OVERLAY */}
-          <GlobalDropOverlay currentView={currentView} onSelectView={handleSelectView} />
+              <main className="flex-1 w-full px-3 sm:px-5 lg:px-8 py-4 sm:py-6">
+                <Suspense fallback={null}>
+                  {currentView === "home" && (
+                    <HomeView
+                      searchQuery={searchQuery}
+                      onSearchChange={setSearchQuery}
+                      onSelectView={handleSelectView}
+                    />
+                  )}
 
-          {/* HEADER & TOP CONTROL DECK */}
-          <HeaderNav currentView={currentView} onSelectView={handleSelectView} />
+                  {currentView === "compress_img" && (
+                    <CompressImgView
+                      onSuccess={() => handleSelectView("compress_img_download")}
+                      initialFile={routedFiles?.[0] || null}
+                      initialTargetKB={presetTargetKB}
+                    />
+                  )}
+                  {currentView === "compress_img_download" &&
+                    renderDownloadView("compress_img", "compress_img")}
 
-          {/* PASSWORD DIALOG FOR ENCRYPTED PDFS */}
-          {passwordPrompt.isOpen && (
-            <PasswordModal
-              reason={passwordPrompt.reason}
-              onSubmit={handlePasswordSubmit}
-              onCancel={handlePasswordCancel}
-            />
-          )}
+                  {currentView === "compress_pdf" && (
+                    <CompressPdfView
+                      onSuccess={() => handleSelectView("compress_pdf_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "compress_pdf_download" &&
+                    renderDownloadView("compress_pdf", "compress_pdf")}
 
-          {/* MAIN WORKSPACE CANVAS */}
-          <main className="flex-1 max-w-[1800px] w-full mx-auto p-3 sm:p-5 md:p-8" id="workspace-canvas">
-            <Suspense fallback={<ToolSkeletonLoader variant="download_desk" />}>
-              {currentView === "home" && (
-                <HomeView
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                  onSelectView={handleSelectView}
-                  onOpenContact={() => {
-                    setIsContactOpen(true);
-                    setTimeout(() => {
-                      document.getElementById("footer-contact-details")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                    }, 50);
-                  }}
-                />
-              )}
+                  {currentView === "convert_img" && (
+                    <ConvertImgView
+                      onSuccess={() => handleSelectView("convert_img_download")}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "convert_img_download" &&
+                    renderDownloadView("convert_img", "convert_img")}
 
-              {(currentView === "compress_img" || currentView === "compress_img_download") && (
-                <div className={currentView === "compress_img" ? "block" : "hidden"}>
-                  <CompressImgView
-                    key={`compress_img_${resetKeys.compress_img || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("compress_img_download")}
-                  />
+                  {currentView === "image_to_pdf" && (
+                    <ImageToPdfView
+                      onSuccess={() => handleSelectView("image_to_pdf_download")}
+                      initialFiles={routedFiles}
+                    />
+                  )}
+                  {currentView === "image_to_pdf_download" &&
+                    renderDownloadView("image_to_pdf", "image_to_pdf")}
+
+                  {currentView === "merge_pdf" && (
+                    <MergePdfView
+                      onSuccess={() => handleSelectView("merge_pdf_download")}
+                      initialFiles={routedFiles}
+                    />
+                  )}
+                  {currentView === "merge_pdf_download" &&
+                    renderDownloadView("merge_pdf", "merge_pdf")}
+
+                  {currentView === "pdf_to_images" && (
+                    <PdfToImagesView
+                      onSuccess={() => handleSelectView("pdf_to_images_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "pdf_to_images_download" &&
+                    renderDownloadView("pdf_to_images", "pdf_to_images")}
+
+                  {currentView === "remove_pdf_pages" && (
+                    <RemovePdfPagesView
+                      onSuccess={() => handleSelectView("remove_pdf_pages_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "remove_pdf_pages_download" &&
+                    renderDownloadView("remove_pdf_pages", "remove_pdf_pages")}
+
+                  {currentView === "organize_pdf" && (
+                    <OrganizePdfView
+                      onSuccess={() => handleSelectView("organize_pdf_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "organize_pdf_download" &&
+                    renderDownloadView("organize_pdf", "organize_pdf")}
+
+                  {currentView === "watermark_pdf" && (
+                    <WatermarkPdfView
+                      onSuccess={() => handleSelectView("watermark_pdf_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "watermark_pdf_download" &&
+                    renderDownloadView("watermark_pdf", "watermark_pdf")}
+
+                  {currentView === "word_to_pdf" && (
+                    <WordToPdfView
+                      onSuccess={() => handleSelectView("word_to_pdf_download")}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "word_to_pdf_download" &&
+                    renderDownloadView("word_to_pdf", "word_to_pdf")}
+
+                  {currentView === "word_to_jpg" && (
+                    <WordToJpgView
+                      onSuccess={() => handleSelectView("word_to_jpg_download")}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "word_to_jpg_download" &&
+                    renderDownloadView("word_to_jpg", "word_to_jpg")}
+
+                  {currentView === "pdf_to_word" && (
+                    <PdfToWordView
+                      onSuccess={() => handleSelectView("pdf_to_word_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "pdf_to_word_download" &&
+                    renderDownloadView("pdf_to_word", "pdf_to_word")}
+
+                  {currentView === "excel_to_pdf" && (
+                    <ExcelToPdfView
+                      onSuccess={() => handleSelectView("excel_to_pdf_download")}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "excel_to_pdf_download" &&
+                    renderDownloadView("excel_to_pdf", "excel_to_pdf")}
+
+                  {currentView === "pdf_to_excel" && (
+                    <PdfToExcelView
+                      onSuccess={() => handleSelectView("pdf_to_excel_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "pdf_to_excel_download" &&
+                    renderDownloadView("pdf_to_excel", "pdf_to_excel")}
+
+                  {currentView === "ppt_to_pdf" && (
+                    <PptToPdfView
+                      onSuccess={() => handleSelectView("ppt_to_pdf_download")}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "ppt_to_pdf_download" &&
+                    renderDownloadView("ppt_to_pdf", "ppt_to_pdf")}
+
+                  {currentView === "pdf_to_ppt" && (
+                    <PdfToPptView
+                      onSuccess={() => handleSelectView("pdf_to_ppt_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "pdf_to_ppt_download" &&
+                    renderDownloadView("pdf_to_ppt", "pdf_to_ppt")}
+
+                  {currentView === "lock_pdf" && (
+                    <LockPdfView
+                      onSuccess={() => handleSelectView("lock_pdf_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "lock_pdf_download" &&
+                    renderDownloadView("lock_pdf", "lock_pdf")}
+
+                  {currentView === "unlock_pdf" && (
+                    <UnlockPdfView
+                      onSuccess={() => handleSelectView("unlock_pdf_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "unlock_pdf_download" &&
+                    renderDownloadView("unlock_pdf", "unlock_pdf")}
+
+                  {currentView === "sign_pdf" && (
+                    <SignPdfView
+                      onSuccess={() => handleSelectView("sign_pdf_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "sign_pdf_download" &&
+                    renderDownloadView("sign_pdf", "sign_pdf")}
+
+                  {currentView === "passport_photo" && (
+                    <PassportPhotoView
+                      onSuccess={() => handleSelectView("passport_photo_download")}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "passport_photo_download" &&
+                    renderDownloadView("passport_photo", "passport_photo")}
+
+                  {currentView === "coffee" && (
+                    <BuyMeCoffeeView onBack={() => handleSelectView("home")} />
+                  )}
+
+                  {currentView === "privacy" && (
+                    <PrivacyView onBack={() => handleSelectView("home")} />
+                  )}
+
+                  {currentView === "terms" && (
+                    <TermsView onBack={() => handleSelectView("home")} />
+                  )}
+
+                  {currentView === "not_found" && (
+                    <NotFoundView onBack={() => handleSelectView("home")} />
+                  )}
+                </Suspense>
+              </main>
+
+              {/* Footer */}
+              <footer id="application-footer" className="border-t border-zinc-800/80 py-5 px-3 sm:px-5 lg:px-8 mt-auto bg-black">
+                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-zinc-400">
+                  <div>
+                    MONO-TRANSCODER //YOUR DOCUMENTS &amp; PHOTOS NEVER LEAVE YOUR DEVICE
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <button
+                      type="button"
+                      id="footer-contact-button"
+                      onClick={() => setIsContactOpen(true)}
+                      className="hover:text-white transition-colors cursor-pointer"
+                    >
+                      Contact
+                    </button>
+                    <a
+                      href="/privacy"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleSelectView("privacy");
+                      }}
+                      className="hover:text-white transition-colors"
+                    >
+                      Privacy Policy
+                    </a>
+                    <a
+                      href="/terms"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleSelectView("terms");
+                      }}
+                      className="hover:text-white transition-colors"
+                    >
+                      Terms of Service
+                    </a>
+                    <a
+                      href="/support"
+                      id="footer-coffee-link"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleSelectView("coffee");
+                      }}
+                      className="hover:text-white transition-colors"
+                    >
+                      Buy Me a Coffee
+                    </a>
+                  </div>
                 </div>
-              )}
+              </footer>
 
-              {(currentView === "compress_pdf" || currentView === "compress_pdf_download") && (
-                <div className={currentView === "compress_pdf" ? "block" : "hidden"}>
-                  <CompressPdfView
-                    key={`compress_pdf_${resetKeys.compress_pdf || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("compress_pdf_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "convert_img" || currentView === "convert_img_download") && (
-                <div className={currentView === "convert_img" ? "block" : "hidden"}>
-                  <ConvertImgView
-                    key={`convert_img_${resetKeys.convert_img || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("convert_img_download")}
-                  />
-                </div>
-              )}
-
-              {(currentView === "image_to_pdf" || currentView === "image_to_pdf_download") && (
-                <div className={currentView === "image_to_pdf" ? "block" : "hidden"}>
-                  <ImageToPdfView
-                    key={`image_to_pdf_${resetKeys.image_to_pdf || 0}`}
-                    initialFiles={pendingFiles}
-                    onSuccess={() => setCurrentView("image_to_pdf_download")}
-                  />
-                </div>
-              )}
-
-              {(currentView === "merge_pdf" || currentView === "merge_pdf_download") && (
-                <div className={currentView === "merge_pdf" ? "block" : "hidden"}>
-                  <MergePdfView
-                    key={`merge_pdf_${resetKeys.merge_pdf || 0}`}
-                    initialFiles={pendingFiles}
-                    onSuccess={() => setCurrentView("merge_pdf_download")}
-                  />
-                </div>
-              )}
-
-              {(currentView === "pdf_to_images" || currentView === "pdf_to_images_download") && (
-                <div className={currentView === "pdf_to_images" ? "block" : "hidden"}>
-                  <PdfToImagesView
-                    key={`pdf_to_images_${resetKeys.pdf_to_images || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("pdf_to_images_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "remove_pdf_pages" || currentView === "remove_pdf_pages_download") && (
-                <div className={currentView === "remove_pdf_pages" ? "block" : "hidden"}>
-                  <RemovePdfPagesView
-                    key={`remove_pdf_pages_${resetKeys.remove_pdf_pages || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("remove_pdf_pages_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "organize_pdf" || currentView === "organize_pdf_download") && (
-                <div className={currentView === "organize_pdf" ? "block" : "hidden"}>
-                  <OrganizePdfView
-                    key={`organize_pdf_${resetKeys.organize_pdf || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("organize_pdf_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "word_to_pdf" || currentView === "word_to_pdf_download") && (
-                <div className={currentView === "word_to_pdf" ? "block" : "hidden"}>
-                  <WordToPdfView
-                    key={`word_to_pdf_${resetKeys.word_to_pdf || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("word_to_pdf_download")}
-                  />
-                </div>
-              )}
-
-              {(currentView === "word_to_jpg" || currentView === "word_to_jpg_download") && (
-                <div className={currentView === "word_to_jpg" ? "block" : "hidden"}>
-                  <WordToJpgView
-                    key={`word_to_jpg_${resetKeys.word_to_jpg || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("word_to_jpg_download")}
-                  />
-                </div>
-              )}
-
-              {(currentView === "pdf_to_word" || currentView === "pdf_to_word_download") && (
-                <div className={currentView === "pdf_to_word" ? "block" : "hidden"}>
-                  <PdfToWordView
-                    key={`pdf_to_word_${resetKeys.pdf_to_word || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("pdf_to_word_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "excel_to_pdf" || currentView === "excel_to_pdf_download") && (
-                <div className={currentView === "excel_to_pdf" ? "block" : "hidden"}>
-                  <ExcelToPdfView
-                    key={`excel_to_pdf_${resetKeys.excel_to_pdf || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("excel_to_pdf_download")}
-                  />
-                </div>
-              )}
-
-              {(currentView === "ppt_to_pdf" || currentView === "ppt_to_pdf_download") && (
-                <div className={currentView === "ppt_to_pdf" ? "block" : "hidden"}>
-                  <PptToPdfView
-                    key={`ppt_to_pdf_${resetKeys.ppt_to_pdf || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("ppt_to_pdf_download")}
-                  />
-                </div>
-              )}
-
-              {(currentView === "pdf_to_ppt" || currentView === "pdf_to_ppt_download") && (
-                <div className={currentView === "pdf_to_ppt" ? "block" : "hidden"}>
-                  <PdfToPptView
-                    key={`pdf_to_ppt_${resetKeys.pdf_to_ppt || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("pdf_to_ppt_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "pdf_to_excel" || currentView === "pdf_to_excel_download") && (
-                <div className={currentView === "pdf_to_excel" ? "block" : "hidden"}>
-                  <PdfToExcelView
-                    key={`pdf_to_excel_${resetKeys.pdf_to_excel || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("pdf_to_excel_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "watermark_pdf" || currentView === "watermark_pdf_download") && (
-                <div className={currentView === "watermark_pdf" ? "block" : "hidden"}>
-                  <WatermarkPdfView
-                    key={`watermark_pdf_${resetKeys.watermark_pdf || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("watermark_pdf_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "lock_pdf" || currentView === "lock_pdf_download") && (
-                <div className={currentView === "lock_pdf" ? "block" : "hidden"}>
-                  <LockPdfView
-                    key={`lock_pdf_${resetKeys.lock_pdf || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("lock_pdf_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "unlock_pdf" || currentView === "unlock_pdf_download") && (
-                <div className={currentView === "unlock_pdf" ? "block" : "hidden"}>
-                  <UnlockPdfView
-                    key={`unlock_pdf_${resetKeys.unlock_pdf || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("unlock_pdf_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "sign_pdf" || currentView === "sign_pdf_download") && (
-                <div className={currentView === "sign_pdf" ? "block" : "hidden"}>
-                  <SignPdfView
-                    key={`sign_pdf_${resetKeys.sign_pdf || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("sign_pdf_download")}
-                    askPassword={askPassword}
-                  />
-                </div>
-              )}
-
-              {(currentView === "passport_photo" || currentView === "passport_photo_download") && (
-                <div className={currentView === "passport_photo" ? "block" : "hidden"}>
-                  <PassportPhotoView
-                    key={`passport_photo_${resetKeys.passport_photo || 0}`}
-                    initialFile={pendingFile}
-                    onSuccess={() => setCurrentView("passport_photo_download")}
-                  />
-                </div>
-              )}
-
-              {/* DOWNLOAD DESK VIEW */}
-              {currentView.endsWith("_download") && (
-                <div className="animate-fade-in">
-                  <DownloadDeskView
-                    toolKey={currentView.replace("_download", "")}
-                    sourceView={currentView.replace("_download", "") as RetroView}
-                    onBack={() => setCurrentView(currentView.replace("_download", "") as RetroView)}
-                    onAnotherFile={() => {
-                      const tool = currentView.replace("_download", "");
-                      handleResetTool(tool);
-                      setCurrentView(tool as RetroView);
-                    }}
-                    onBuyMeCoffee={() => handleSelectView("coffee")}
-                  />
-                </div>
-              )}
-
-              {/* LEGAL VIEWS */}
-              {currentView === "privacy" && (
-                <PrivacyView onBack={() => handleSelectView("home")} />
-              )}
-
-              {currentView === "terms" && (
-                <TermsView onBack={() => handleSelectView("home")} />
-              )}
-
-              {/* BUY ME A COFFEE DEDICATED VIEW */}
-              {currentView === "coffee" && (
-                <BuyMeCoffeeView
-                  onBack={() => handleSelectView("home")}
-                  isContactOpen={isContactOpen}
-                  onOpenContact={() => {
-                    setIsContactOpen((prev) => !prev);
-                    setTimeout(() => {
-                      document.getElementById("footer-contact-details")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                    }, 50);
-                  }}
-                />
-              )}
-
-              {/* 404 NOT FOUND */}
-              {currentView === "not_found" && (
-                <NotFoundView
-                  onBack={() => handleSelectView("home")}
-                  requestedPath={typeof window !== "undefined" ? window.location.pathname : ""}
-                />
-              )}
-            </Suspense>
-          </main>
-
-        {/* FOOTER */}
-        <footer className="border-t-2 border-black bg-zinc-950 py-2.5 sm:py-3 px-3 sm:px-4 md:px-6 shrink-0 text-zinc-400 font-mono text-[10px] sm:text-[11px] mt-4 sm:mt-6" id="application-footer">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 sm:gap-3">
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2 gap-y-0.5 text-center md:text-left">
-              <span className="font-bold text-white uppercase tracking-wider text-[10px] sm:text-[11px]">
-                MONO-TRANSCODER // VER 2.5.0
-              </span>
-              <span className="hidden sm:inline text-zinc-600" aria-hidden="true">—</span>
-              <span className="text-[9px] sm:text-[10px] text-zinc-500">
-                100% Client-Side In-Memory File Processing // Zero-Telemetry
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center md:items-end gap-1.5 w-full md:w-auto">
-              <nav aria-label="Footer Navigation" className="flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-2.5 gap-y-1 text-[10px] sm:text-[11px] font-mono font-bold uppercase">
-                <button
-                  type="button"
-                  id="footer-contact-button"
-                  onClick={() => {
-                    setIsContactOpen((prev) => !prev);
-                    setCopiedEmail(false);
-                  }}
-                  className={`cursor-pointer uppercase underline underline-offset-3 transition-all duration-300 ease-in-out py-0.5 px-0.5 ${
-                    isContactOpen
-                      ? "text-emerald-400 font-extrabold decoration-emerald-400"
-                      : "text-zinc-400 decoration-zinc-500/30 hover:text-emerald-300 hover:decoration-emerald-300"
-                  }`}
-                  aria-label="Toggle contact information"
-                  aria-expanded={isContactOpen}
+              {/* Contact Modal */}
+              {isContactOpen && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="contact-modal-title"
+                  onClick={() => setIsContactOpen(false)}
                 >
-                  CONTACT_US
-                </button>
-                <span className="hidden sm:inline text-zinc-600" aria-hidden="true">|</span>
-                <a
-                  href="/buy-me-a-coffee"
-                  id="footer-coffee-link"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSelectView("coffee");
-                  }}
-                  className={`cursor-pointer uppercase underline underline-offset-3 transition-all duration-300 ease-in-out py-0.5 px-0.5 ${
-                    currentView === "coffee"
-                      ? "text-amber-400 font-extrabold decoration-amber-400"
-                      : "text-zinc-400 decoration-zinc-500/30 hover:text-amber-300 hover:decoration-amber-400 active:text-amber-400 active:decoration-amber-400"
-                  }`}
-                  aria-label="Navigate to Buy Me A Coffee page"
-                >
-                  BUY_ME_A_COFFEE
-                </a>
-                <span className="hidden sm:inline text-zinc-600" aria-hidden="true">|</span>
-                <a
-                  href="/privacy"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSelectView("privacy");
-                  }}
-                  className="hover:text-white underline cursor-pointer py-0.5 px-0.5"
-                  aria-label="View Privacy Policy"
-                >
-                  PRIVACY_POLICY
-                </a>
-                <span className="hidden sm:inline text-zinc-600" aria-hidden="true">|</span>
-                <a
-                  href="/terms"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSelectView("terms");
-                  }}
-                  className="hover:text-white underline cursor-pointer py-0.5 px-0.5"
-                  aria-label="View Terms of Service"
-                >
-                  TERMS_OF_SERVICE
-                </a>
-                <span className="hidden sm:inline text-zinc-600" aria-hidden="true">|</span>
-                <a
-                  href="/"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSelectView("home");
-                  }}
-                  className="hover:text-white underline cursor-pointer py-0.5 px-0.5"
-                  aria-label="Back to System Deck"
-                >
-                  SYSTEM_DECK
-                </a>
-              </nav>
-
-              {/* Smooth Animated Email Drawer directly below CONTACT_US */}
-              <div
-                className={`grid transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] max-w-full ${
-                  isContactOpen
-                    ? "grid-rows-[1fr] opacity-100 translate-y-0 mt-0.5 pointer-events-auto"
-                    : "grid-rows-[0fr] opacity-0 -translate-y-1 mt-0 pointer-events-none"
-                }`}
-              >
-                <div className="overflow-hidden">
                   <div
-                    id="footer-contact-details"
-                    aria-hidden={!isContactOpen}
-                    className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-2 py-1.5 px-2.5 bg-zinc-950 border border-zinc-700 rounded-md text-[11px] font-mono text-white max-w-full overflow-hidden"
+                    className="bg-zinc-950 border-2 border-zinc-800 rounded-xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <Mail className="w-3 h-3 text-white shrink-0" aria-hidden="true" />
-                      <a
-                        href="mailto:burnster1826@gmail.com"
-                        tabIndex={isContactOpen ? 0 : -1}
-                        className="hover:text-white underline font-bold tracking-tight text-zinc-200 transition-colors truncate max-w-[200px] xs:max-w-none text-[10px] sm:text-[11px]"
-                        title="Click to send email"
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+                      <h2
+                        id="contact-modal-title"
+                        className="text-sm sm:text-base font-bold text-white font-sans flex items-center gap-2"
                       >
-                        burnster1826@gmail.com
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
+                        <Mail className="w-4 h-4 text-emerald-400" />
+                        <span>Contact &amp; Support</span>
+                      </h2>
                       <button
                         type="button"
-                        tabIndex={isContactOpen ? 0 : -1}
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText("burnster1826@gmail.com");
-                            setCopiedEmail(true);
-                            setTimeout(() => setCopiedEmail(false), 2000);
-                          } catch {
-                            // fallback
-                          }
-                        }}
-                        className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded text-[9px] font-bold cursor-pointer transition-all duration-150 active:scale-95"
-                        title="Copy email to clipboard"
+                        onClick={() => setIsContactOpen(false)}
+                        aria-label="Close Contact Modal"
+                        className="p-1.5 rounded-lg border border-zinc-800 hover:border-white text-zinc-400 hover:text-white cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <p className="text-xs font-mono text-zinc-400 leading-relaxed">
+                      Have a bug report, feature request, or question about MONO-TRANSCODER? Reach out directly via email:
+                    </p>
+                    <div className="bg-black border border-zinc-800 rounded-lg p-3 flex items-center justify-between gap-2">
+                      <span className="text-xs font-mono font-bold text-white truncate">
+                        burnster1826@gmail.com
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCopyEmail}
+                        className="px-2.5 py-1.5 bg-white text-black rounded text-[11px] font-mono font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
                       >
                         {copiedEmail ? (
                           <>
-                            <Check className="w-2.5 h-2.5 text-emerald-400" />
-                            <span className="text-emerald-400 font-bold">COPIED</span>
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>COPIED</span>
                           </>
                         ) : (
                           <>
-                            <Copy className="w-2.5 h-2.5" />
+                            <Copy className="w-3.5 h-3.5" />
                             <span>COPY</span>
                           </>
                         )}
                       </button>
+                    </div>
+                    <div className="pt-1 flex justify-end">
                       <a
-                        href="mailto:burnster1826@gmail.com"
-                        tabIndex={isContactOpen ? 0 : -1}
-                        className="p-0.5 hover:text-white text-zinc-400 transition-colors"
-                        title="Open mail client"
-                        aria-label="Open mail client"
+                        href="mailto:burnster1826@gmail.com?subject=MONO-TRANSCODER%20Feedback"
+                        className="px-3.5 py-2 bg-white text-black rounded-lg text-xs font-mono font-bold uppercase no-underline hover:bg-zinc-200 transition-colors"
                       >
-                        <ExternalLink className="w-3 h-3" />
+                        SEND EMAIL
                       </a>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {pwdModalState.isOpen && (
+                <PasswordModal
+                  reason={pwdModalState.reason}
+                  onSubmit={handlePasswordSubmit}
+                  onCancel={handlePasswordCancel}
+                />
+              )}
             </div>
-          </div>
-        </footer>
-        </div>
-      </FileDropProvider>
-      </AuthProvider>
-    </ToastProvider>
-  </ThemeProvider>
-);
+          </FileDropProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </ThemeProvider>
+  );
 }

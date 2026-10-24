@@ -23,7 +23,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface LockPdfViewProps {
@@ -309,10 +308,10 @@ export default function LockPdfView({
             id="lock-pdf-heading"
             className="text-xl font-bold uppercase tracking-tight text-white font-sans"
           >
-            LOCK PDF WITH PASSWORD // LOCK_PDF.PRG
+            Lock PDF (Basic Password Protection)
           </h1>
           <p className="text-xs text-zinc-400 font-mono">
-            Add a password to your PDF so anyone opening the file must enter the password first.
+            Applies standard PDF RC4-128 (V2/R3) basic password protection locally in your browser to prevent casual opening. For high-security archival encryption, use dedicated AES-256 desktop tools (e.g., Acrobat or qpdf).
           </p>
         </div>
       </div>
@@ -379,17 +378,6 @@ export default function LockPdfView({
             SELECT_PDF_FILE
           </button>
         </div>
-      ) : isParsing || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="lock_pdf"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo="PASSWORD PROTECTED PDF"
-          statusMessage={
-            progressMsg ||
-            (isParsing ? "PARSING_PDF_DOCUMENT..." : "ADDING_OPEN_PASSWORD_TO_PDF...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Document Preview & Lock Status */}

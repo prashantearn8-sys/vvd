@@ -13,7 +13,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface CompressPdfViewProps {
@@ -234,14 +233,6 @@ export default function CompressPdfView({ onSuccess, askPassword, initialFile }:
             SELECT_PDF
           </button>
         </div>
-      ) : isProcessing ? (
-        <ToolSkeletonLoader
-          variant="compress_pdf"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={useNumerical ? `${targetKB} KB TARGET` : `${compressLevel.toUpperCase()} LEVEL`}
-          statusMessage={progressMsg || "DEFLATING_PDF_OBJECT_STREAMS..."}
-        />
       ) : (
         <div className="max-w-3xl mx-auto space-y-6">
           <div

@@ -19,7 +19,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface PdfToWordViewProps {
@@ -920,18 +919,6 @@ export default function PdfToWordView({
             SELECT_PDF_FILE
           </button>
         </div>
-      ) : isScanning || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="pdf_to_word"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          fileCount={extractedPages.length || 4}
-          targetInfo="OPENXML .DOCX"
-          statusMessage={
-            progressMsg ||
-            (isScanning ? "SCANNING_PDF_TEXT_AND_IMAGE_STREAMS..." : "GENERATING_DOCX_FILE...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Extracted Document & Image Preview */}

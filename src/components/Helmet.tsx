@@ -1,791 +1,506 @@
-import React, { useEffect, useState } from "react";
-import { RetroView } from "../types";
+import React, { useEffect } from 'react';
+import { DEFAULT_SITE_ORIGIN, getCanonicalPathForLocation, normalizePathname } from '../utils/routesConfig';
 
-export interface PageMetaTags {
+interface HelmetProps {
+  view: string;
+}
+
+export interface RouteMetadata {
   title: string;
   description: string;
-  ogTitle: string;
-  ogDescription: string;
-  twitterTitle: string;
-  twitterDescription: string;
-  canonicalPath: string;
-  category: string;
   keywords: string;
+  heading?: string;
+  intro?: string;
+  steps?: string[];
+  faqs?: Array<{ q: string; a: string }>;
 }
 
-export interface HelmetProps {
-  currentView?: RetroView;
-  path?: string;
-  customTitle?: string;
-  customDescription?: string;
-}
+export const ROUTE_METADATA: Record<string, RouteMetadata> = {
+  '/': {
+    title: 'Free Online PDF Tools & Image Compressor to Exact KB | MONO-TRANSCODER',
+    description: '20 free browser-based PDF & image utilities: compress images to exact KB (20KB, 50KB, 100KB), merge, split, sign, lock, unlock, and convert PDF to Word, Excel, PowerPoint, or JPG locally. Your documents and photos never leave your device.',
+    keywords: 'compress image to 50kb, compress image to 20kb, compress image to 100kb, merge pdf online free, remove pdf pages, compress pdf, word to pdf, pdf to word, image to pdf, pdf to images, sign pdf, lock pdf, unlock pdf, passport photo maker',
+    heading: 'Private, Browser-Based PDF & Image Tools',
+    intro: 'Process sensitive contracts, ID scans, passport photos, and academic documents directly inside your web browser. All 20 utilities run locally on your device—your documents and photos never leave your device.',
+    steps: [
+      'Choose any of the 20 PDF, Office, or Image utilities from the tool directory.',
+      'Select or drag and drop your files directly from your phone or computer.',
+      'Download your processed files immediately from local browser memory.'
+    ],
+    faqs: [
+      {
+        q: 'Are my PDF and image files uploaded to any server?',
+        a: 'No. Your documents and photos never leave your device. Every file conversion, compression, and signature operation runs locally inside your browser using HTML5 Canvas and local JavaScript engines.'
+      },
+      {
+        q: 'How do I compress an image to an exact KB size like 20KB, 50KB, or 100KB?',
+        a: 'Open the Compress Image tool, select the 20 KB, 50 KB, or 100 KB preset chip (or enter a custom Min–Max KB range), and run the binary-search encoder. It automatically finds the highest visual quality that fits under your target byte limit.'
+      },
+      {
+        q: 'Can I merge, organize, lock, unlock, and sign PDFs for free without watermarks?',
+        a: 'Yes. All 20 tools in MONO-TRANSCODER are free to use with no watermarks, no daily task limits, and no mandatory account registration.'
+      },
+      {
+        q: 'Does optional Google Sign-In upload my documents?',
+        a: 'No. Document processing is always 100% local. Optional Google Sign-In is only used if you choose to save reusable visual signature images and basic profile metadata to your personal account.'
+      }
+    ]
+  },
+  '/compress-image': {
+    title: 'Compress Image to Exact KB (20KB, 50KB, 100KB) Online Free | MONO-TRANSCODER',
+    description: 'Reduce JPG, PNG, WebP, and AVIF file sizes to an exact KB target (20KB, 50KB, 100KB, 200KB) or Min–Max KB range using binary-search quality tuning. Your photos never leave your device.',
+    keywords: 'compress image to 50kb, compress image to 20kb, compress image to 100kb, reduce image size in kb, jpg compressor online, photo size reducer in kb, min max kb image compressor',
+    heading: 'Compress Image to Exact KB Target',
+    intro: 'Use a 7-step binary search across quality levels and resolution scales to hit strict government portal, visa, and exam form file size limits (20KB, 50KB, 100KB, or custom Min–Max KB windows) locally in your browser.',
+    steps: [
+      'Drop your JPG, PNG, WebP, or AVIF photo into the workspace.',
+      'Click a quick target chip (20 KB, 50 KB, 100 KB, 200 KB) or enable Min–Max KB range mode.',
+      'Review the achieved vs. target KB size and download your compressed image.'
+    ],
+    faqs: [
+      {
+        q: 'How does exact KB targeting work?',
+        a: 'The encoder runs a 7-step binary search on JPEG/WebP quality to land within 90–100% of your target KB without wasting quality, and progressively scales dimensions if needed.'
+      },
+      {
+        q: 'Can I set both a minimum and maximum KB limit?',
+        a: 'Yes. Enable Min–Max Window mode to specify both a minimum KB floor and maximum KB ceiling for portals that require a strict range (such as 20 KB to 50 KB).'
+      }
+    ]
+  },
+  '/compress-image-to-20kb': {
+    title: 'Compress Image to 20KB Online Free (Exact Size Reducer) | MONO-TRANSCODER',
+    description: 'Compress JPG, PNG, and WebP photos to under 20KB (18KB–20KB) for online exam forms, signature uploads, and government portals. Your photos never leave your device.',
+    keywords: 'compress image to 20kb, resize photo to 20kb, signature compressor 20kb, reduce jpg size to 20kb online free, photo under 20kb',
+    heading: 'Compress Image to 20KB Online',
+    intro: 'Pre-configured to target 20 KB using multi-step binary search encoding. Ideal for signature scans, thumb impressions, and strict portal uploads requiring files between 10 KB and 20 KB.',
+    steps: [
+      'Upload your photo or signature scan (JPG, PNG, or WebP).',
+      'Keep the 20 KB target preset or enable a 10 KB – 20 KB Min–Max window.',
+      'Compress locally and download your file with verified KB size.'
+    ]
+  },
+  '/compress-image-to-50kb': {
+    title: 'Compress Image to 50KB Online Free (JPG, PNG, WebP) | MONO-TRANSCODER',
+    description: 'Compress passport photos and ID scans to under 50KB with binary-search precision. Supports Min–Max KB ranges (e.g., 20KB–50KB). Your photos never leave your device.',
+    keywords: 'compress image to 50kb, reduce photo size to 50kb, jpg under 50kb, passport photo 50kb compressor, resize image to 50kb',
+    heading: 'Compress Image to 50KB Online',
+    intro: 'Pre-configured to compress photos to 50 KB—the most common limit for passport applications, university admissions, and civil service portals.',
+    steps: [
+      'Select your portrait photo or document scan.',
+      'Use the pre-selected 50 KB target (or set a 20 KB – 50 KB Min–Max window).',
+      'Run the local binary-search compressor and save your image.'
+    ]
+  },
+  '/compress-image-to-100kb': {
+    title: 'Compress Image to 100KB Online Free (High Clarity) | MONO-TRANSCODER',
+    description: 'Shrink high-resolution JPG, PNG, and WebP images to 100KB locally in your browser. Retains crisp text and portrait detail while meeting 100KB upload caps.',
+    keywords: 'compress image to 100kb, reduce image size to 100kb, photo compressor 100kb, shrink jpg to 100kb',
+    heading: 'Compress Image to 100KB Online',
+    intro: 'Reduce multi-megabyte smartphone photos and scanned certificates to 100 KB while keeping text and facial features sharp.',
+    steps: [
+      'Add an image from your device.',
+      'Confirm the 100 KB target preset (or customize your Min–Max KB bounds).',
+      'Download the optimized 100 KB image immediately.'
+    ]
+  },
+  '/compress-image-to-200kb': {
+    title: 'Compress Image to 200KB Online Free | MONO-TRANSCODER',
+    description: 'Compress large documents, certificates, and photos to 200KB right in your browser. Binary-search quality optimization with zero server uploads.',
+    keywords: 'compress image to 200kb, reduce photo to 200kb, certificate size reducer 200kb, jpg compressor 200kb',
+    heading: 'Compress Image to 200KB Online',
+    intro: 'Ideal for scanned mark sheets, certificates, and KYC documents that must fit under a 200 KB portal limit without losing readability.',
+    steps: [
+      'Drop your scanned certificate or photo into the tool.',
+      'Keep the 200 KB preset or adjust the output format.',
+      'Compress and download your verified file.'
+    ]
+  },
+  '/compress-pdf': {
+    title: 'Compress PDF Online Free — Reduce PDF File Size Locally | MONO-TRANSCODER',
+    description: 'Shrink large PDF files for email and portal uploads right in your browser. Choose light, balanced, or maximum compression while keeping your documents on your device.',
+    keywords: 'compress pdf, reduce pdf file size, shrink pdf online free, pdf size reducer',
+    heading: 'Compress PDF File Size',
+    intro: 'Downsample high-DPI embedded page graphics and strip redundant metadata streams to make large PDFs easy to email or upload.',
+    steps: [
+      'Select the PDF file you need to shrink.',
+      'Choose a target KB size or compression preset.',
+      'Download the smaller PDF and compare the before/after byte savings.'
+    ]
+  },
+  '/convert-image': {
+    title: 'Convert Image Format Online Free — PNG, JPG, WebP, AVIF | MONO-TRANSCODER',
+    description: 'Convert images between PNG, JPG, WebP, and AVIF formats locally in your browser. Your photos never leave your device.',
+    keywords: 'convert image format, png to jpg, jpg to png, webp to jpg, avif to jpg, image converter online',
+    heading: 'Convert Image Format (PNG, JPG, WebP, AVIF)',
+    intro: 'Transcode photos and graphics between PNG, JPEG, WebP, and AVIF formats directly in your browser using hardware-accelerated HTML5 Canvas.',
+    steps: [
+      'Select a JPG, PNG, WebP, or AVIF image from your device.',
+      'Pick the target output format.',
+      'Convert and download the transcoded image immediately.'
+    ]
+  },
+  '/image-to-pdf': {
+    title: 'Image to PDF Converter Online Free — Combine Photos into PDF | MONO-TRANSCODER',
+    description: 'Convert JPG, PNG, and WebP images into a clean multi-page PDF document locally in your browser. Your photos never leave your device.',
+    keywords: 'image to pdf, jpg to pdf, png to pdf, combine photos into pdf free',
+    heading: 'Convert Images to PDF',
+    intro: 'Turn receipt photos, scanned notes, and ID cards into a formatted single- or multi-page PDF locally.',
+    steps: [
+      'Select one or more JPG, PNG, or WebP images and arrange their order.',
+      'Rotate individual images if needed.',
+      'Compile and download your PDF document.'
+    ]
+  },
+  '/merge-pdf': {
+    title: 'Merge PDF Online Free — Combine PDF Files Locally | MONO-TRANSCODER',
+    description: 'Combine multiple PDF documents into a single file in your browser. Reorder files with no uploads and no watermarks. Your documents never leave your device.',
+    keywords: 'merge pdf, combine pdf files, pdf merger online free, join pdf documents',
+    heading: 'Merge PDF Files Locally',
+    intro: 'Combine contracts, invoices, and multi-part reports into one clean PDF document directly in your browser memory.',
+    steps: [
+      'Select two or more PDF files from your device.',
+      'Reorder the files into your preferred sequence.',
+      'Click Merge PDF to generate and download your combined file.'
+    ]
+  },
+  '/pdf-to-images': {
+    title: 'PDF to Images Converter Online Free — Export JPG & PNG | MONO-TRANSCODER',
+    description: 'Render PDF pages into high-resolution JPG or PNG images locally in your browser. Export single images or a complete ZIP archive.',
+    keywords: 'pdf to images, pdf to jpg, pdf to png high resolution, convert pdf page to photo',
+    heading: 'Convert PDF Pages to Images',
+    intro: 'Render every page of your PDF into crisp raster images or batch-export all pages as a ZIP archive without uploading your document.',
+    steps: [
+      'Select your PDF document.',
+      'Preview the pages and run the local rasterizer.',
+      'Download your page images or ZIP bundle.'
+    ]
+  },
+  '/remove-pdf-pages': {
+    title: 'Remove PDF Pages Online Free — Delete Unwanted Pages Locally | MONO-TRANSCODER',
+    description: 'Preview page thumbnails and delete unwanted pages from any PDF file locally in your browser. Fast, lossless, and your documents never leave your device.',
+    keywords: 'remove pdf pages, delete pages from pdf, split pdf pages, cut pdf pages online free',
+    heading: 'Remove Unwanted PDF Pages',
+    intro: 'Inspect every page thumbnail in your PDF, select the pages you want to discard, and export a clean PDF without uploading your file.',
+    steps: [
+      'Open your PDF document in the local page inspector.',
+      'Click the pages you want to remove (or type a page range).',
+      'Export the remaining pages as a new PDF.'
+    ]
+  },
+  '/organize-pdf': {
+    title: 'Organize PDF Pages Online Free — Reorder, Rotate & Duplicate | MONO-TRANSCODER',
+    description: 'Reorder, rotate, duplicate, or delete PDF pages visually in your browser. Your documents never leave your device.',
+    keywords: 'organize pdf pages, reorder pdf pages, rotate pdf pages, rearrange pdf online free',
+    heading: 'Organize, Reorder & Rotate PDF Pages',
+    intro: 'Visually drag and drop page thumbnails to change page order, rotate sideways pages by 90°/180°, duplicate sheets, or remove blank pages locally.',
+    steps: [
+      'Load your PDF into the visual thumbnail organizer.',
+      'Reorder, rotate, duplicate, or delete individual pages.',
+      'Save your newly organized PDF.'
+    ]
+  },
+  '/watermark-pdf': {
+    title: 'Watermark PDF Online Free — Add Custom Text or Logo Stamp | MONO-TRANSCODER',
+    description: 'Stamp CONFIDENTIAL, DRAFT, or custom text and image watermarks across PDF pages locally in your browser. Customize opacity, rotation, and position.',
+    keywords: 'watermark pdf, add watermark to pdf, stamp pdf pages, confidential pdf stamp',
+    heading: 'Add Custom Watermark to PDF',
+    intro: 'Overlay customizable text or image watermarks across your PDF pages without uploading files to a server.',
+    steps: [
+      'Open your PDF file in the live watermark previewer.',
+      'Configure your text or logo watermark, opacity, angle, and placement.',
+      'Apply and download your watermarked PDF.'
+    ]
+  },
+  '/word-to-pdf': {
+    title: 'Word to PDF Converter Online Free — Basic Local DOCX to PDF | MONO-TRANSCODER',
+    description: 'Convert Word (.docx, .rtf, .txt) files to PDF locally in your browser with basic layout conversion. Preserves text, headings, tables, and embedded images without server uploads.',
+    keywords: 'word to pdf, docx to pdf converter online, convert word to pdf locally',
+    heading: 'Word (.docx) to PDF — Basic Local Conversion',
+    intro: 'Convert `.docx`, `.rtf`, and `.txt` documents into PDF locally in your browser. Note: This uses a client-side parser for basic text, headings, lists, tables, and images—complex Word features (floating frames, SmartArt, macros, and custom embedded fonts) may differ from Microsoft Word, and non-Latin lines are rasterized.',
+    steps: [
+      'Select your .docx, .rtf, or .txt file to inspect the local document preview.',
+      'Verify paragraphs, tables, and page sizing in the preview panel.',
+      'Export to PDF locally.'
+    ]
+  },
+  '/word-to-jpg': {
+    title: 'Word to Image Converter Online Free — DOCX to High-Res JPG | MONO-TRANSCODER',
+    description: 'Render Word (.docx, .rtf, .txt) document pages into high-resolution JPG or PNG images locally in your browser. Your documents never leave your device.',
+    keywords: 'word to jpg, word to image, docx to jpg converter, word to png online free',
+    heading: 'Word (.docx) to Image — Basic Local Conversion',
+    intro: 'Render pages from a `.docx`, `.rtf`, or `.txt` document into shareable JPG or PNG images directly in your browser.',
+    steps: [
+      'Select your Word document.',
+      'Preview the rendered pages and choose your output resolution.',
+      'Download individual page images or a ZIP archive.'
+    ]
+  },
+  '/pdf-to-word': {
+    title: 'PDF to Word Converter Online Free — Extract Editable DOCX | MONO-TRANSCODER',
+    description: 'Extract selectable text and paragraphs from PDF files into an editable Microsoft Word (.docx) document locally in your browser.',
+    keywords: 'pdf to word, convert pdf to docx online free, extract text from pdf to word',
+    heading: 'Convert PDF to Editable Word (.docx)',
+    intro: 'Reconstruct text blocks, headings, and reading order from digital PDFs into an editable `.docx` file right on your device.',
+    steps: [
+      'Select a PDF containing selectable text.',
+      'Preview the extracted paragraphs and sections.',
+      'Download the generated .docx file.'
+    ]
+  },
+  '/excel-to-pdf': {
+    title: 'Excel to PDF Converter Online Free — Basic Local XLSX to PDF | MONO-TRANSCODER',
+    description: 'Convert Excel (.xlsx) and CSV spreadsheets into paginated PDF tables locally in your browser. Financial data never leaves your device.',
+    keywords: 'excel to pdf, xlsx to pdf converter, spreadsheet to pdf online free, csv to pdf',
+    heading: 'Excel (.xlsx / .csv) to PDF — Basic Table Conversion',
+    intro: 'Render spreadsheet rows, columns, and cell values into clean PDF tables locally in your browser. Note: Performs basic tabular conversion; pivot charts, VBA macros, and conditional formatting gradients are not rendered.',
+    steps: [
+      'Select your .xlsx or .csv spreadsheet.',
+      'Choose page orientation and preview the extracted table grid.',
+      'Export the paginated PDF.'
+    ]
+  },
+  '/pdf-to-excel': {
+    title: 'PDF to Excel Converter Online Free — Extract Tables to XLSX/CSV | MONO-TRANSCODER',
+    description: 'Extract tabular rows and columns from PDF pages into editable Excel (.xlsx) or CSV spreadsheets locally in your browser.',
+    keywords: 'pdf to excel, pdf to xlsx, pdf to csv, extract table from pdf online free',
+    heading: 'Convert PDF Tables to Excel (.xlsx / .csv)',
+    intro: 'Detect aligned rows and columns on PDF pages and export them into editable `.xlsx` or `.csv` files directly in your browser.',
+    steps: [
+      'Select a PDF containing tabular text.',
+      'Inspect the detected rows and columns in the table preview.',
+      'Export as an Excel (.xlsx) workbook or CSV file.'
+    ]
+  },
+  '/powerpoint-to-pdf': {
+    title: 'PowerPoint to PDF Converter Online Free — Basic Local PPTX to PDF | MONO-TRANSCODER',
+    description: 'Convert PowerPoint (.pptx) slide decks into landscape PDF handouts locally in your browser. Your slides never leave your device.',
+    keywords: 'powerpoint to pdf, pptx to pdf converter, ppt to pdf online free, slides to pdf',
+    heading: 'PowerPoint (.pptx) to PDF — Basic Slide Conversion',
+    intro: 'Extract slide text, shapes, and embedded images from `.pptx` presentations into a PDF deck locally. Note: Basic conversion—slide transitions, animations, SmartArt, and embedded media are not preserved.',
+    steps: [
+      'Upload your .pptx presentation file.',
+      'Preview the rendered slide snapshots and optional speaker notes.',
+      'Download the PDF presentation.'
+    ]
+  },
+  '/pdf-to-powerpoint': {
+    title: 'PDF to PowerPoint Converter Online Free — PDF to PPTX Slides | MONO-TRANSCODER',
+    description: 'Transform PDF pages into widescreen PowerPoint (.pptx) presentations locally in your browser. Your documents never leave your device.',
+    keywords: 'pdf to powerpoint, pdf to pptx, convert pdf to slides online free',
+    heading: 'Convert PDF Pages to PowerPoint (.pptx)',
+    intro: 'Convert PDF pages into an editable `.pptx` slide deck locally in your browser.',
+    steps: [
+      'Select your PDF file.',
+      'Choose slide mode and preview the extracted slides.',
+      'Download your PowerPoint (.pptx) presentation.'
+    ]
+  },
+  '/lock-pdf': {
+    title: 'Lock PDF Online Free — Basic Password Protection Locally | MONO-TRANSCODER',
+    description: 'Add a password to your PDF files locally in your browser using standard PDF RC4-128 (V2/R3) basic protection. Your documents never leave your device.',
+    keywords: 'lock pdf, password protect pdf, encrypt pdf online free, add password to pdf',
+    heading: 'Password Protect PDF (Basic RC4-128)',
+    intro: 'Apply standard PDF 1.4–1.6 RC4-128 (V2/R3) password protection and permission flags locally in your browser. Ideal for basic access control against casual viewing; for high-security archival encryption, use dedicated desktop AES-256 tools (such as qpdf or Acrobat).',
+    steps: [
+      'Select the PDF document you want to password-protect.',
+      'Enter a user password to require on open and an optional owner password.',
+      'Download your locked PDF directly from browser memory.'
+    ]
+  },
+  '/unlock-pdf': {
+    title: 'Unlock PDF Online Free — Remove PDF Password Locally | MONO-TRANSCODER',
+    description: 'Remove known open passwords and permission restrictions from your PDF files locally in your browser. Your documents and passwords never leave your device.',
+    keywords: 'unlock pdf, remove pdf password, decrypt pdf online, pdf password remover',
+    heading: 'Unlock Password-Protected PDF',
+    intro: 'Enter the password for a locked PDF once and save an unlocked copy so you do not have to type the password every time you open it.',
+    steps: [
+      'Select your password-protected PDF file.',
+      'Enter the current open password when prompted.',
+      'Download a clean, unlocked PDF copy.'
+    ]
+  },
+  '/sign-pdf': {
+    title: 'Sign PDF Online Free — Stamp Visual Signatures Privately | MONO-TRANSCODER',
+    description: 'Draw, type, or upload a visual signature image and stamp it onto any PDF page locally in your browser. Note: Applies a visual signature appearance, not a cryptographic PKI signature.',
+    keywords: 'sign pdf online, electronic signature pdf, stamp signature on pdf, draw signature on pdf free',
+    heading: 'Sign PDF (Visual Signature Stamp)',
+    intro: 'Draw with a mouse or touchscreen, type with self-hosted calligraphy fonts, or upload an ink signature image and position it on any PDF page. Note: This tool stamps a visual signature image onto the PDF—it does not apply a cryptographic digital certificate (PKI/X.509).',
+    steps: [
+      'Open your PDF and navigate to the page that needs a signature.',
+      'Draw, type, or upload your signature and drag it into position.',
+      'Export your flattened, visually signed PDF locally.'
+    ]
+  },
+  '/passport-photo': {
+    title: 'Passport Photo Maker Online Free — US, UK, India, EU Sizes | MONO-TRANSCODER',
+    description: 'Crop biometric passport, visa, and ID photos (2x2 inch, 35x45mm) with printable 4x6 sheets locally in your browser. Your portrait photos never leave your device.',
+    keywords: 'passport photo maker, 2x2 photo maker free, 35x45mm passport photo, visa photo cropper, printable passport photo sheet',
+    heading: 'Passport & ID Photo Maker',
+    intro: 'Crop biometric ID and visa photos to official dimensions (US 2×2", UK/EU/India 35×45mm, China 33×48mm, Canada 50×70mm) and generate printable 4×6" sheets locally. Note: Background removal uses colour-cluster flood fill + manual brush touch-up; many issuing authorities reject digitally altered photos or suit overlays.',
+    steps: [
+      'Select a well-lit portrait photo taken against a plain wall.',
+      'Choose your country size preset and align your face to the biometric guide.',
+      'Download a single photo or a printable 4×6" multi-photo sheet.'
+    ]
+  },
+  '/support': {
+    title: 'Support Independent Local-First Software | MONO-TRANSCODER',
+    description: 'Support the development of MONO-TRANSCODER — free, ad-free, local-first PDF and image utilities.',
+    keywords: 'support mono transcoder, buy me a coffee open web tools',
+    heading: 'Support Local-First Tools',
+    intro: 'MONO-TRANSCODER is free to use with no paywalls, watermarks, or server tracking. Voluntary contributions help keep the project independent.'
+  },
+  '/privacy': {
+    title: 'Privacy Policy & Local Processing Architecture | MONO-TRANSCODER',
+    description: 'Learn how MONO-TRANSCODER processes all 20 PDF and image tools locally on your device, and what optional Google Sign-In stores if you choose to use it.',
+    keywords: 'mono transcoder privacy policy, client side pdf privacy',
+    heading: 'Privacy Policy & Local Architecture',
+    intro: 'Your documents and photos never leave your device. Read our full disclosure on local browser processing and optional Google Sign-In for saved signatures.'
+  },
+  '/terms': {
+    title: 'Terms of Service | MONO-TRANSCODER',
+    description: 'Terms of use and disclaimers for MONO-TRANSCODER client-side PDF and image utilities.',
+    keywords: 'mono transcoder terms of service',
+    heading: 'Terms of Service',
+    intro: 'Terms governing the use of the 20 local-first document and image processing tools in MONO-TRANSCODER.'
+  },
+  '/download': {
+    title: 'Download Processed Files | MONO-TRANSCODER',
+    description: 'Download your locally processed PDF or image files from browser memory.',
+    keywords: 'download processed pdf',
+    heading: 'Download Desk',
+    intro: 'Your processed files are ready in temporary browser memory.'
+  },
+  '/404': {
+    title: '404 — Page Not Found | MONO-TRANSCODER',
+    description: 'The requested page could not be found. Browse all 20 local PDF and image tools on MONO-TRANSCODER.',
+    keywords: '404 not found',
+    heading: 'Page Not Found',
+    intro: 'The URL you requested does not exist. Return to the main tool directory to access all 20 PDF and image utilities.'
+  },
+};
 
-/**
- * Normalizes any route path or alias to a clean, canonical path
- */
-export function normalizePath(pathname: string): string {
-  if (!pathname) return "/";
-  let clean = pathname.toLowerCase().trim();
-  // Remove trailing slashes (except root)
-  if (clean.length > 1 && clean.endsWith("/")) {
-    clean = clean.replace(/\/+$/, "");
+export function buildStructuredDataForRoute(canonicalPath: string, siteOrigin: string = DEFAULT_SITE_ORIGIN): Record<string, unknown> | null {
+  if (canonicalPath === '/404' || canonicalPath === '/download') {
+    return null;
   }
-  // Remove hash or query params if accidentally included
-  clean = clean.split("?")[0].split("#")[0];
 
-  // Map route aliases to canonical paths
-  switch (clean) {
-    case "/compress_img":
-    case "/compressimage":
-    case "/compress-images":
-    case "/image-compressor":
-    case "/pi7-image-compressor":
-    case "/compress-image-to-20kb":
-    case "/compress-image-to-50kb":
-    case "/compress-image-to-100kb":
-      return "/compress-image";
-    case "/compress_pdf":
-    case "/compresspdf":
-    case "/pdf-compressor":
-    case "/ilovepdf-compress":
-      return "/compress-pdf";
-    case "/convert_img":
-    case "/convertimage":
-    case "/convert-images":
-    case "/image-converter":
-      return "/convert-image";
-    case "/image_to_pdf":
-    case "/imagetopdf":
-    case "/img-to-pdf":
-    case "/jpg-to-pdf":
-    case "/png-to-pdf":
-      return "/image-to-pdf";
-    case "/merge_pdf":
-    case "/mergepdf":
-    case "/combine-pdf":
-    case "/ilovepdf-merge":
-      return "/merge-pdf";
-    case "/pdf_to_images":
-    case "/pdftoimages":
-    case "/pdf-to-image":
-    case "/pdf-to-jpg":
-    case "/pdf-to-png":
-      return "/pdf-to-images";
-    case "/remove_pdf_pages":
-    case "/removepdfpages":
-    case "/delete-pdf-pages":
-    case "/remove-pages":
-      return "/remove-pdf-pages";
-    case "/organize_pdf":
-    case "/organizepdf":
-    case "/organise-pdf":
-    case "/organise_pdf":
-    case "/organisepdf":
-    case "/reorder-pdf":
-      return "/organize-pdf";
-    case "/word_to_pdf":
-    case "/wordtopdf":
-    case "/docx-to-pdf":
-    case "/doc-to-pdf":
-      return "/word-to-pdf";
-    case "/word_to_jpg":
-    case "/wordtojpg":
-    case "/docx-to-jpg":
-    case "/doc-to-jpg":
-    case "/word-to-image":
-      return "/word-to-jpg";
-    case "/pdf_to_word":
-    case "/pdftoword":
-    case "/pdf-to-docx":
-    case "/pdf-to-doc":
-      return "/pdf-to-word";
-    case "/excel_to_pdf":
-    case "/exceltopdf":
-    case "/xlsx-to-pdf":
-    case "/csv-to-pdf":
-      return "/excel-to-pdf";
-    case "/ppt_to_pdf":
-    case "/ppt-to-pdf":
-    case "/pptx-to-pdf":
-    case "/powerpointtopdf":
-      return "/powerpoint-to-pdf";
-    case "/pdf_to_ppt":
-    case "/pdf-to-ppt":
-    case "/pdf-to-pptx":
-    case "/pdftopowerpoint":
-      return "/pdf-to-powerpoint";
-    case "/pdf_to_excel":
-    case "/pdftoexcel":
-    case "/pdf-to-xlsx":
-    case "/pdf-to-csv":
-      return "/pdf-to-excel";
-    case "/watermark_pdf":
-    case "/watermarkpdf":
-    case "/add-watermark-pdf":
-      return "/watermark-pdf";
-    case "/lock_pdf":
-    case "/lockpdf":
-    case "/protect-pdf":
-    case "/encrypt-pdf":
-      return "/lock-pdf";
-    case "/unlock_pdf":
-    case "/unlockpdf":
-    case "/decrypt-pdf":
-      return "/unlock-pdf";
-    case "/sign_pdf":
-    case "/signpdf":
-    case "/esign-pdf":
-    case "/signature-pdf":
-      return "/sign-pdf";
-    case "/passport_photo":
-    case "/passportphoto":
-    case "/passport-photo-maker":
-    case "/passport-size-photo":
-    case "/id-photo":
-      return "/passport-photo";
-    case "/coffee":
-    case "/buymeacoffee":
-    case "/support":
-      return "/buy-me-a-coffee";
-    default:
-      return clean;
-  }
-}
+  const meta = ROUTE_METADATA[canonicalPath] || ROUTE_METADATA['/'];
+  const fullUrl = canonicalPath === '/' ? `${siteOrigin}/` : `${siteOrigin}${canonicalPath}`;
 
-/**
- * Maps a RetroView to its canonical URL path
- */
-export function getPathFromView(view?: RetroView): string {
-  if (!view) return "/";
-  switch (view) {
-    case "compress_img":
-    case "compress_img_download":
-      return "/compress-image";
-    case "compress_pdf":
-    case "compress_pdf_download":
-      return "/compress-pdf";
-    case "convert_img":
-    case "convert_img_download":
-      return "/convert-image";
-    case "image_to_pdf":
-    case "image_to_pdf_download":
-      return "/image-to-pdf";
-    case "merge_pdf":
-    case "merge_pdf_download":
-      return "/merge-pdf";
-    case "pdf_to_images":
-    case "pdf_to_images_download":
-      return "/pdf-to-images";
-    case "remove_pdf_pages":
-    case "remove_pdf_pages_download":
-      return "/remove-pdf-pages";
-    case "organize_pdf":
-    case "organize_pdf_download":
-      return "/organize-pdf";
-    case "word_to_pdf":
-    case "word_to_pdf_download":
-      return "/word-to-pdf";
-    case "word_to_jpg":
-    case "word_to_jpg_download":
-      return "/word-to-jpg";
-    case "pdf_to_word":
-    case "pdf_to_word_download":
-      return "/pdf-to-word";
-    case "excel_to_pdf":
-    case "excel_to_pdf_download":
-      return "/excel-to-pdf";
-    case "ppt_to_pdf":
-    case "ppt_to_pdf_download":
-      return "/powerpoint-to-pdf";
-    case "pdf_to_ppt":
-    case "pdf_to_ppt_download":
-      return "/pdf-to-powerpoint";
-    case "pdf_to_excel":
-    case "pdf_to_excel_download":
-      return "/pdf-to-excel";
-    case "watermark_pdf":
-    case "watermark_pdf_download":
-      return "/watermark-pdf";
-    case "lock_pdf":
-    case "lock_pdf_download":
-      return "/lock-pdf";
-    case "unlock_pdf":
-    case "unlock_pdf_download":
-      return "/unlock-pdf";
-    case "sign_pdf":
-    case "sign_pdf_download":
-      return "/sign-pdf";
-    case "passport_photo":
-    case "passport_photo_download":
-      return "/passport-photo";
-    case "coffee":
-      return "/buy-me-a-coffee";
-    case "privacy":
-      return "/privacy";
-    case "terms":
-      return "/terms";
-    case "not_found":
-      return "/404";
-    case "home":
-    default:
-      return "/";
-  }
-}
-
-/**
- * Dynamic Meta Tags Generator:
- * Generates high-intent, search-optimized titles and meta descriptions targeting
- * queries like "image compressor", "compress image to 20kb 50kb 100kb", "iLovePDF alternative",
- * "Pi7 image compressor alternative", and specific PDF/Office conversion keywords.
- */
-export function generateMetaTags(pathname: string, view?: RetroView): PageMetaTags {
-  const canonicalPath = normalizePath(pathname || getPathFromView(view));
-
-  switch (canonicalPath) {
-    case "/compress-image":
-      return {
-        title: "Image Compressor Online Free (20KB, 50KB, 100KB) | MONO-TRANSCODER",
-        description: "Free online Image Compressor to shrink JPG, PNG, WebP & AVIF to exact KB size (20KB, 50KB, 100KB). Private Pi7 & iLovePDF alternative with zero uploads.",
-        ogTitle: "Free Online Image Compressor (Shrink to 20KB, 50KB, 100KB) — Private Pi7 Alternative",
-        ogDescription: "Compress JPG, PNG, and WebP images to exact target KB sizes locally in your browser. Zero server uploads—faster and more private than Pi7 or iLoveIMG.",
-        twitterTitle: "Image Compressor Online (Exact KB Size) — MONO-TRANSCODER",
-        twitterDescription: "Compress images to 20KB, 50KB, 100KB, or custom KB limits directly on your device with zero server uploads.",
-        canonicalPath: "/compress-image",
-        category: "ImageCompressionApplication",
-        keywords: "image compressor, compress image online, compress image to 20kb, compress image to 50kb, compress image to 100kb, pi7 image compressor, reduce image size in kb, jpg compressor, png compressor, private image compressor"
-      };
-
-    case "/compress-pdf":
-      return {
-        title: "Compress PDF Online Free (Reduce PDF Size in KB) | MONO-TRANSCODER",
-        description: "Compress PDF file size online free to 100KB, 200KB, or 500KB in your browser. Private iLovePDF & Pi7 PDF compressor alternative with zero server uploads.",
-        ogTitle: "Compress PDF Online Free — Private iLovePDF & Pi7 PDF Compressor Alternative",
-        ogDescription: "Reduce PDF document size locally in your browser with zero cloud uploads. Shrink heavy PDFs for email and portals with complete privacy.",
-        twitterTitle: "Free Private PDF Compressor Online — MONO-TRANSCODER",
-        twitterDescription: "Compress PDF files in seconds on your device. Zero server uploads, custom DPI downsampling, and total confidentiality.",
-        canonicalPath: "/compress-pdf",
-        category: "PdfCompressionApplication",
-        keywords: "compress pdf, pdf compressor, reduce pdf size, compress pdf to 100kb, compress pdf to 200kb, ilovepdf compress pdf, pi7 pdf compressor, shrink pdf online free, private pdf compressor"
-      };
-
-    case "/convert-image":
-      return {
-        title: "Image Converter Online Free (PNG, JPG, WebP, AVIF) | MONO-TRANSCODER",
-        description: "Convert images between JPG, PNG, WebP, and AVIF online free in browser memory. Fast, lossless Pi7 & iLoveIMG converter alternative with zero uploads.",
-        ogTitle: "Convert Image Formats Online (PNG, JPG, WebP, AVIF) — Zero Uploads",
-        ogDescription: "Transform images between PNG, JPG, WebP, and AVIF in local browser RAM. Lossless color preservation and instant client-side transcoding.",
-        twitterTitle: "Free Online Image Format Converter — MONO-TRANSCODER",
-        twitterDescription: "Convert PNG to JPG, WebP to PNG, and AVIF to JPG directly in your browser without server uploads.",
-        canonicalPath: "/convert-image",
-        category: "ImageConversionApplication",
-        keywords: "image converter, convert image to jpg, png to jpg, webp to png, avif converter, convert image format online, pi7 image tool, iloveimg converter alternative"
-      };
-
-    case "/image-to-pdf":
-      return {
-        title: "JPG to PDF & Image to PDF Converter Online Free | MONO-TRANSCODER",
-        description: "Convert JPG, PNG, and WebP images to PDF online free. Combine multiple photos into one PDF locally—private iLovePDF & Pi7 JPG to PDF alternative.",
-        ogTitle: "JPG to PDF & Image to PDF Converter Online — Zero Server Uploads",
-        ogDescription: "Combine JPG, PNG, and WebP photos into clean multi-page PDF documents. Drag-and-drop page reordering and 100% private in-browser generation.",
-        twitterTitle: "Free JPG to PDF & Image to PDF Converter — MONO-TRANSCODER",
-        twitterDescription: "Merge photos and images into a single PDF right on your device. Drag-and-drop sequencing with zero cloud uploads.",
-        canonicalPath: "/image-to-pdf",
-        category: "PdfGenerationApplication",
-        keywords: "image to pdf, jpg to pdf, png to pdf, convert photos to pdf, combine images to pdf, ilovepdf jpg to pdf, pi7 image to pdf, free jpg to pdf converter"
-      };
-
-    case "/merge-pdf":
-      return {
-        title: "Merge PDF Online Free — Combine PDF Files Privately | MONO-TRANSCODER",
-        description: "Merge multiple PDF files into one document online free with drag-and-drop sorting. 100% private iLovePDF Merge PDF alternative with zero uploads.",
-        ogTitle: "Merge PDF Files Online Free — Private iLovePDF Alternative",
-        ogDescription: "Combine multiple PDF documents together seamlessly in your browser. Reorder files with drag-and-drop and merge PDFs with zero cloud exposure.",
-        twitterTitle: "Merge PDF Files Locally Online — MONO-TRANSCODER",
-        twitterDescription: "Combine multiple PDF files into one clean document on your computer. 100% client-side iLovePDF alternative.",
-        canonicalPath: "/merge-pdf",
-        category: "PdfMergeApplication",
-        keywords: "merge pdf, combine pdf, join pdf files, ilovepdf merge pdf, merge pdf online free, pdf combiner, private pdf merger, pi7 merge pdf"
-      };
-
-    case "/pdf-to-images":
-      return {
-        title: "PDF to JPG & PNG Converter Online Free | MONO-TRANSCODER",
-        description: "Convert PDF pages to high-resolution JPG or PNG images online free in your browser. Private iLovePDF PDF to JPG alternative with zero server uploads.",
-        ogTitle: "PDF to JPG & PNG Image Extractor Online — 100% Private",
-        ogDescription: "Convert every page of your PDF into crisp JPG or PNG images or download all pages as a ZIP archive. 100% local browser rendering.",
-        twitterTitle: "PDF to JPG & Image Converter — MONO-TRANSCODER",
-        twitterDescription: "Convert PDF pages into high-definition PNG or JPG images directly in your browser. Zero uploads, fast local rendering.",
-        canonicalPath: "/pdf-to-images",
-        category: "PdfRasterizationApplication",
-        keywords: "pdf to jpg, pdf to png, pdf to image, convert pdf to jpg online, extract images from pdf, ilovepdf pdf to jpg, high resolution pdf to image"
-      };
-
-    case "/remove-pdf-pages":
-      return {
-        title: "Remove Pages from PDF Online Free — Delete PDF Pages | MONO-TRANSCODER",
-        description: "Delete unwanted pages from any PDF document online free in your browser. Private iLovePDF Remove Pages alternative with visual thumbnails & zero uploads.",
-        ogTitle: "Delete & Remove Pages from PDF Privately in Your Browser",
-        ogDescription: "Select and delete specific pages or page ranges from your PDF losslessly in local RAM. Nothing is uploaded to any server.",
-        twitterTitle: "Remove PDF Pages Online Free — MONO-TRANSCODER",
-        twitterDescription: "Delete unwanted PDF pages in seconds on your device. 100% client-side with zero uploads.",
-        canonicalPath: "/remove-pdf-pages",
-        category: "PdfEditingApplication",
-        keywords: "remove pages from pdf, delete pdf pages, split pdf pages, ilovepdf remove pages, delete pages from pdf online free, pdf page remover"
-      };
-
-    case "/organize-pdf":
-      return {
-        title: "Organize PDF Pages Online Free — Rearrange & Rotate PDF | MONO-TRANSCODER",
-        description: "Reorder, rotate, duplicate, and delete PDF pages online free with drag-and-drop visual previews. Private iLovePDF Organize PDF alternative in browser.",
-        ogTitle: "Organize, Reorder & Rotate PDF Pages Privately Online",
-        ogDescription: "Drag and drop PDF pages to rearrange order, rotate page orientations, or remove pages locally on your device with zero uploads.",
-        twitterTitle: "Organize & Reorder PDF Pages Online — MONO-TRANSCODER",
-        twitterDescription: "Rearrange and rotate PDF pages in your browser with zero server uploads.",
-        canonicalPath: "/organize-pdf",
-        category: "PdfEditingApplication",
-        keywords: "organize pdf, reorder pdf pages, rearrange pdf pages, rotate pdf pages, ilovepdf organize pdf, sort pdf pages online free"
-      };
-
-    case "/word-to-pdf":
-      return {
-        title: "Word to PDF Converter Online Free (.DOCX to PDF) | MONO-TRANSCODER",
-        description: "Convert Word (.docx, .doc, .rtf) documents to PDF online free directly in your browser. Private iLovePDF Word to PDF alternative with zero uploads.",
-        ogTitle: "Convert Word (.DOCX) to PDF Privately in Browser — Free Online",
-        ogDescription: "Turn Microsoft Word documents into clean, paginated PDFs locally in browser memory. Your files never leave your device.",
-        twitterTitle: "Free Word to PDF Converter Online — MONO-TRANSCODER",
-        twitterDescription: "Convert Word documents to PDF directly in your browser with zero cloud uploads.",
-        canonicalPath: "/word-to-pdf",
-        category: "DocumentConversionApplication",
-        keywords: "word to pdf, docx to pdf, doc to pdf, convert word to pdf online free, ilovepdf word to pdf, private word to pdf converter"
-      };
-
-    case "/word-to-jpg":
-      return {
-        title: "Word to JPG Converter Online Free (.DOCX to Image) | MONO-TRANSCODER",
-        description: "Convert Word (.docx) documents into high-resolution JPG images online free directly in your browser with zero server uploads.",
-        ogTitle: "Convert Word (.DOCX) Pages to High-Res JPG Images Privately",
-        ogDescription: "Render Word documents into crisp JPG page images or a single stitched JPG in browser RAM. Nothing is uploaded.",
-        twitterTitle: "Free Word to JPG Converter Online — MONO-TRANSCODER",
-        twitterDescription: "Convert Word documents to high-resolution JPG images locally on your device with zero uploads.",
-        canonicalPath: "/word-to-jpg",
-        category: "DocumentConversionApplication",
-        keywords: "word to jpg, docx to jpg, word to image, convert word to jpg online free, save word document as image"
-      };
-
-    case "/pdf-to-word":
-      return {
-        title: "PDF to Word Converter Online Free (Editable .DOCX) | MONO-TRANSCODER",
-        description: "Convert PDF documents into editable Microsoft Word (.docx) files online free in your browser. Private iLovePDF PDF to Word alternative with zero uploads.",
-        ogTitle: "Convert PDF to Editable Word (.DOCX) Online Privately",
-        ogDescription: "Extract PDF text, headings, and page layouts into an editable Word document locally in browser RAM with zero server uploads.",
-        twitterTitle: "Free PDF to Word (.DOCX) Converter — MONO-TRANSCODER",
-        twitterDescription: "Convert PDFs to editable .DOCX files directly on your device with zero uploads.",
-        canonicalPath: "/pdf-to-word",
-        category: "DocumentConversionApplication",
-        keywords: "pdf to word, pdf to docx, convert pdf to word online free, editable word from pdf, ilovepdf pdf to word, private pdf to word"
-      };
-
-    case "/excel-to-pdf":
-      return {
-        title: "Excel to PDF Converter Online Free (.XLSX & CSV to PDF) | MONO-TRANSCODER",
-        description: "Convert Excel (.xlsx) and CSV spreadsheets into clean paginated PDF tables online free in your browser. Private iLovePDF Excel to PDF alternative.",
-        ogTitle: "Convert Excel (.XLSX) & CSV Spreadsheets to PDF Privately",
-        ogDescription: "Turn multi-sheet Excel workbooks and CSV files into formatted PDF tables directly in browser RAM with zero uploads.",
-        twitterTitle: "Free Excel to PDF Converter Online — MONO-TRANSCODER",
-        twitterDescription: "Convert Excel spreadsheets to PDF tables locally on your device with zero cloud uploads.",
-        canonicalPath: "/excel-to-pdf",
-        category: "DocumentConversionApplication",
-        keywords: "excel to pdf, xlsx to pdf, csv to pdf, convert spreadsheet to pdf, ilovepdf excel to pdf, excel to pdf online free"
-      };
-
-    case "/powerpoint-to-pdf":
-      return {
-        title: "PowerPoint to PDF Converter Online Free (.PPTX to PDF) | MONO-TRANSCODER",
-        description: "Convert PowerPoint (.pptx) presentations into crisp PDF slide decks online free in your browser. Private iLovePDF PPT to PDF alternative with zero uploads.",
-        ogTitle: "Convert PowerPoint (.PPTX) Slide Decks to PDF Privately",
-        ogDescription: "Render PowerPoint presentations into widescreen 16:9, 4:3, or A4 handout PDFs locally in browser memory.",
-        twitterTitle: "Free PowerPoint to PDF Converter — MONO-TRANSCODER",
-        twitterDescription: "Convert PowerPoint presentations to PDF directly in your browser with zero server uploads.",
-        canonicalPath: "/powerpoint-to-pdf",
-        category: "DocumentConversionApplication",
-        keywords: "powerpoint to pdf, pptx to pdf, ppt to pdf, convert slides to pdf, ilovepdf powerpoint to pdf, ppt to pdf online free"
-      };
-
-    case "/pdf-to-powerpoint":
-      return {
-        title: "PDF to PowerPoint Converter Online Free (PDF to .PPTX) | MONO-TRANSCODER",
-        description: "Convert PDF pages into editable PowerPoint (.pptx) presentation slide decks online free in your browser. Private iLovePDF PDF to PPTX alternative.",
-        ogTitle: "Convert PDF Documents to PowerPoint (.PPTX) Privately",
-        ogDescription: "Transform PDF pages into widescreen 16:9 or 4:3 PowerPoint presentations in local browser RAM with zero uploads.",
-        twitterTitle: "Free PDF to PowerPoint (.PPTX) Converter — MONO-TRANSCODER",
-        twitterDescription: "Convert PDF files into .PPTX slide decks on your device with zero server uploads.",
-        canonicalPath: "/pdf-to-powerpoint",
-        category: "DocumentConversionApplication",
-        keywords: "pdf to powerpoint, pdf to pptx, pdf to ppt, convert pdf to slides, ilovepdf pdf to powerpoint, pdf to pptx online free"
-      };
-
-    case "/pdf-to-excel":
-      return {
-        title: "PDF to Excel Converter Online Free (PDF to .XLSX & CSV) | MONO-TRANSCODER",
-        description: "Extract tables and rows from PDF documents into editable Excel (.xlsx) or CSV spreadsheets online free. Private iLovePDF PDF to Excel alternative.",
-        ogTitle: "Extract PDF Tables to Excel (.XLSX) & CSV Privately",
-        ogDescription: "Scan PDF coordinates and reconstruct tabular rows and columns into Excel workbooks locally in browser memory.",
-        twitterTitle: "Free PDF to Excel (.XLSX) Extractor — MONO-TRANSCODER",
-        twitterDescription: "Extract tables from PDFs into .XLSX or .CSV spreadsheets directly on your device.",
-        canonicalPath: "/pdf-to-excel",
-        category: "DocumentConversionApplication",
-        keywords: "pdf to excel, pdf to xlsx, pdf to csv, extract table from pdf, ilovepdf pdf to excel, convert pdf table to excel free"
-      };
-
-    case "/watermark-pdf":
-      return {
-        title: "Watermark PDF Online Free — Add Text & Logo Watermarks | MONO-TRANSCODER",
-        description: "Add custom text or image watermarks to PDF pages online free in your browser. Private iLovePDF Watermark alternative with rotation, opacity & tiled stamps.",
-        ogTitle: "Stamp Custom Text & Logo Watermarks on PDFs Privately",
-        ogDescription: "Add confidential stamps, draft labels, or company logos across PDF pages 100% locally in your browser with zero uploads.",
-        twitterTitle: "Free PDF Watermark Adder Online — MONO-TRANSCODER",
-        twitterDescription: "Stamp text or image watermarks onto PDF files in browser memory with zero server uploads.",
-        canonicalPath: "/watermark-pdf",
-        category: "PdfEditingApplication",
-        keywords: "watermark pdf, add watermark to pdf, stamp pdf online, ilovepdf watermark, pdf watermark maker free"
-      };
-
-    case "/lock-pdf":
-      return {
-        title: "Protect & Lock PDF Online Free (Encrypt PDF Password) | MONO-TRANSCODER",
-        description: "Encrypt and password-protect PDF files online free in your browser. Private iLovePDF Protect PDF alternative with 128-bit encryption and zero uploads.",
-        ogTitle: "Password Protect & Encrypt PDF Documents Privately Online",
-        ogDescription: "Lock sensitive PDFs with a 128-bit password and custom permission flags strictly in local browser memory.",
-        twitterTitle: "Free Private PDF Password Protector — MONO-TRANSCODER",
-        twitterDescription: "Lock PDF files with a password directly in your browser. Nothing is uploaded.",
-        canonicalPath: "/lock-pdf",
-        category: "PdfSecurityApplication",
-        keywords: "lock pdf, protect pdf, password protect pdf, encrypt pdf online free, ilovepdf protect pdf, add password to pdf"
-      };
-
-    case "/unlock-pdf":
-      return {
-        title: "Unlock PDF Online Free — Remove PDF Password Privately | MONO-TRANSCODER",
-        description: "Remove password prompts and printing/copying restrictions from encrypted PDF files online free in your browser. Private iLovePDF Unlock PDF alternative.",
-        ogTitle: "Unlock Protected PDFs & Remove Restrictions Privately",
-        ogDescription: "Decrypt password-protected PDFs and strip Owner permissions 100% locally in your web browser with zero server uploads.",
-        twitterTitle: "Free Private PDF Unlocker Online — MONO-TRANSCODER",
-        twitterDescription: "Unlock PDF files and remove restrictions directly on your device with zero cloud uploads.",
-        canonicalPath: "/unlock-pdf",
-        category: "PdfSecurityApplication",
-        keywords: "unlock pdf, remove pdf password, decrypt pdf online free, ilovepdf unlock pdf, pdf password remover"
-      };
-
-    case "/sign-pdf":
-      return {
-        title: "Sign PDF Online Free — Electronic Signature on PDF | MONO-TRANSCODER",
-        description: "Sign PDF documents online free in your browser. Draw, type, or upload your e-signature and stamp any page—private iLovePDF Sign PDF alternative.",
-        ogTitle: "Sign PDF Documents Privately in Your Browser — Zero Uploads",
-        ogDescription: "Create handwritten, typed, or image signatures and stamp them onto your PDF locally. Your sensitive contracts never leave your device.",
-        twitterTitle: "Free Private PDF Signer Online — MONO-TRANSCODER",
-        twitterDescription: "Sign PDF files directly in your browser without uploading sensitive contracts to the cloud.",
-        canonicalPath: "/sign-pdf",
-        category: "PdfSigningApplication",
-        keywords: "sign pdf, esign pdf, electronic signature pdf, sign pdf online free, ilovepdf sign pdf, add signature to pdf"
-      };
-
-    case "/passport-photo":
-      return {
-        title: "Passport Photo Maker Online Free (Background Remover & Suit) | MONO-TRANSCODER",
-        description: "Make official 300 DPI passport size photos online free in your browser. AI background removal, custom backdrop colors & formal suit overlays—Pi7 alternative.",
-        ogTitle: "Free Online Passport Size Photo Maker with AI Background Removal & Formal Suits",
-        ogDescription: "Remove background, set white/blue passport backdrops, add formal shirts or coats, and export 4x6 print sheets 100% privately in your browser.",
-        twitterTitle: "Free Private Passport Photo Maker — MONO-TRANSCODER",
-        twitterDescription: "Create 300 DPI passport photos and 4x6 print sheets with automatic background removal and formal attire overlays locally.",
-        canonicalPath: "/passport-photo",
-        category: "ImageEditingApplication",
-        keywords: "passport photo maker, passport size photo maker online, pi7 passport photo, remove background passport photo, passport photo with suit online free"
-      };
-
-    case "/buy-me-a-coffee":
-      return {
-        title: "Support MONO-TRANSCODER | Buy Me A Coffee",
-        description: "Support the development of MONO-TRANSCODER. Keep in-browser image compressor and PDF tools 100% free, ad-free, and private for everyone.",
-        ogTitle: "Support MONO-TRANSCODER — Privacy-First Image & PDF Tools",
-        ogDescription: "Help sustain free, zero-upload, client-side file conversion and compression tools. Support independent software with direct contributions.",
-        twitterTitle: "Fuel MONO-TRANSCODER — 100% Private Local File Tools",
-        twitterDescription: "Support open, privacy-first file tools. Keep in-browser image and PDF compression accessible to everyone worldwide.",
-        canonicalPath: "/buy-me-a-coffee",
-        category: "DonationPage",
-        keywords: "support mono transcoder, buy me a coffee, donate privacy tools"
-      };
-
-    case "/privacy":
-      return {
-        title: "Privacy Policy | MONO-TRANSCODER Zero-Upload Guarantee",
-        description: "Our client-side privacy guarantee: your files never leave your device. Zero server uploads and 100% in-browser processing for all PDF and image tools.",
-        ogTitle: "100% Offline Client-Side Privacy Policy — MONO-TRANSCODER",
-        ogDescription: "Discover how MONO-TRANSCODER guarantees complete privacy: zero file uploads, zero server storage, and ephemeral in-memory processing.",
-        twitterTitle: "Privacy First: Zero Uploads, 100% Local Processing",
-        twitterDescription: "Read MONO-TRANSCODER's privacy architecture: all image and PDF operations happen strictly in your browser RAM.",
-        canonicalPath: "/privacy",
-        category: "PrivacyPolicy",
-        keywords: "privacy policy, zero upload pdf tool, client side image compressor privacy"
-      };
-
-    case "/terms":
-      return {
-        title: "Terms of Service | MONO-TRANSCODER",
-        description: "Terms of service for utilizing the free, open, client-side MONO-TRANSCODER file transcoder and compression engine.",
-        ogTitle: "MONO-TRANSCODER Terms of Service",
-        ogDescription: "Review the usage terms and guidelines for MONO-TRANSCODER's free, open-source, client-side file conversion and compression suite.",
-        twitterTitle: "Terms of Service — MONO-TRANSCODER",
-        twitterDescription: "Simple, transparent guidelines for using our private in-browser file transformation tools.",
-        canonicalPath: "/terms",
-        category: "TermsOfService",
-        keywords: "terms of service, mono transcoder terms"
-      };
-
-    case "/404":
-      return {
-        title: "404 Page Not Found | MONO-TRANSCODER",
-        description: "The requested file transcoding routine was not found. Return home to convert and compress your images and PDFs.",
-        ogTitle: "404 Not Found — MONO-TRANSCODER",
-        ogDescription: "The requested file transcoding tool or page could not be located. Access our suite of free, private local file utilities.",
-        twitterTitle: "404 Page Not Found — MONO-TRANSCODER",
-        twitterDescription: "Requested page not found. Explore our free in-browser file compression and conversion tools.",
-        canonicalPath: "/404",
-        category: "ErrorPage",
-        keywords: "404 not found"
-      };
-
-    case "/":
-    default:
-      return {
-        title: "MONO-TRANSCODER: Free Image Compressor (KB) & Private PDF Converter",
-        description: "Free online Image Compressor (20KB, 50KB, 100KB) and complete PDF & Office toolkit. Merge, Compress, Sign, Word/Excel/PPT to PDF in your browser—100% private with zero uploads.",
-        ogTitle: "MONO-TRANSCODER: Private Image Compressor & All-in-One PDF Suite (Zero Uploads)",
-        ogDescription: "Compress images to exact KB sizes and convert, merge, compress, or sign PDFs directly in your browser with zero server uploads.",
-        twitterTitle: "MONO-TRANSCODER: Free Image Compressor & Private PDF Suite",
-        twitterDescription: "Shrink images to target KB sizes and manage PDFs 100% locally in your browser. Zero server uploads—your files never leave your device.",
-        canonicalPath: "/",
-        category: "UtilitiesApplication",
-        keywords: "image compressor, compress image to 20kb, compress image to 50kb, compress image to 100kb, ilovepdf, ilovepdf alternative, pi7, pi7 image compressor, pdf compressor, merge pdf, jpg to pdf, word to pdf, pdf to word, sign pdf, passport photo maker, private pdf tools"
-      };
-  }
-}
-
-/**
- * Helmet Component:
- * Dynamically applies synchronized HTML Title, Meta Description, Open Graph (OG),
- * Twitter Cards, and Schema.org JSON-LD structured data based on the current page path and view.
- */
-export default function Helmet({ currentView, path, customTitle, customDescription }: HelmetProps) {
-  const [activePath, setActivePath] = useState<string>(() => {
-    if (path) return path;
-    if (typeof window !== "undefined") return window.location.pathname;
-    return getPathFromView(currentView);
-  });
-
-  // Track path changes from browser history (back/forward popstate) and view transitions
-  useEffect(() => {
-    const handleLocationChange = () => {
-      if (typeof window !== "undefined") {
-        setActivePath(window.location.pathname);
+  if (canonicalPath === '/privacy' || canonicalPath === '/terms' || canonicalPath === '/support') {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: meta.title,
+      description: meta.description,
+      url: fullUrl,
+      isPartOf: {
+        '@type': 'WebSite',
+        name: 'MONO-TRANSCODER',
+        url: `${siteOrigin}/`
       }
     };
+  }
 
-    window.addEventListener("popstate", handleLocationChange);
-    return () => {
-      window.removeEventListener("popstate", handleLocationChange);
-    };
-  }, []);
+  const webAppNode: Record<string, unknown> = {
+    '@type': 'WebApplication',
+    name: canonicalPath === '/' ? 'MONO-TRANSCODER' : meta.title.split(' | ')[0],
+    url: fullUrl,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'All (Web Browser)',
+    browserRequirements: 'Requires HTML5 Canvas and JavaScript',
+    description: meta.description,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+  };
 
-  // Sync active path whenever currentView or path prop changes
+  return {
+    '@context': 'https://schema.org',
+    ...webAppNode,
+  };
+}
+
+export const Helmet: React.FC<HelmetProps> = ({ view }) => {
   useEffect(() => {
-    if (path) {
-      setActivePath(path);
-    } else if (currentView) {
-      const viewPath = getPathFromView(currentView);
-      if (typeof window !== "undefined" && window.location.pathname !== viewPath && !currentView.endsWith("_download")) {
-        setActivePath(window.location.pathname);
-      } else {
-        setActivePath(viewPath);
+    const rawPathname = window.location.pathname;
+    const cleanPath = normalizePathname(rawPathname);
+    const isDownloadView = view.endsWith('_download');
+    const canonicalPath = view === 'not_found'
+      ? '/404'
+      : isDownloadView
+        ? '/download'
+        : getCanonicalPathForLocation(cleanPath, view);
+    const meta = ROUTE_METADATA[canonicalPath] || ROUTE_METADATA['/'];
+    const isNoIndex = view === 'not_found' || isDownloadView || canonicalPath === '/404' || canonicalPath === '/download';
+
+    document.title = meta.title;
+
+    const updateMeta = (name: string, content: string, isProperty = false) => {
+      const attr = isProperty ? 'property' : 'name';
+      let el = document.querySelector(`meta[${attr}="${name}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, name);
+        document.head.appendChild(el);
       }
+      el.setAttribute('content', content);
+    };
+
+    const fullCanonicalUrl = canonicalPath === '/'
+      ? `${DEFAULT_SITE_ORIGIN}/`
+      : `${DEFAULT_SITE_ORIGIN}${canonicalPath}`;
+
+    updateMeta('description', meta.description);
+    updateMeta('keywords', meta.keywords);
+    updateMeta(
+      'robots',
+      isNoIndex
+        ? 'noindex, nofollow'
+        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+    );
+    updateMeta('og:title', meta.title, true);
+    updateMeta('og:description', meta.description, true);
+    updateMeta('og:url', fullCanonicalUrl, true);
+    updateMeta('og:image', `${DEFAULT_SITE_ORIGIN}/og-image.png`, true);
+    updateMeta('twitter:title', meta.title);
+    updateMeta('twitter:description', meta.description);
+    updateMeta('twitter:url', fullCanonicalUrl);
+    updateMeta('twitter:image', `${DEFAULT_SITE_ORIGIN}/og-image.png`);
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
     }
-  }, [currentView, path]);
+    canonical.setAttribute('href', fullCanonicalUrl);
 
-  // Execute Dynamic Meta Tags Generation and DOM injection
-  useEffect(() => {
-    // 1. Generate full meta tags profile based on current normalized path & view
-    const meta = generateMetaTags(activePath, currentView);
-
-    const title = customTitle || meta.title;
-    const description = customDescription || meta.description;
-    const ogTitle = customTitle || meta.ogTitle;
-    const ogDescription = customDescription || meta.ogDescription;
-    const twitterTitle = customTitle || meta.twitterTitle;
-    const twitterDescription = customDescription || meta.twitterDescription;
-
-    // 2. Update document title
-    document.title = title;
-
-    // Helper to find or create a meta tag
-    const updateMetaTag = (nameAttr: string, value: string, isProperty = false) => {
-      const attribute = isProperty ? "property" : "name";
-      let element = document.querySelector(`meta[${attribute}="${nameAttr}"]`);
-      if (!element) {
-        element = document.createElement("meta");
-        element.setAttribute(attribute, nameAttr);
-        document.head.appendChild(element);
-      }
-      element.setAttribute("content", value);
-    };
-
-    // Helper to find or create a link tag
-    const updateLinkTag = (rel: string, href: string) => {
-      let element = document.querySelector(`link[rel="${rel}"]`);
-      if (!element) {
-        element = document.createElement("link");
-        element.setAttribute("rel", rel);
-        document.head.appendChild(element);
-      }
-      element.setAttribute("href", href);
-    };
-
-    // 3. Update standard search engine & verification tags
-    updateMetaTag("description", description);
-    updateMetaTag("keywords", meta.keywords);
-    updateMetaTag("google-site-verification", "zoItMRwQuzoxVNZ6JNSi78d9JA-U2hFOGRld1SwtQ7k");
-    updateMetaTag("robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
-
-    // 4. Resolve canonical and Open Graph URLs using primary domain https://monotranscoder.runs-on.dev
-    const primaryDomain = "https://monotranscoder.runs-on.dev";
-    const canonicalUrl = `${primaryDomain}${meta.canonicalPath}`;
-    const socialImageUrl = `${primaryDomain}/og-image.png`;
-
-    updateLinkTag("canonical", canonicalUrl);
-
-    // 5. Dynamic Open Graph Tags (Optimized for Facebook, LinkedIn, WhatsApp, Slack, Discord previews)
-    updateMetaTag("og:type", "website", true);
-    updateMetaTag("og:url", canonicalUrl, true);
-    updateMetaTag("og:title", ogTitle, true);
-    updateMetaTag("og:description", ogDescription, true);
-    updateMetaTag("og:site_name", "MONO-TRANSCODER", true);
-    updateMetaTag("og:locale", "en_US", true);
-    updateMetaTag("og:image", socialImageUrl, true);
-    updateMetaTag("og:image:width", "1200", true);
-    updateMetaTag("og:image:height", "630", true);
-    updateMetaTag("og:image:alt", title, true);
-
-    // 6. Dynamic Twitter / X Card Tags (Optimized for summary_large_image rendering)
-    updateMetaTag("twitter:card", "summary_large_image");
-    updateMetaTag("twitter:url", canonicalUrl);
-    updateMetaTag("twitter:title", twitterTitle);
-    updateMetaTag("twitter:description", twitterDescription);
-    updateMetaTag("twitter:image", socialImageUrl);
-    updateMetaTag("twitter:image:alt", title);
-
-    // 7. Dynamic Schema.org JSON-LD Structured Data
-    let schemaScript = document.getElementById("dynamic-schema-structured-data") as HTMLScriptElement | null;
-    if (!schemaScript) {
-      schemaScript = document.createElement("script");
-      schemaScript.id = "dynamic-schema-structured-data";
-      schemaScript.type = "application/ld+json";
-      document.head.appendChild(schemaScript);
+    const legacyDynamic = document.querySelector('script#dynamic-schema');
+    if (legacyDynamic) {
+      legacyDynamic.remove();
     }
 
-    const breadcrumbItems =
-      meta.canonicalPath === "/"
-        ? [
-            {
-              "@type": "ListItem",
-              "position": 1,
-              "name": "MONO-TRANSCODER",
-              "item": `${primaryDomain}/`,
-            },
-          ]
-        : [
-            {
-              "@type": "ListItem",
-              "position": 1,
-              "name": "MONO-TRANSCODER",
-              "item": `${primaryDomain}/`,
-            },
-            {
-              "@type": "ListItem",
-              "position": 2,
-              "name": title.split("|")[0].trim(),
-              "item": canonicalUrl,
-            },
-          ];
-
-    const schemaData = {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": ["WebApplication", "SoftwareApplication"],
-          "name": meta.canonicalPath === "/" ? "MONO-TRANSCODER" : title.split("|")[0].trim(),
-          "alternateName": [
-            title,
-            "MONO-TRANSCODER Private Image & PDF Suite",
-            "Private iLovePDF Alternative",
-            "Private Pi7 Image Compressor Alternative"
-          ],
-          "url": canonicalUrl,
-          "image": socialImageUrl,
-          "description": description,
-          "keywords": meta.keywords,
-          "applicationCategory": meta.category,
-          "operatingSystem": "All modern web browsers (Windows, macOS, Linux, Android, iOS)",
-          "isAccessibleForFree": true,
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
-          }
-        },
-        {
-          "@type": "BreadcrumbList",
-          "itemListElement": breadcrumbItems
-        },
-        {
-          "@type": "FAQPage",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "How is MONO-TRANSCODER different from iLovePDF or Pi7 Image Compressor?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Unlike traditional cloud tools where your documents and photos are uploaded to remote servers, MONO-TRANSCODER runs 100% locally inside your web browser using WebAssembly and HTML5 Canvas. You get all the features of iLovePDF and Pi7 (compress image to 20KB/50KB/100KB, merge PDF, compress PDF, sign PDF, Word to PDF, passport photo maker) with zero server uploads and total privacy."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Can I compress an image to an exact KB size like 20KB, 50KB, or 100KB?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes. Our Compress Image tool lets you type any exact target KB limit (such as 20KB, 50KB, 100KB, or 200KB for government portals and exam forms) and automatically binary-searches the optimal quality in local browser memory."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "What are the file size limits?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Because operations run locally in browser memory rather than over network uploads, typical documents and images up to 500MB process smoothly without upload bottlenecks."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Are my files uploaded to any server?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Never. Nothing is uploaded. All computation happens entirely within your local web browser session."
-              }
-            }
-          ]
-        }
-      ]
-    };
-
-    schemaScript.text = JSON.stringify(schemaData);
-  }, [activePath, currentView, customTitle, customDescription]);
+    let script = document.querySelector('script#schema-structured-data');
+    const structuredData = buildStructuredDataForRoute(canonicalPath, DEFAULT_SITE_ORIGIN);
+    if (!structuredData) {
+      if (script) script.remove();
+    } else {
+      if (!script) {
+        script = document.createElement('script');
+        script.setAttribute('id', 'schema-structured-data');
+        script.setAttribute('type', 'application/ld+json');
+        document.head.appendChild(script);
+      }
+      script.textContent = JSON.stringify(structuredData);
+    }
+  }, [view]);
 
   return null;
-}
+};
+
+export default Helmet;

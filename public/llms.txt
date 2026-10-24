@@ -1,26 +1,32 @@
-# MONO-TRANSCODER
+# MONO-TRANSCODER (https://monotranscoder.runs-on.dev)
 
-MONO-TRANSCODER is a 100% client-side, privacy-first image and PDF converter & compressor that executes entirely in your local browser memory with zero server uploads.
+> Private, browser-based PDF, Office, and Image processing suite with 20 local-first utilities. Your documents and photos never leave your device.
 
-## Official Website
-- URL: https://monotranscoder.runs-on.dev/
+## Overview
+MONO-TRANSCODER provides 20 client-side document and image tools that execute inside the user's browser using HTML5 Canvas, PDF.js, and pdf-lib:
+- **Zero Document Uploads**: Your documents and photos never leave your device.
+- **Exact KB Image Compression**: 7-step binary search across quality levels and resolution scales to hit strict 20KB, 50KB, 100KB, or 200KB portal limits (plus Min–Max KB windows).
+- **Optional Sign-In**: Anonymous usage makes zero requests to external servers. Optional Google Sign-In is lazy-loaded only when clicked to sync reusable visual signatures.
 
-## Available Client-Side Tools (13 Modules)
-- [Sign PDF Document](https://monotranscoder.runs-on.dev/sign-pdf): Draw, type, or stamp signatures onto any PDF page locally.
-- [Compress Image File](https://monotranscoder.runs-on.dev/compress-image): Shrink JPG, PNG, WebP, and AVIF images to your target KB size.
-- [Compress PDF](https://monotranscoder.runs-on.dev/compress-pdf): Reduce PDF file size with stream compression and image downsampling.
-- [Convert Image Format](https://monotranscoder.runs-on.dev/convert-image): Convert images between PNG, JPG, WebP, and AVIF formats instantly.
-- [Image to PDF Converter](https://monotranscoder.runs-on.dev/image-to-pdf): Combine single or multiple images into a clean, custom-aligned PDF.
-- [Merge PDF Documents](https://monotranscoder.runs-on.dev/merge-pdf): Join multiple PDF files together with drag-and-drop sorting.
-- [PDF to Images](https://monotranscoder.runs-on.dev/pdf-to-images): Export PDF pages as high-quality images or batch download as ZIP.
-- [Remove PDF Pages](https://monotranscoder.runs-on.dev/remove-pdf-pages): Preview thumbnails and delete unwanted PDF pages losslessly.
-- [Organize PDF Pages](https://monotranscoder.runs-on.dev/organize-pdf): Reorder, rotate, duplicate, or delete PDF pages visually.
-- [Word to PDF Converter](https://monotranscoder.runs-on.dev/word-to-pdf): Convert Word (.docx, .rtf, .txt) files into paginated PDFs.
-- [Word to JPG Converter](https://monotranscoder.runs-on.dev/word-to-jpg): Render Word (.docx, .rtf, .txt) pages into high-res JPG images.
-- [PDF to Word Converter](https://monotranscoder.runs-on.dev/pdf-to-word): Extract PDF text and layouts into an editable Word (.docx) file.
-- [Passport Photo Maker](https://monotranscoder.runs-on.dev/passport-photo): Remove backgrounds, set backdrop color, and export 300 DPI photos.
-
-## Policies & Support
-- [Privacy Policy](https://monotranscoder.runs-on.dev/privacy)
-- [Terms of Service](https://monotranscoder.runs-on.dev/terms)
-- [Support / Buy Me A Coffee](https://monotranscoder.runs-on.dev/buy-me-a-coffee)
+## All 20 Tools & Canonical Routes
+1. **Compress Image to Exact KB**: `https://monotranscoder.runs-on.dev/compress-image`
+   - Presets: `/compress-image-to-20kb`, `/compress-image-to-50kb`, `/compress-image-to-100kb`, `/compress-image-to-200kb`
+2. **Compress PDF**: `https://monotranscoder.runs-on.dev/compress-pdf`
+3. **Convert Image Format**: `https://monotranscoder.runs-on.dev/convert-image`
+4. **Image to PDF**: `https://monotranscoder.runs-on.dev/image-to-pdf`
+5. **Merge PDF**: `https://monotranscoder.runs-on.dev/merge-pdf`
+6. **PDF to Images**: `https://monotranscoder.runs-on.dev/pdf-to-images`
+7. **Remove PDF Pages**: `https://monotranscoder.runs-on.dev/remove-pdf-pages`
+8. **Organize PDF Pages**: `https://monotranscoder.runs-on.dev/organize-pdf`
+9. **Watermark PDF**: `https://monotranscoder.runs-on.dev/watermark-pdf`
+10. **Word to PDF (Basic Local Conversion)**: `https://monotranscoder.runs-on.dev/word-to-pdf`
+11. **Word to Image**: `https://monotranscoder.runs-on.dev/word-to-jpg`
+12. **PDF to Word**: `https://monotranscoder.runs-on.dev/pdf-to-word`
+13. **Excel to PDF (Basic Table Conversion)**: `https://monotranscoder.runs-on.dev/excel-to-pdf`
+14. **PDF to Excel**: `https://monotranscoder.runs-on.dev/pdf-to-excel`
+15. **PowerPoint to PDF (Basic Slide Conversion)**: `https://monotranscoder.runs-on.dev/powerpoint-to-pdf`
+16. **PDF to PowerPoint**: `https://monotranscoder.runs-on.dev/pdf-to-powerpoint`
+17. **Lock PDF (Basic RC4-128 Password Protection)**: `https://monotranscoder.runs-on.dev/lock-pdf`
+18. **Unlock PDF**: `https://monotranscoder.runs-on.dev/unlock-pdf`
+19. **Sign PDF (Visual Signature Stamp)**: `https://monotranscoder.runs-on.dev/sign-pdf`
+20. **Passport Photo Maker**: `https://monotranscoder.runs-on.dev/passport-photo`

@@ -19,7 +19,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface ExcelToPdfViewProps {
@@ -619,10 +618,10 @@ export default function ExcelToPdfView({ onSuccess, initialFile }: ExcelToPdfVie
             id="excel-to-pdf-heading"
             className="text-xl font-bold uppercase tracking-tight text-white font-sans"
           >
-            EXCEL TO PDF CONVERTER // EXCEL_TO_PDF.PRG
+            Excel to PDF (Basic Table Conversion)
           </h1>
           <p className="text-xs text-zinc-400 font-mono">
-            Convert Excel (.xlsx) workbooks and CSV/TSV spreadsheets into clean, paginated PDF tables in local RAM.
+            Basic client-side conversion of Excel (.xlsx) and CSV/TSV cell grids into paginated PDF tables. Charts, pivot tables, conditional formatting gradients, and VBA macros are not rendered.
           </p>
         </div>
       </div>
@@ -689,17 +688,6 @@ export default function ExcelToPdfView({ onSuccess, initialFile }: ExcelToPdfVie
             SELECT_EXCEL_FILE
           </button>
         </div>
-      ) : isParsing || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="excel_to_pdf"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={`${pageSize} ${orientation}`}
-          statusMessage={
-            progressMsg ||
-            (isParsing ? "PARSING_XLSX_WORKBOOK..." : "COMPILING_PDF_TABLES...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Interactive Worksheet Grid Preview */}

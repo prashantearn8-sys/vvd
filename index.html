@@ -1,356 +1,139 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script>
-      if (typeof window !== "undefined" && window.location.hostname.endsWith(".netlify.app")) {
-        window.location.replace(
-          "https://monotranscoder.runs-on.dev" +
-            window.location.pathname +
-            window.location.search +
-            window.location.hash
-        );
-      }
-    </script>
-    <meta name="google-site-verification" content="zoItMRwQuzoxVNZ6JNSi78d9JA-U2hFOGRld1SwtQ7k" />
-    <meta name="msvalidate.01" content="EE312B0BBF26D82C3CD036CAB4F1D796" />
-    <title>MONO-TRANSCODER: Free Image Compressor (KB) &amp; Private PDF Converter</title>
-    <meta name="description" content="Free online Image Compressor (20KB, 50KB, 100KB) and complete PDF &amp; Office toolkit. Merge, Compress, Sign, Word/Excel/PPT to PDF in your browser—100% private with zero uploads." />
-    <meta name="keywords" content="image compressor, compress image to 20kb, compress image to 50kb, compress image to 100kb, ilovepdf, ilovepdf alternative, pi7, pi7 image compressor, pdf compressor, merge pdf, jpg to pdf, word to pdf, pdf to word, sign pdf, passport photo maker, private pdf tools" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="google-site-verification" content="hWhcB-sG6eb1yL-wV8F8zF5F3vF0y7G6K9M2N4P5Q8R" />
+
+    <!-- Primary Meta Tags -->
+    <title>Free Online PDF Tools &amp; Image Compressor to Exact KB | MONO-TRANSCODER</title>
+    <meta name="title" content="Free Online PDF Tools &amp; Image Compressor to Exact KB | MONO-TRANSCODER" />
+    <meta name="description" content="20 free browser-based PDF &amp; image utilities: compress images to exact KB (20KB, 50KB, 100KB), merge, split, sign, lock, unlock, and convert PDF to Word or JPG locally. Your documents and photos never leave your device." />
+    <meta name="keywords" content="compress image to 50kb, compress image to 20kb, compress image to 100kb, merge pdf online free, split pdf, compress pdf, word to pdf, pdf to word, jpg to pdf, pdf to jpg, sign pdf, lock pdf, unlock pdf, passport photo maker, local pdf tools" />
     <meta name="author" content="MONO-TRANSCODER" />
-    <meta name="theme-color" content="#000000" />
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://monotranscoder.runs-on.dev/" />
-    <meta property="og:title" content="MONO-TRANSCODER: Private Image Compressor &amp; All-in-One PDF Suite (Zero Uploads)" />
-    <meta property="og:description" content="Compress images to exact KB sizes and convert, merge, compress, or sign PDFs directly in your browser. The 100% private, zero-upload alternative to iLovePDF and Pi7." />
-    <meta property="og:image" content="https://monotranscoder.runs-on.dev/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="MONO-TRANSCODER: Free Image Compressor &amp; Private PDF Tools" />
-    <meta property="og:site_name" content="MONO-TRANSCODER" />
-    <meta property="og:locale" content="en_US" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://monotranscoder.runs-on.dev/" />
-    <meta name="twitter:title" content="MONO-TRANSCODER: Free Image Compressor &amp; Private PDF Suite" />
-    <meta name="twitter:description" content="Shrink images to target KB sizes and manage PDFs 100% locally in your browser. Zero server uploads—your files never leave your device." />
-    <meta name="twitter:image" content="https://monotranscoder.runs-on.dev/og-image.png" />
-    <meta name="twitter:image:alt" content="MONO-TRANSCODER Terminal Interface" />
-
-    <!-- Canonical URL -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="theme-color" content="#1A1A1A" />
+    <meta name="application-name" content="MONO-TRANSCODER" />
+    <meta name="apple-mobile-web-app-title" content="MONO-TRANSCODER" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="canonical" href="https://monotranscoder.runs-on.dev/" />
+    <link rel="alternate" hreflang="en" href="https://monotranscoder.runs-on.dev/" />
+    <link rel="alternate" hreflang="x-default" href="https://monotranscoder.runs-on.dev/" />
 
-    <!-- Favicon & Touch Icons -->
+    <!-- Favicons & PWA Manifest -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- PWA Web App Manifest -->
-    <link rel="manifest" href="/manifest.json" />
+    <!-- Open Graph / Facebook / LinkedIn / Discord -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MONO-TRANSCODER" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="https://monotranscoder.runs-on.dev/" />
+    <meta property="og:title" content="Free Online PDF Tools &amp; Image Compressor to Exact KB | MONO-TRANSCODER" />
+    <meta property="og:description" content="20 free browser-based PDF &amp; image utilities: compress images to exact KB (20KB, 50KB, 100KB), merge, split, sign, lock, unlock, and convert PDF to Word or JPG locally. Your documents and photos never leave your device." />
+    <meta property="og:image" content="https://monotranscoder.runs-on.dev/og-image.png" />
+    <meta property="og:image:secure_url" content="https://monotranscoder.runs-on.dev/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="MONO-TRANSCODER — 20 Local-First PDF and Image Utilities" />
 
-    <!-- Handwritten Signature Fonts for Sign PDF -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Caveat:wght@600;700&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Sacramento&display=swap" rel="stylesheet" />
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://monotranscoder.runs-on.dev/" />
+    <meta name="twitter:title" content="Free Online PDF Tools &amp; Image Compressor to Exact KB | MONO-TRANSCODER" />
+    <meta name="twitter:description" content="20 free browser-based PDF &amp; image utilities: compress images to exact KB (20KB, 50KB, 100KB), merge, split, sign, lock, unlock, and convert PDF to Word or JPG locally. Your documents and photos never leave your device." />
+    <meta name="twitter:image" content="https://monotranscoder.runs-on.dev/og-image.png" />
+    <meta name="twitter:image:alt" content="MONO-TRANSCODER — 20 Local-First PDF and Image Utilities" />
 
-    <!-- Structured Data (JSON-LD) for Search Engines -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebSite",
-          "@id": "https://monotranscoder.runs-on.dev/#website",
-          "url": "https://monotranscoder.runs-on.dev/",
-          "name": "MONO-TRANSCODER",
-          "alternateName": [
-            "MONO-TRANSCODER: Free Image Compressor & Private PDF Converter",
-            "Private iLovePDF Alternative",
-            "Private Pi7 Image Compressor Alternative"
-          ],
-          "description": "Free online Image Compressor (20KB, 50KB, 100KB) and complete PDF & Office toolkit. Merge, Compress, Sign, Word/Excel/PPT to PDF in your browser—100% private iLovePDF & Pi7 alternative with zero uploads.",
-          "inLanguage": "en-US"
-        },
-        {
-          "@type": ["WebApplication", "SoftwareApplication"],
-          "@id": "https://monotranscoder.runs-on.dev/#app",
-          "name": "MONO-TRANSCODER",
-          "alternateName": [
-            "MONO-TRANSCODER Image Compressor & PDF Toolkit",
-            "iLovePDF Private Local Alternative",
-            "Pi7 Image Compressor Local Alternative"
-          ],
-          "url": "https://monotranscoder.runs-on.dev/",
-          "image": "https://monotranscoder.runs-on.dev/og-image.png",
-          "screenshot": "https://monotranscoder.runs-on.dev/og-image.png",
-          "description": "Free online Image Compressor (20KB, 50KB, 100KB) and complete PDF & Office toolkit. Merge, Compress, Sign, Word/Excel/PPT to PDF in your browser—100% private iLovePDF & Pi7 alternative with zero uploads.",
-          "keywords": "image compressor, compress image to 20kb, compress image to 50kb, compress image to 100kb, ilovepdf, ilovepdf alternative, pi7, pi7 image compressor, pdf compressor, merge pdf, jpg to pdf, word to pdf, pdf to word, sign pdf, passport photo maker",
-          "applicationCategory": "UtilitiesApplication",
-          "operatingSystem": "All modern web browsers (Chrome, Firefox, Safari, Edge, Brave)",
-          "isAccessibleForFree": true,
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
-          },
-          "featureList": [
-            "Image Compressor Online: Shrink JPG, PNG, WebP, and AVIF images to exact 20KB, 50KB, 100KB, or custom KB size (Pi7 alternative)",
-            "Compress PDF Online: Reduce PDF file size in KB with stream compression and DPI downsampling (iLovePDF alternative)",
-            "Merge PDF Online: Join and combine multiple PDF files with drag-and-drop sorting",
-            "Sign PDF Online: Draw, type, or stamp electronic signatures onto any PDF page locally",
-            "JPG to PDF / Image to PDF: Combine single or multiple photos into a custom-aligned PDF",
-            "Convert Image Format: Convert images between PNG, JPG, WebP, and AVIF formats instantly",
-            "PDF to JPG & PNG Images: Export PDF pages as high-resolution images or batch download as ZIP",
-            "Remove PDF Pages: Preview thumbnails and delete unwanted PDF pages losslessly",
-            "Organize PDF Pages: Reorder, rotate, duplicate, or delete PDF pages visually",
-            "Word to PDF Converter: Convert Word (.docx, .rtf, .txt) files into paginated PDFs",
-            "Word to JPG Converter: Render Word (.docx, .rtf, .txt) pages into high-res JPG images",
-            "PDF to Word Converter: Extract PDF text and layouts into an editable Word (.docx) file",
-            "Excel to PDF Converter: Convert Excel (.xlsx) and CSV spreadsheets into clean paginated PDFs",
-            "PowerPoint to PDF Converter: Convert PowerPoint (.pptx) slide decks into high-DPI PDFs",
-            "PDF to PowerPoint Converter: Convert PDF pages into editable widescreen or standard .pptx decks",
-            "PDF to Excel Converter: Extract PDF tables and rows into Excel (.xlsx) or CSV spreadsheets",
-            "Watermark PDF: Stamp custom text or logo watermarks onto PDF pages locally",
-            "Lock & Protect PDF: Add a 128-bit password required to open your PDF",
-            "Unlock PDF: Decrypt password-protected PDFs and remove restrictions locally",
-            "Passport Photo Maker: Remove backgrounds, set backdrop color, add formal suits, and export 300 DPI photos"
-          ],
-          "browserRequirements": "Requires JavaScript and modern Canvas/WebAssembly APIs",
-          "softwareHelp": {
-            "@type": "CreativeWork",
-            "url": "https://monotranscoder.runs-on.dev/privacy"
-          }
-        },
-        {
-          "@type": "ItemList",
-          "@id": "https://monotranscoder.runs-on.dev/#tools",
-          "name": "MONO-TRANSCODER Free Online Image & PDF Tools",
-          "itemListElement": [
-            { "@type": "SiteNavigationElement", "position": 1, "name": "Image Compressor Online (20KB, 50KB, 100KB)", "url": "https://monotranscoder.runs-on.dev/compress-image" },
-            { "@type": "SiteNavigationElement", "position": 2, "name": "Compress PDF Online Free", "url": "https://monotranscoder.runs-on.dev/compress-pdf" },
-            { "@type": "SiteNavigationElement", "position": 3, "name": "Merge PDF Online Free", "url": "https://monotranscoder.runs-on.dev/merge-pdf" },
-            { "@type": "SiteNavigationElement", "position": 4, "name": "Sign PDF Online Free", "url": "https://monotranscoder.runs-on.dev/sign-pdf" },
-            { "@type": "SiteNavigationElement", "position": 5, "name": "JPG to PDF & Image to PDF", "url": "https://monotranscoder.runs-on.dev/image-to-pdf" },
-            { "@type": "SiteNavigationElement", "position": 6, "name": "Convert Image Format (PNG, JPG, WebP, AVIF)", "url": "https://monotranscoder.runs-on.dev/convert-image" },
-            { "@type": "SiteNavigationElement", "position": 7, "name": "PDF to JPG & PNG Images", "url": "https://monotranscoder.runs-on.dev/pdf-to-images" },
-            { "@type": "SiteNavigationElement", "position": 8, "name": "Remove PDF Pages", "url": "https://monotranscoder.runs-on.dev/remove-pdf-pages" },
-            { "@type": "SiteNavigationElement", "position": 9, "name": "Organize & Rotate PDF Pages", "url": "https://monotranscoder.runs-on.dev/organize-pdf" },
-            { "@type": "SiteNavigationElement", "position": 10, "name": "Word to PDF Converter", "url": "https://monotranscoder.runs-on.dev/word-to-pdf" },
-            { "@type": "SiteNavigationElement", "position": 11, "name": "Word to JPG Converter", "url": "https://monotranscoder.runs-on.dev/word-to-jpg" },
-            { "@type": "SiteNavigationElement", "position": 12, "name": "PDF to Word (.DOCX) Converter", "url": "https://monotranscoder.runs-on.dev/pdf-to-word" },
-            { "@type": "SiteNavigationElement", "position": 13, "name": "Excel to PDF Converter", "url": "https://monotranscoder.runs-on.dev/excel-to-pdf" },
-            { "@type": "SiteNavigationElement", "position": 14, "name": "PowerPoint to PDF Converter", "url": "https://monotranscoder.runs-on.dev/powerpoint-to-pdf" },
-            { "@type": "SiteNavigationElement", "position": 15, "name": "PDF to PowerPoint (.PPTX) Converter", "url": "https://monotranscoder.runs-on.dev/pdf-to-powerpoint" },
-            { "@type": "SiteNavigationElement", "position": 16, "name": "PDF to Excel (.XLSX) Extractor", "url": "https://monotranscoder.runs-on.dev/pdf-to-excel" },
-            { "@type": "SiteNavigationElement", "position": 17, "name": "Watermark PDF Online", "url": "https://monotranscoder.runs-on.dev/watermark-pdf" },
-            { "@type": "SiteNavigationElement", "position": 18, "name": "Lock & Password Protect PDF", "url": "https://monotranscoder.runs-on.dev/lock-pdf" },
-            { "@type": "SiteNavigationElement", "position": 19, "name": "Unlock PDF Password Remover", "url": "https://monotranscoder.runs-on.dev/unlock-pdf" },
-            { "@type": "SiteNavigationElement", "position": 20, "name": "Passport Size Photo Maker", "url": "https://monotranscoder.runs-on.dev/passport-photo" }
-          ]
-        },
-        {
-          "@type": "FAQPage",
-          "@id": "https://monotranscoder.runs-on.dev/#faq",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "How is MONO-TRANSCODER better than iLovePDF or Pi7 Image Compressor?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Traditional websites like iLovePDF and Pi7 require uploading your sensitive PDFs and personal photos to remote cloud servers. MONO-TRANSCODER runs 100% locally inside your browser using WebAssembly and HTML5 Canvas—giving you instant Image Compression (to 20KB, 50KB, 100KB), PDF Merging, PDF Compression, Signing, and Office conversions with zero server uploads."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "How do I compress an image to 20KB, 50KB, or 100KB online?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Open the MONO-TRANSCODER Image Compressor (/compress-image), drop your JPG, PNG, or WebP photo, enter your exact target KB size (e.g., 20KB, 50KB, or 100KB), and download the optimized image immediately."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "What are the file size limits?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Because operations run locally in browser memory rather than over a network upload, typical images and documents up to 500MB process smoothly without upload bottlenecks or timeouts."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Which file formats are supported?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Supported image formats include JPG, JPEG, PNG, WebP, and AVIF. Supported document operations include PDF signing, compression, merging, organizing, page removal, watermarking, password locking/unlocking, Word to PDF, Word to JPG, PDF to Word, Excel to PDF, PDF to Excel, PowerPoint to PDF, PDF to PowerPoint, and biometric passport photo creation."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Are my files uploaded to any server?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Never. Nothing is uploaded. All computation happens entirely within your local web browser session."
-              }
-            }
-          ]
+    <!-- Single JSON-LD Structured Data Block (replaced per route at build time) -->
+    <script id="schema-structured-data" type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "MONO-TRANSCODER",
+        "url": "https://monotranscoder.runs-on.dev/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "All (Web Browser)",
+        "browserRequirements": "Requires HTML5 Canvas and JavaScript",
+        "description": "20 free browser-based PDF & image utilities: compress images to exact KB (20KB, 50KB, 100KB), merge, split, sign, lock, unlock, and convert PDF to Word or JPG locally. Your documents and photos never leave your device.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
         }
-      ]
-    }
+      }
+    </script>
+
+    <!-- Redirect *.netlify.app to canonical custom domain -->
+    <script>
+      (function () {
+        if (window.location.hostname === 'mono-transcoder.netlify.app') {
+          window.location.replace(
+            'https://monotranscoder.runs-on.dev' +
+              window.location.pathname +
+              window.location.search +
+              window.location.hash
+          );
+        }
+      })();
     </script>
   </head>
-  <body class="bg-black text-zinc-100">
-    <noscript>
-      <div style="max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #000; color: #e4e4e7; line-height: 1.6;">
-        <header style="border-bottom: 2px solid #27272a; padding-bottom: 1.5rem; margin-bottom: 2rem;">
-          <h1 style="color: #fff; font-size: 1.75rem; font-weight: 800; margin: 0 0 0.5rem 0; letter-spacing: -0.025em;">
-            MONO-TRANSCODER: Free Online Image Compressor (KB) &amp; Private PDF Toolkit
-          </h1>
-          <p style="color: #ffffff; font-weight: 600; font-size: 0.95rem; margin: 0;">
-            The 100% private, zero-upload alternative to iLovePDF and Pi7 Image Compressor. Compress images to 20KB, 50KB, 100KB and convert, merge, sign, or compress PDFs directly in your browser.
-          </p>
-        </header>
-
-        <section style="margin-bottom: 2.5rem;">
-          <h2 style="color: #fff; font-size: 1.25rem; font-weight: 700; border-bottom: 1px solid #27272a; padding-bottom: 0.5rem; margin-bottom: 1rem;">
-            Why Choose MONO-TRANSCODER Over Cloud Uploaders (iLovePDF / Pi7)?
-          </h2>
-          <p style="color: #a1a1aa; font-size: 0.95rem; margin-bottom: 1rem;">
-            MONO-TRANSCODER is a fast, 100% client-side file transformation suite at <strong>https://monotranscoder.runs-on.dev/</strong>. All image compression (exact KB targeting for forms and portals), format transcoding, PDF merging, PDF compression, electronic signing, and Office document conversions execute directly inside your local web browser using WebAssembly and HTML5 Canvas technology. Your files never leave your device—meaning zero cloud latency, no upload wait times, and total confidentiality.
-          </p>
-        </section>
-
-        <section style="margin-bottom: 2.5rem;">
-          <h2 style="color: #fff; font-size: 1.25rem; font-weight: 700; border-bottom: 1px solid #27272a; padding-bottom: 0.5rem; margin-bottom: 1rem;">
-            All 20 Free Online Image, PDF &amp; Office Tools
-          </h2>
-          <ul style="list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem;">
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/compress-image" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Image Compressor Online (20KB, 50KB, 100KB)</a> — Shrink JPG, PNG, WebP, and AVIF image sizes down to exact target KB limits (Pi7 Image Compressor alternative) with instant previews.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/compress-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Compress PDF Online</a> — Reduce PDF document sizes in KB (100KB, 200KB, 500KB) by pruning metadata and optimizing streams locally (iLovePDF Compress PDF alternative).
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/merge-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Merge PDF Online</a> — Combine multiple PDF documents into one unified file with drag-and-drop page ordering (iLovePDF Merge PDF alternative).
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/sign-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Sign PDF Online</a> — Draw, type, or upload your electronic signature and stamp it directly onto any PDF page locally.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/image-to-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">JPG to PDF / Image to PDF</a> — Compile multiple JPG, PNG, or WebP photos into a clean multi-page PDF document.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/convert-image" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Convert Image Format</a> — Transcode images instantly between PNG, JPG, WebP, and AVIF in local memory.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/pdf-to-images" style="color: #ffffff; font-weight: 600; text-decoration: underline;">PDF to JPG &amp; PNG Images</a> — Rasterize and extract every page from a PDF into high-definition standalone JPG or PNG images.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/remove-pdf-pages" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Remove PDF Pages</a> — Inspect PDF page thumbnails and delete specific pages or page ranges losslessly in local RAM.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/organize-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Organize &amp; Rotate PDF Pages</a> — Reorder, rotate, duplicate, and remove PDF pages with drag-and-drop visual previews.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/word-to-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Word to PDF Converter</a> — Convert Microsoft Word (.docx) documents into clean, paginated PDF files in browser memory.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/word-to-jpg" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Word to JPG Converter</a> — Render Word (.docx) pages into high-resolution JPG images in local browser memory.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/pdf-to-word" style="color: #ffffff; font-weight: 600; text-decoration: underline;">PDF to Word (.DOCX) Converter</a> — Extract PDF text, headings, and page layouts into an editable Microsoft Word (.docx) document.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/excel-to-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Excel to PDF Converter</a> — Convert Excel (.xlsx) and CSV spreadsheets into clean paginated PDF tables locally.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/powerpoint-to-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">PowerPoint to PDF Converter</a> — Convert PowerPoint (.pptx) presentations into crisp PDF slide decks locally.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/pdf-to-powerpoint" style="color: #ffffff; font-weight: 600; text-decoration: underline;">PDF to PowerPoint (.PPTX) Converter</a> — Transform PDF pages into editable widescreen PowerPoint presentations.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/pdf-to-excel" style="color: #ffffff; font-weight: 600; text-decoration: underline;">PDF to Excel (.XLSX) Converter</a> — Extract tables and rows from PDF documents into editable Excel or CSV spreadsheets.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/watermark-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Watermark PDF</a> — Stamp custom text or logo watermarks onto PDF pages locally.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/lock-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Lock &amp; Protect PDF</a> — Encrypt PDF files with a 128-bit password and permission locks in browser memory.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/unlock-pdf" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Unlock PDF</a> — Remove password prompts and printing/copying restrictions from encrypted PDFs locally.
-            </li>
-            <li style="background: #09090b; border: 1px solid #27272a; padding: 0.85rem 1rem; border-radius: 6px;">
-              <a href="https://monotranscoder.runs-on.dev/passport-photo" style="color: #ffffff; font-weight: 600; text-decoration: underline;">Passport Photo Maker</a> — Automatically remove background, set solid white or colored backdrops, and add formal shirts or suit coats locally.
-            </li>
-          </ul>
-        </section>
-
-        <section style="margin-bottom: 2.5rem;">
-          <h2 style="color: #fff; font-size: 1.25rem; font-weight: 700; border-bottom: 1px solid #27272a; padding-bottom: 0.5rem; margin-bottom: 1rem;">
-            How It Works
-          </h2>
-          <ol style="color: #a1a1aa; padding-left: 1.25rem; margin: 0; font-size: 0.95rem; display: grid; gap: 0.5rem;">
-            <li><strong>Select or drop your file:</strong> Choose an image, PDF, Word, Excel, or PowerPoint file from your computer or phone.</li>
-            <li><strong>Configure settings:</strong> Adjust compression levels, exact numerical target size (20KB, 50KB, 100KB), or desired output formats.</li>
-            <li><strong>Local processing:</strong> Your browser executes the transformation entirely in local RAM using client-side algorithms.</li>
-            <li><strong>Instant download:</strong> Save your optimized file immediately. Nothing is uploaded or stored on any server.</li>
-          </ol>
-        </section>
-
-        <section style="margin-bottom: 2.5rem;">
-          <h2 style="color: #fff; font-size: 1.25rem; font-weight: 700; border-bottom: 1px solid #27272a; padding-bottom: 0.5rem; margin-bottom: 1rem;">
-            Frequently Asked Questions (FAQ)
-          </h2>
-          <div style="display: grid; gap: 1.25rem;">
-            <article style="background: #09090b; border: 1px solid #27272a; padding: 1rem 1.25rem; border-radius: 6px;">
-              <h3 style="color: #fff; font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem 0;">How is MONO-TRANSCODER different from iLovePDF or Pi7?</h3>
-              <p style="color: #a1a1aa; font-size: 0.9rem; margin: 0;">
-                Your files never leave your device. Unlike cloud tools that upload your documents to remote servers, MONO-TRANSCODER runs every PDF and image tool directly inside your web browser via WebAssembly and HTML5 Canvas.
-              </p>
-            </article>
-
-            <article style="background: #09090b; border: 1px solid #27272a; padding: 1rem 1.25rem; border-radius: 6px;">
-              <h3 style="color: #fff; font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem 0;">Can I compress images to 20KB, 50KB, or 100KB?</h3>
-              <p style="color: #a1a1aa; font-size: 0.9rem; margin: 0;">
-                Yes. Use our <a href="https://monotranscoder.runs-on.dev/compress-image" style="color: #fff; text-decoration: underline;">Image Compressor</a> to set any exact KB target size for online application forms, portals, and ID uploads.
-              </p>
-            </article>
-
-            <article style="background: #09090b; border: 1px solid #27272a; padding: 1rem 1.25rem; border-radius: 6px;">
-              <h3 style="color: #fff; font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem 0;">What are the file size limits?</h3>
-              <p style="color: #a1a1aa; font-size: 0.9rem; margin: 0;">
-                Because operations run locally in browser memory rather than over network uploads, typical documents and images up to 500MB process smoothly without upload bottlenecks or connection timeouts.
-              </p>
-            </article>
-
-            <article style="background: #09090b; border: 1px solid #27272a; padding: 1rem 1.25rem; border-radius: 6px;">
-              <h3 style="color: #fff; font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem 0;">Are my files uploaded to any server?</h3>
-              <p style="color: #a1a1aa; font-size: 0.9rem; margin: 0;">
-                Never. Nothing is uploaded. All computation happens locally in your device's browser memory.
-              </p>
-            </article>
-          </div>
-        </section>
-
-        <footer style="border-top: 1px solid #27272a; padding-top: 1rem; font-size: 0.85rem; color: #71717a;">
-          <p style="margin: 0 0 0.5rem 0;">
-            <a href="https://monotranscoder.runs-on.dev/privacy" style="color: #a1a1aa; text-decoration: underline; margin-right: 1rem;">Privacy Policy</a>
-            <a href="https://monotranscoder.runs-on.dev/terms" style="color: #a1a1aa; text-decoration: underline;">Terms of Service</a>
-          </p>
-          <p style="margin: 0; color: #a1a1aa;">
-            Note: Enable JavaScript in your browser to run the interactive file tools.
-          </p>
-        </footer>
-      </div>
-    </noscript>
+  <body>
     <div id="root"></div>
+
+    <!-- Pre-rendered semantic fallback content for search crawlers & non-JS environments -->
+    <noscript>
+      <main style="max-width: 960px; margin: 0 auto; padding: 2rem; font-family: monospace; line-height: 1.6;">
+        <h1>MONO-TRANSCODER — Private, Browser-Based PDF &amp; Image Tools</h1>
+        <p>
+          Process sensitive contracts, ID scans, passport photos, and academic documents directly inside your web browser.
+          All 20 utilities run locally on your device—<strong>your documents and photos never leave your device</strong>.
+        </p>
+
+        <h2>All 20 Local-First Tools &amp; Size Presets</h2>
+        <ul>
+          <li><a href="/compress-image"><strong>Compress Image to Exact KB</strong></a> — Binary-search image compression for JPG, PNG, and WebP with Min–Max KB windows.</li>
+          <li><a href="/compress-image-to-20kb"><strong>Compress Image to 20KB</strong></a> — Pre-set 20 KB target for signatures and exam portals.</li>
+          <li><a href="/compress-image-to-50kb"><strong>Compress Image to 50KB</strong></a> — Pre-set 50 KB target for passport and ID uploads.</li>
+          <li><a href="/compress-image-to-100kb"><strong>Compress Image to 100KB</strong></a> — Pre-set 100 KB target for high-clarity portraits and forms.</li>
+          <li><a href="/compress-image-to-200kb"><strong>Compress Image to 200KB</strong></a> — Pre-set 200 KB target for scanned certificates.</li>
+          <li><a href="/merge-pdf"><strong>Merge PDF</strong></a> — Combine multiple PDF files into one document locally.</li>
+          <li><a href="/split-pdf"><strong>Split PDF</strong></a> — Extract specific pages or split PDFs into individual files.</li>
+          <li><a href="/compress-pdf"><strong>Compress PDF</strong></a> — Shrink PDF file sizes for email and web portals.</li>
+          <li><a href="/sign-pdf"><strong>Sign PDF</strong></a> — Stamp drawn, typed, or uploaded visual signatures onto PDF pages.</li>
+          <li><a href="/lock-pdf"><strong>Lock PDF</strong></a> — Apply basic standard PDF RC4-128 password protection locally.</li>
+          <li><a href="/unlock-pdf"><strong>Unlock PDF</strong></a> — Strip known passwords from protected PDF documents.</li>
+          <li><a href="/rotate-pdf"><strong>Rotate PDF</strong></a> — Permanently rotate sideways or upside-down PDF pages.</li>
+          <li><a href="/watermark-pdf"><strong>Watermark PDF</strong></a> — Stamp custom diagonal or tiled text watermarks across PDFs.</li>
+          <li><a href="/page-numbers-pdf"><strong>Page Numbers PDF</strong></a> — Add headers, footers, or Bates page numbering to PDFs.</li>
+          <li><a href="/reorder-pdf"><strong>Reorder PDF</strong></a> — Visually rearrange or delete pages inside a PDF file.</li>
+          <li><a href="/extract-pdf-images"><strong>Extract PDF Images</strong></a> — Export images from PDF documents as PNG or JPG.</li>
+          <li><a href="/jpg-to-pdf"><strong>JPG to PDF</strong></a> — Convert JPG, PNG, and WebP photos into formatted PDF documents.</li>
+          <li><a href="/pdf-to-jpg"><strong>PDF to JPG</strong></a> — Render PDF pages as high-resolution JPG or PNG images.</li>
+          <li><a href="/word-to-pdf"><strong>Word to PDF</strong></a> — Basic local conversion of .docx documents to PDF.</li>
+          <li><a href="/pdf-to-word"><strong>PDF to Word</strong></a> — Extract selectable text from PDFs into editable .docx files.</li>
+          <li><a href="/excel-to-pdf"><strong>Excel to PDF</strong></a> — Basic local conversion of .xlsx and .csv spreadsheets to PDF tables.</li>
+          <li><a href="/ppt-to-pdf"><strong>PPT to PDF</strong></a> — Basic local conversion of .pptx slide decks into PDF handouts.</li>
+          <li><a href="/word-to-jpg"><strong>Word to Image</strong></a> — Render Word .docx pages as high-resolution images.</li>
+          <li><a href="/passport-photo-maker"><strong>Passport Photo Maker</strong></a> — Crop biometric passport and visa photos (2x2", 35x45mm) with printable sheets.</li>
+        </ul>
+
+        <p>
+          <a href="/privacy">Privacy Policy</a> |
+          <a href="/terms">Terms of Service</a> |
+          <a href="/donate">Support Project</a>
+        </p>
+      </main>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

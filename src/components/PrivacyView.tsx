@@ -14,7 +14,7 @@ const PRIVACY_SECTIONS = [
   {
     title: "1. 100% LOCAL CLIENT-SIDE DOCUMENT & IMAGE PROCESSING",
     content:
-      "All file operations across our 18 tools—including Sign PDF, Compress Image, Compress PDF, Convert Image Format, Image to PDF, Merge PDF, PDF to Images, Remove PDF Pages, Organize PDF Pages, Watermark PDF, Word to PDF, Word to JPG, PDF to Word, Excel to PDF, PDF to Excel, PowerPoint to PDF, PDF to PowerPoint, Lock PDF, Unlock PDF, and Passport Photo Maker—execute strictly inside your local browser sandbox using WebAssembly, HTML5 Canvas APIs, PDF.js, and client-side OpenXML engines. Your documents, spreadsheets, presentations, and photos are never uploaded to any external server.",
+      "All file operations across our 20 tools—including Sign PDF, Compress Image, Compress PDF, Convert Image Format, Image to PDF, Merge PDF, PDF to Images, Remove PDF Pages, Organize PDF Pages, Watermark PDF, Word to PDF, Word to Image, PDF to Word, Excel to PDF, PDF to Excel, PowerPoint to PDF, PDF to PowerPoint, Lock PDF, Unlock PDF, and Passport Photo Maker—execute strictly inside your local browser sandbox using HTML5 Canvas APIs, PDF.js, pdf-lib, and client-side OpenXML engines. Your documents, spreadsheets, presentations, and photos never leave your device.",
   },
   {
     title: "2. OPTIONAL GOOGLE SIGN-IN & CLOUD SIGNATURE SYNC",

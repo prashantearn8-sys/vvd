@@ -21,7 +21,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface WordToPdfViewProps {
@@ -886,10 +885,10 @@ export default function WordToPdfView({ onSuccess, initialFile }: WordToPdfViewP
             id="word-to-pdf-heading"
             className="text-xl font-bold uppercase tracking-tight text-white font-sans"
           >
-            WORD TO PDF CONVERTER // WORD_TO_PDF.PRG
+            Word to PDF (Basic Local Conversion)
           </h1>
           <p className="text-xs text-zinc-400 font-mono">
-            Convert Word (.docx, .rtf, .txt) documents into clean, paginated PDF files directly in browser memory.
+            Basic client-side conversion of .docx, .rtf, and .txt files (paragraphs, headings, lists, tables, and embedded images). Complex Word layouts, floating frames, SmartArt, custom fonts, and macros are not supported, and non-Latin lines are rasterized as images.
           </p>
         </div>
       </div>
@@ -957,17 +956,6 @@ export default function WordToPdfView({ onSuccess, initialFile }: WordToPdfViewP
             SELECT_WORD_FILE
           </button>
         </div>
-      ) : isParsing || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="word_to_pdf"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={`${pageSize} PDF`}
-          statusMessage={
-            progressMsg ||
-            (isParsing ? "PARSING_OPENXML_ARCHIVE..." : "COMPILING_PDF_DOCUMENT...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Document Preview & Extracted Structure */}

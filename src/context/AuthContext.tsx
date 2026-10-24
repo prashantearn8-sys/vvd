@@ -4,25 +4,11 @@
  */
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import type { User } from "firebase/auth";
 import {
-  User,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut,
-} from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  writeBatch,
-  serverTimestamp,
-  onSnapshot,
-} from "firebase/firestore";
-import {
-  auth,
-  db,
-  googleProvider,
+  AUTH_SESSION_STORAGE_KEY,
+  getFirebaseServices,
+  hasStoredAuthSession,
   handleFirestoreError,
   OperationType,
 } from "../firebase";
@@ -61,8 +47,6 @@ interface AuthContextValue {
   isSigningIn: boolean;
   signInWithGoogle: () => Promise<void>;
   signOutUser: () => Promise<void>;
-  updateDisplayName: (newName: string) => Promise<void>;
-  toggleFavoriteTool: (toolId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -89,9 +73,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [privateInfo, setPrivateInfo] = useState<UserPrivateInfoData | null>(null);
-  const [isAuthReady, setIsAuthReady] = useState<boolean>(false);
+  const [isAuthReady, setIsAuthReady] = useState<boolean>(() => !hasStoredAuthSession());
   const [isSigningIn, setIsSigningIn] = useState<boolean>(false);
-  const { addToast } = useToast();
+  const { showToast: addToast } = useToast();
 
   // Ensure user documents exist in Firestore on sign-in
   const ensureUserRecords = useCallback(async (firebaseUser: User) => {
@@ -99,6 +83,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!uid || uid.length > UID_MAX_LENGTH || !UID_PATTERN.test(uid)) {
       return;
     }
+
+    const { db, firestoreMod } = await getFirebaseServices();
+    const { doc, getDoc, setDoc, updateDoc, writeBatch, serverTimestamp } = firestoreMod;
 
     const userDocPath = `users/${uid}`;
     const userDocRef = doc(db, "users", uid);
@@ -145,7 +132,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         }
 
-        // Ensure private email record exists if verified
         const privSnap = await getDoc(privateDocRef);
         const safeEmail = sanitizeEmail(firebaseUser.email);
         if (!privSnap.exists() && firebaseUser.emailVerified && safeEmail.length >= EMAIL_MIN_LENGTH) {
@@ -165,24 +151,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Track Firebase Auth state
+  // Only initialize Firebase Auth on boot if a previous session exists in storage
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        await ensureUserRecords(currentUser);
-        setUser(currentUser);
-        setIsAuthReady(true);
-      } else {
-        setUser(null);
-        setProfile(null);
-        setPrivateInfo(null);
-        setIsAuthReady(true);
-      }
+    if (!hasStoredAuthSession()) {
+      setIsAuthReady(true);
+      return;
+    }
+
+    let unsubscribe: (() => void) | null = null;
+    let cancelled = false;
+
+    void getFirebaseServices().then(({ auth, authMod }) => {
+      if (cancelled) return;
+      unsubscribe = authMod.onAuthStateChanged(auth, async (currentUser) => {
+        if (currentUser) {
+          try {
+            window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, "1");
+          } catch {
+            // ignore storage errors
+          }
+          await ensureUserRecords(currentUser);
+          setUser(currentUser);
+          setIsAuthReady(true);
+        } else {
+          try {
+            window.localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+          } catch {
+            // ignore storage errors
+          }
+          setUser(null);
+          setProfile(null);
+          setPrivateInfo(null);
+          setIsAuthReady(true);
+        }
+      });
     });
-    return () => unsubscribe();
+
+    return () => {
+      cancelled = true;
+      if (unsubscribe) unsubscribe();
+    };
   }, [ensureUserRecords]);
 
-  // Attach real-time listeners only when auth is ready and user is authenticated
+  // Attach real-time listeners only when user is authenticated
   useEffect(() => {
     if (!isAuthReady || !user) {
       setProfile(null);
@@ -195,44 +206,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const userDocPath = `users/${uid}`;
-    const privateDocPath = `users/${uid}/private/info`;
+    let unsubProfile: (() => void) | null = null;
+    let unsubPrivate: (() => void) | null = null;
+    let cancelled = false;
 
-    const unsubProfile = onSnapshot(
-      doc(db, "users", uid),
-      (snap) => {
-        if (snap.exists()) {
-          setProfile(snap.data() as UserProfileData);
-        }
-      },
-      (error) => {
-        try {
-          handleFirestoreError(error, OperationType.GET, userDocPath);
-        } catch {
-          // Handled and logged
-        }
-      }
-    );
+    void getFirebaseServices().then(({ db, firestoreMod }) => {
+      if (cancelled) return;
+      const { doc, onSnapshot } = firestoreMod;
+      const userDocPath = `users/${uid}`;
+      const privateDocPath = `users/${uid}/private/info`;
 
-    const unsubPrivate = onSnapshot(
-      doc(db, "users", uid, "private", "info"),
-      (snap) => {
-        if (snap.exists()) {
-          setPrivateInfo(snap.data() as UserPrivateInfoData);
+      unsubProfile = onSnapshot(
+        doc(db, "users", uid),
+        (snap) => {
+          if (snap.exists()) {
+            setProfile(snap.data() as UserProfileData);
+          }
+        },
+        (error) => {
+          try {
+            handleFirestoreError(error, OperationType.GET, userDocPath);
+          } catch {
+            // Handled and logged
+          }
         }
-      },
-      (error) => {
-        try {
-          handleFirestoreError(error, OperationType.GET, privateDocPath);
-        } catch {
-          // Handled and logged
+      );
+
+      unsubPrivate = onSnapshot(
+        doc(db, "users", uid, "private", "info"),
+        (snap) => {
+          if (snap.exists()) {
+            setPrivateInfo(snap.data() as UserPrivateInfoData);
+          }
+        },
+        (error) => {
+          try {
+            handleFirestoreError(error, OperationType.GET, privateDocPath);
+          } catch {
+            // Handled and logged
+          }
         }
-      }
-    );
+      );
+    });
 
     return () => {
-      unsubProfile();
-      unsubPrivate();
+      cancelled = true;
+      if (unsubProfile) unsubProfile();
+      if (unsubPrivate) unsubPrivate();
     };
   }, [isAuthReady, user]);
 
@@ -240,8 +260,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isSigningIn) return;
     setIsSigningIn(true);
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const { auth, googleProvider, authMod } = await getFirebaseServices();
+      const result = await authMod.signInWithPopup(auth, googleProvider);
       if (result.user) {
+        try {
+          window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, "1");
+        } catch {
+          // ignore storage errors
+        }
+        await ensureUserRecords(result.user);
+        setUser(result.user);
+        setIsAuthReady(true);
         addToast(
           `Signed in as ${result.user.displayName || result.user.email || "Operator"}`,
           "success"
@@ -257,65 +286,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsSigningIn(false);
     }
-  }, [isSigningIn, addToast]);
+  }, [isSigningIn, addToast, ensureUserRecords]);
 
   const signOutUser = useCallback(async () => {
     try {
-      await signOut(auth);
+      const { auth, authMod } = await getFirebaseServices();
+      await authMod.signOut(auth);
+      try {
+        window.localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+      } catch {
+        // ignore storage errors
+      }
+      setUser(null);
+      setProfile(null);
+      setPrivateInfo(null);
       addToast("Signed out of MONO-TRANSCODER", "info");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to sign out.";
       addToast(message, "error");
     }
   }, [addToast]);
-
-  const updateDisplayName = useCallback(
-    async (newName: string) => {
-      if (!user || !profile) return;
-      const sanitized = sanitizeDisplayName(newName);
-      const userDocPath = `users/${user.uid}`;
-      try {
-        await updateDoc(doc(db, "users", user.uid), {
-          displayName: sanitized,
-          photoURL: sanitizePhotoURL(profile.photoURL),
-          favoriteTools: (profile.favoriteTools || "").slice(0, FAVORITE_TOOLS_MAX_LENGTH),
-          updatedAt: serverTimestamp(),
-        });
-        addToast("Display name updated", "success");
-      } catch (error) {
-        handleFirestoreError(error, OperationType.UPDATE, userDocPath);
-      }
-    },
-    [user, profile, addToast]
-  );
-
-  const toggleFavoriteTool = useCallback(
-    async (toolId: string) => {
-      if (!user || !profile) return;
-      const currentList = (profile.favoriteTools || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      const exists = currentList.includes(toolId);
-      const nextList = exists
-        ? currentList.filter((id) => id !== toolId)
-        : [...currentList, toolId];
-      const serialized = nextList.join(",").slice(0, FAVORITE_TOOLS_MAX_LENGTH);
-
-      const userDocPath = `users/${user.uid}`;
-      try {
-        await updateDoc(doc(db, "users", user.uid), {
-          displayName: sanitizeDisplayName(profile.displayName),
-          photoURL: sanitizePhotoURL(profile.photoURL),
-          favoriteTools: serialized,
-          updatedAt: serverTimestamp(),
-        });
-      } catch (error) {
-        handleFirestoreError(error, OperationType.UPDATE, userDocPath);
-      }
-    },
-    [user, profile]
-  );
 
   return (
     <AuthContext.Provider
@@ -327,8 +317,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isSigningIn,
         signInWithGoogle,
         signOutUser,
-        updateDisplayName,
-        toggleFavoriteTool,
       }}
     >
       {children}

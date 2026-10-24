@@ -13,7 +13,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface ImageToPdfViewProps {
@@ -312,14 +311,6 @@ export default function ImageToPdfView({ onSuccess, initialFiles }: ImageToPdfVi
             </button>
           </div>
         </div>
-      ) : isProcessing ? (
-        <ToolSkeletonLoader
-          variant="image_to_pdf"
-          fileCount={items.length}
-          fileSize={formatBytes(items.reduce((acc, it) => acc + it.file.size, 0))}
-          targetInfo={`${items.length} PAGES -> PDF`}
-          statusMessage={`ASSEMBLING_${items.length}_PAGES_INTO_PDF...`}
-        />
       ) : (
         <div className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-2">

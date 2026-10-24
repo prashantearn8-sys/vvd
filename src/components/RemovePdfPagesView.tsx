@@ -22,7 +22,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface RemovePdfPagesViewProps {
@@ -592,22 +591,6 @@ export default function RemovePdfPagesView({
             SELECT_PDF_FILE
           </button>
         </div>
-      ) : isProcessing || isLoadingPages ? (
-        <ToolSkeletonLoader
-          variant="remove_pdf_pages"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          fileCount={totalPages || 4}
-          targetInfo={
-            pagesToRemove.size > 0
-              ? `REMOVE ${pagesToRemove.size} OF ${totalPages} PAGES`
-              : "LOADING_PAGE_TREE"
-          }
-          statusMessage={
-            progressMsg ||
-            (isLoadingPages ? "LOADING_PDF_PAGE_PREVIEWS..." : "REMOVING_SELECTED_PAGES...")
-          }
-        />
       ) : (
         <div className="space-y-6">
           {/* Top Control Bar & Document Telemetry */}

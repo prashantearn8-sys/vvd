@@ -4,39 +4,60 @@
  */
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import { Image as ImageIcon, FolderOpen, Zap, Sparkles, UploadCloud } from "lucide-react";
+import { FolderOpen, Zap, Sparkles, UploadCloud } from "lucide-react";
 import { ImageFormat } from "../types";
-import { formatBytes, compressToTargetSizeKB, processImageClientSide, processImageLossless, normalizeSupportedEncodeFormat, yieldFrame } from "../utils/imageProcessor";
+import {
+  formatBytes,
+  compressToTargetSizeKB,
+  processImageClientSide,
+  processImageLossless,
+  normalizeSupportedEncodeFormat,
+  yieldFrame,
+} from "../utils/imageProcessor";
 import { saveFile } from "../utils/db";
 import { createTrackedObjectURL, revokeTrackedObjectURL } from "../utils/urlTracker";
 import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface CompressImgViewProps {
   onSuccess: () => void;
   showToast?: (msg: string) => void;
   initialFile?: File | null;
+  initialTargetKB?: number;
 }
 
-function getDefaultTargetKB(fileSizeBytes: number): number {
-  const fileKB = fileSizeBytes / 1024;
-  if (fileKB < 200) {
-    return Math.max(1, Math.round(fileKB * 0.3));
+const PRESET_KB_CHIPS = [20, 50, 100, 200] as const;
+
+function getDefaultTargetKB(fileSizeBytes: number, initialPreset?: number): number {
+  if (initialPreset && initialPreset > 0) {
+    return initialPreset;
   }
-  return 200;
+  const fileKB = fileSizeBytes / 1024;
+  if (fileKB <= 60) {
+    return 20;
+  }
+  if (fileKB <= 140) {
+    return 50;
+  }
+  return 100;
 }
 
-export default function CompressImgView({ onSuccess, initialFile }: CompressImgViewProps) {
+export default function CompressImgView({
+  onSuccess,
+  initialFile,
+  initialTargetKB,
+}: CompressImgViewProps) {
   const { showToast } = useToast();
   const { registerDropHandler } = useFileDrop();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [compressLevel, setCompressLevel] = useState<"lossless" | "light" | "balanced" | "maximum">("balanced");
-  const [targetKB, setTargetKB] = useState<number>(200);
+  const [targetKB, setTargetKB] = useState<number>(initialTargetKB || 50);
+  const [minKB, setMinKB] = useState<number>(20);
+  const [useMinMaxRange, setUseMinMaxRange] = useState<boolean>(false);
   const [useNumerical, setUseNumerical] = useState<boolean>(true);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
@@ -44,26 +65,39 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string>("");
 
-  const validateAndSetupFile = useCallback((selectedFile: File) => {
-    const isImageMime = selectedFile.type.startsWith("image/");
-    const validExts = [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".avif", ".svg"];
-    const hasValidExt = validExts.some((ext) => selectedFile.name.toLowerCase().endsWith(ext));
-
-    if (!isImageMime && !hasValidExt) {
-      showToast(`Invalid file type: ${selectedFile.name}. Please select a valid image file.`, "error");
-      return;
+  useEffect(() => {
+    if (initialTargetKB && initialTargetKB > 0) {
+      setUseNumerical(true);
+      setTargetKB(initialTargetKB);
+      setMinKB(Math.max(1, Math.round(initialTargetKB * 0.4)));
     }
+  }, [initialTargetKB]);
 
-    if (previewUrlRef.current) {
-      revokeTrackedObjectURL(previewUrlRef.current);
-    }
+  const validateAndSetupFile = useCallback(
+    (selectedFile: File) => {
+      const isImageMime = selectedFile.type.startsWith("image/");
+      const validExts = [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".avif", ".svg"];
+      const hasValidExt = validExts.some((ext) => selectedFile.name.toLowerCase().endsWith(ext));
 
-    setFile(selectedFile);
-    const url = createTrackedObjectURL(selectedFile);
-    previewUrlRef.current = url;
-    setPreviewUrl(url);
-    setTargetKB(getDefaultTargetKB(selectedFile.size));
-  }, [showToast]);
+      if (!isImageMime && !hasValidExt) {
+        showToast(`Invalid file type: ${selectedFile.name}. Please select a valid image file.`, "error");
+        return;
+      }
+
+      if (previewUrlRef.current) {
+        revokeTrackedObjectURL(previewUrlRef.current);
+      }
+
+      setFile(selectedFile);
+      const url = createTrackedObjectURL(selectedFile);
+      previewUrlRef.current = url;
+      setPreviewUrl(url);
+      const nextTarget = getDefaultTargetKB(selectedFile.size, initialTargetKB);
+      setTargetKB(nextTarget);
+      setMinKB(Math.max(1, Math.round(nextTarget * 0.4)));
+    },
+    [showToast, initialTargetKB]
+  );
 
   // Handle initialFile prop from global drop router
   useEffect(() => {
@@ -101,7 +135,7 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
     }
     setFile(null);
     setPreviewUrl("");
-    setTargetKB(200);
+    setTargetKB(initialTargetKB || 50);
     setIsProcessing(false);
   };
 
@@ -116,16 +150,20 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
       let res;
 
       if (useNumerical) {
-        res = await compressToTargetSizeKB(file, targetKB, targetFmt);
+        const effectiveMaxKB = Math.max(1, targetKB || 50);
+        const effectiveMinKB =
+          useMinMaxRange && minKB > 0 && minKB < effectiveMaxKB ? minKB : undefined;
+        res = await compressToTargetSizeKB(
+          file,
+          effectiveMaxKB,
+          targetFmt,
+          undefined,
+          effectiveMinKB
+        );
       } else if (compressLevel === "lossless") {
-        // Lossless: strips metadata, preserves 100% resolution & visual bit integrity
         res = await processImageLossless(file, targetFmt);
       } else {
-        // Quality mapping:
-        // "light": LESS compression, HIGHEST quality, larger file
-        // "balanced": MODERATE compression
-        // "maximum": MOST compression, LOWEST quality, smallest file
-        const qualityMap = { light: 0.90, balanced: 0.70, maximum: 0.45 };
+        const qualityMap = { light: 0.9, balanced: 0.7, maximum: 0.45 };
         const scaleMap = { light: 1.0, balanced: 0.85, maximum: 0.55 };
 
         const q = qualityMap[compressLevel];
@@ -145,9 +183,20 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
           format: res.format,
           originalName: sanitizeFilename(file.name),
           originalSize: file.size,
+          targetKB: res.targetKB,
+          minKB: res.minKB,
+          hitTarget: res.hitTarget,
+          statusNote: res.statusNote,
         });
 
-        showToast("Image compression completed successfully.", "success");
+        if (res.statusNote) {
+          showToast(res.statusNote, res.hitTarget === false ? "info" : "success");
+        } else {
+          showToast(
+            `Compressed to ${(blob.size / 1024).toFixed(1)} KB successfully.`,
+            "success"
+          );
+        }
         onSuccess();
       }
     } catch (err: any) {
@@ -158,18 +207,18 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
     }
   };
 
-  const maxKB = file ? Math.max(1, Math.round(file.size / 1024)) : 1000;
-  const minKB = maxKB < 20 ? 1 : 5;
+  const maxKB = file ? Math.max(10, Math.round(file.size / 1024)) : 1000;
+  const sliderMinKB = maxKB < 20 ? 1 : 5;
 
   return (
     <section className="space-y-6 animate-fade-in" id="compress-img-view" aria-labelledby="compress-img-heading">
       <div className="border-b-2 border-zinc-800 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 id="compress-img-heading" className="text-xl font-bold uppercase tracking-tight text-white font-sans">
-            COMPRESS IMAGE // COMPRESS_IMG.PRG
+            Compress Image{initialTargetKB ? ` to ${initialTargetKB}KB` : ""}
           </h1>
           <p className="text-xs text-zinc-400 font-mono">
-            Optimizes image binary grids down to custom quality boundaries completely inside your client sandbox.
+            Binary-searches quality and dimensions in local browser memory to hit exact KB targets (20KB, 50KB, 100KB) or min–max portal limits.
           </p>
         </div>
       </div>
@@ -220,7 +269,7 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
             <ModuleIconBadge view="compress_img" size="lg" />
           </div>
           <h3 className="font-sans font-bold text-base uppercase mb-1 text-white">
-            DRAG & DROP, BROWSE, OR PASTE (CTRL+V) YOUR IMAGE
+            DRAG &amp; DROP, BROWSE, OR PASTE (CTRL+V) YOUR IMAGE
           </h3>
           <p className="text-[11px] text-zinc-400 font-mono max-w-sm mx-auto mb-4 uppercase">
             Supports JPEG, PNG, WEBP, and BMP. Paste screenshots directly from your clipboard.
@@ -234,17 +283,9 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
             className="px-4 py-2 bg-white text-black font-mono font-bold text-xs uppercase hover:bg-zinc-200 transition-all shadow-[2px_2px_0px_0px_#ffffff] cursor-pointer rounded"
             aria-label="Select Image"
           >
-            SELECT_IMAGE
+            SELECT IMAGE
           </button>
         </div>
-      ) : isProcessing ? (
-        <ToolSkeletonLoader
-          variant="compress_img"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={useNumerical ? `${targetKB} KB TARGET` : `${compressLevel.toUpperCase()} PRESET`}
-          statusMessage="QUANTIZING_IMAGE_BITSTREAM..."
-        />
       ) : (
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Source preview */}
@@ -267,9 +308,9 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
               }`}
             >
               <div className="bg-zinc-900 border-b-2 border-zinc-800 px-4 py-2.5 flex items-center justify-between text-xs font-mono font-bold text-white">
-                <span>👁️ SOURCE_FILE_PREVIEW.DAT</span>
+                <span>SOURCE IMAGE PREVIEW</span>
                 <span className="text-[9px] text-zinc-400 font-normal uppercase">
-                  {isDragOver ? "● DROP TO REPLACE" : "● QUEUED"}
+                  {isDragOver ? "● DROP TO REPLACE" : "● READY"}
                 </span>
               </div>
               <div className="p-6 overflow-auto flex flex-col items-center justify-center bg-zinc-900 min-h-[250px] relative">
@@ -281,7 +322,7 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
                 />
                 <div className="mt-3 text-[10px] font-mono text-zinc-400 flex items-center gap-1.5">
                   <UploadCloud className="w-3.5 h-3.5" />
-                  <span>Drag & drop another image anywhere to replace</span>
+                  <span>Drag &amp; drop another image anywhere to replace</span>
                 </div>
               </div>
             </div>
@@ -291,7 +332,7 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
           <div className="bg-zinc-950 border-2 border-zinc-800 rounded-xl p-6 space-y-6">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <h3 className="font-mono font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 text-white">
-                <FolderOpen className="w-4 h-4" /> PARAMETERS.CFG
+                <FolderOpen className="w-4 h-4" /> COMPRESSION SETTINGS
               </h3>
               <button
                 type="button"
@@ -299,7 +340,7 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
                 className="text-[10px] font-mono font-bold uppercase underline hover:text-red-400 cursor-pointer text-zinc-400"
                 aria-label="Change current file"
               >
-                [CHANGE_FILE]
+                [CHANGE FILE]
               </button>
             </div>
 
@@ -307,13 +348,13 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
               {/* File Info */}
               <div className="bg-black border-2 border-zinc-800 p-4 rounded-lg space-y-2 text-xs font-mono flex flex-col justify-center">
                 <div className="flex justify-between border-b border-zinc-800 pb-1.5">
-                  <span className="text-zinc-400">FILE_NAME:</span>
-                  <strong className="truncate max-w-[150px] text-emerald-400 font-bold" title={file.name}>
+                  <span className="text-zinc-400">FILE NAME:</span>
+                  <strong className="truncate max-w-[160px] text-emerald-400 font-bold" title={file.name}>
                     {file.name}
                   </strong>
                 </div>
                 <div className="flex justify-between border-b border-zinc-800 pb-1.5">
-                  <span className="text-zinc-400">FILE_SIZE:</span>
+                  <span className="text-zinc-400">ORIGINAL SIZE:</span>
                   <strong className="text-amber-400 font-bold">{formatBytes(file.size)}</strong>
                 </div>
                 <div className="flex justify-between">
@@ -322,13 +363,13 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
                 </div>
               </div>
 
-              {/* Slider & Actions */}
+              {/* Target KB / Preset Controls */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-2 border-b border-zinc-800 pb-2">
                   <button
                     type="button"
                     onClick={() => setUseNumerical(true)}
-                    className={`text-[10px] font-mono font-bold uppercase px-2.5 py-1 rounded transition-colors ${
+                    className={`text-[10px] font-mono font-bold uppercase px-2.5 py-1 rounded transition-colors cursor-pointer ${
                       useNumerical ? "bg-white text-black" : "text-zinc-400 hover:text-white"
                     }`}
                   >
@@ -337,7 +378,7 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
                   <button
                     type="button"
                     onClick={() => setUseNumerical(false)}
-                    className={`text-[10px] font-mono font-bold uppercase px-2.5 py-1 rounded transition-colors ${
+                    className={`text-[10px] font-mono font-bold uppercase px-2.5 py-1 rounded transition-colors cursor-pointer ${
                       !useNumerical ? "bg-white text-black" : "text-zinc-400 hover:text-white"
                     }`}
                   >
@@ -347,46 +388,157 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
 
                 {useNumerical ? (
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <label className="text-xs font-bold font-mono text-zinc-400 uppercase">
-                        TARGET WEIGHT:
-                      </label>
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="number"
-                          min="1"
-                          max={maxKB}
-                          value={targetKB || ""}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (e.target.value === "") {
-                              setTargetKB(0);
-                            } else if (!isNaN(val)) {
-                              setTargetKB(Math.min(maxKB, Math.max(1, val)));
-                            }
+                    {/* Quick Preset Chips: 20KB, 50KB, 100KB, 200KB */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-bold uppercase text-zinc-400">
+                          QUICK PORTAL PRESETS:
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUseMinMaxRange((prev) => {
+                              const next = !prev;
+                              if (next && minKB >= targetKB) {
+                                setMinKB(Math.max(1, Math.round(targetKB * 0.4)));
+                              }
+                              return next;
+                            });
                           }}
-                          onBlur={() => {
-                            if (!targetKB || targetKB < 1) {
-                              setTargetKB(file ? getDefaultTargetKB(file.size) : 200);
-                            }
-                          }}
-                          className="w-20 px-2 py-0.5 text-right font-mono font-bold border-2 border-zinc-700 bg-black text-white text-xs outline-none focus:border-white rounded"
-                          aria-label="Target image weight in kilobytes"
-                        />
-                        <span className="text-xs font-mono font-bold text-zinc-400">KB</span>
+                          className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded border cursor-pointer transition-colors ${
+                            useMinMaxRange
+                              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/50"
+                              : "bg-zinc-900 text-zinc-400 border-zinc-700 hover:text-white"
+                          }`}
+                        >
+                          {useMinMaxRange ? "MIN–MAX RANGE: ON" : "MIN–MAX RANGE: OFF"}
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {PRESET_KB_CHIPS.map((chipKB) => {
+                          const isSelected = targetKB === chipKB && !useMinMaxRange;
+                          return (
+                            <button
+                              key={chipKB}
+                              type="button"
+                              onClick={() => {
+                                setTargetKB(chipKB);
+                                if (useMinMaxRange && minKB >= chipKB) {
+                                  setMinKB(Math.max(1, Math.round(chipKB * 0.4)));
+                                }
+                              }}
+                              className={`py-1.5 text-[11px] font-mono font-bold uppercase rounded border transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-white text-black border-white"
+                                  : "bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-zinc-500"
+                              }`}
+                            >
+                              {chipKB} KB
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    <input
-                      type="range"
-                      min={minKB}
-                      max={maxKB}
-                      step={maxKB < 50 ? "1" : "5"}
-                      value={Math.min(maxKB, Math.max(minKB, targetKB || minKB))}
-                      onChange={(e) => setTargetKB(parseInt(e.target.value))}
-                      className="w-full accent-white h-1 bg-zinc-800 cursor-pointer"
-                      aria-label="Adjust target image file size"
-                    />
+                    {useMinMaxRange ? (
+                      <div className="grid grid-cols-2 gap-2.5 pt-1">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold font-mono text-zinc-400 uppercase block">
+                            MIN SIZE (KB):
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            max={Math.max(1, targetKB - 1)}
+                            value={minKB || ""}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              if (e.target.value === "") {
+                                setMinKB(0);
+                              } else if (!isNaN(val)) {
+                                setMinKB(Math.max(1, Math.min(Math.max(1, targetKB - 1), val)));
+                              }
+                            }}
+                            onBlur={() => {
+                              if (!minKB || minKB < 1 || minKB >= targetKB) {
+                                setMinKB(Math.max(1, Math.round((targetKB || 50) * 0.4)));
+                              }
+                            }}
+                            className="w-full px-2.5 py-1.5 font-mono font-bold border-2 border-zinc-700 bg-black text-white text-xs outline-none focus:border-white rounded"
+                            aria-label="Minimum image size in kilobytes"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold font-mono text-zinc-400 uppercase block">
+                            MAX SIZE (KB):
+                          </label>
+                          <input
+                            type="number"
+                            min={Math.max(2, minKB + 1)}
+                            max={maxKB}
+                            value={targetKB || ""}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              if (e.target.value === "") {
+                                setTargetKB(0);
+                              } else if (!isNaN(val)) {
+                                setTargetKB(Math.max(2, val));
+                              }
+                            }}
+                            onBlur={() => {
+                              if (!targetKB || targetKB <= minKB) {
+                                setTargetKB(Math.max(minKB + 10, 50));
+                              }
+                            }}
+                            className="w-full px-2.5 py-1.5 font-mono font-bold border-2 border-zinc-700 bg-black text-white text-xs outline-none focus:border-white rounded"
+                            aria-label="Maximum image size in kilobytes"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <label className="text-xs font-bold font-mono text-zinc-400 uppercase">
+                            TARGET MAX SIZE:
+                          </label>
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="number"
+                              min="1"
+                              max={maxKB}
+                              value={targetKB || ""}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value, 10);
+                                if (e.target.value === "") {
+                                  setTargetKB(0);
+                                } else if (!isNaN(val)) {
+                                  setTargetKB(Math.max(1, val));
+                                }
+                              }}
+                              onBlur={() => {
+                                if (!targetKB || targetKB < 1) {
+                                  setTargetKB(50);
+                                }
+                              }}
+                              className="w-20 px-2 py-0.5 text-right font-mono font-bold border-2 border-zinc-700 bg-black text-white text-xs outline-none focus:border-white rounded"
+                              aria-label="Target image weight in kilobytes"
+                            />
+                            <span className="text-xs font-mono font-bold text-zinc-400">KB</span>
+                          </div>
+                        </div>
+
+                        <input
+                          type="range"
+                          min={sliderMinKB}
+                          max={maxKB}
+                          step={maxKB < 50 ? "1" : "5"}
+                          value={Math.min(maxKB, Math.max(sliderMinKB, targetKB || sliderMinKB))}
+                          onChange={(e) => setTargetKB(parseInt(e.target.value, 10))}
+                          className="w-full accent-white h-1 bg-zinc-800 cursor-pointer"
+                          aria-label="Adjust target image file size"
+                        />
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -399,7 +551,7 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
                           key={lvl}
                           type="button"
                           onClick={() => setCompressLevel(lvl)}
-                          className={`py-2 text-[9px] font-mono font-bold uppercase rounded border transition-all ${
+                          className={`py-2 text-[9px] font-mono font-bold uppercase rounded border transition-all cursor-pointer ${
                             compressLevel === lvl
                               ? "bg-white text-black border-white"
                               : "bg-zinc-900 text-zinc-300 border-zinc-700 hover:border-zinc-500"
@@ -437,7 +589,7 @@ export default function CompressImgView({ onSuccess, initialFile }: CompressImgV
                       ) : (
                         <Zap className="w-4 h-4" />
                       )}
-                      <span>COMPRESS FILE NOW</span>
+                      <span>COMPRESS IMAGE NOW</span>
                     </>
                   )}
                 </button>

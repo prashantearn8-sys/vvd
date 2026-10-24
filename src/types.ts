@@ -59,4 +59,8 @@ export interface ImageProcessResult {
   height: number;
   format: ImageFormat;
   blob: Blob;
+  targetKB?: number;
+  minKB?: number;
+  hitTarget?: boolean;
+  statusNote?: string;
 }

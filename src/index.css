@@ -1,26 +1,11 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: "Space Grotesk";
-  src: url("/fonts/space-grotesk.woff2") format("woff2");
-  font-weight: 300 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "JetBrains Mono";
-  src: url("/fonts/jetbrains-mono.woff2") format("woff2");
-  font-weight: 100 800;
-  font-style: normal;
-  font-display: swap;
-}
-
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-sans: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --color-white: #faf3e3;
 
   --animate-fade-in: fade-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-slide-up: slide-up 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -95,8 +80,8 @@
       radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.07), transparent 35%),
       radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.07), transparent 35%),
       radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.06), transparent 40%),
-      linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+      linear-gradient(to right, rgba(250, 243, 227, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(250, 243, 227, 0.03) 1px, transparent 1px);
   }
   
   .dark .retro-grid-bg {
@@ -105,8 +90,8 @@
       radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.07), transparent 35%),
       radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.07), transparent 35%),
       radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.06), transparent 40%),
-      linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+      linear-gradient(to right, rgba(250, 243, 227, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(250, 243, 227, 0.03) 1px, transparent 1px);
   }
 
   .pixel-borders {
@@ -191,73 +176,73 @@ select {
 }
 
 /* ============================================================================
-   ELEGANT CREAMY WHITE LIGHT THEME PALETTE & SURFACE SYSTEM
+   SOFT OFF-WHITE BACKGROUND + BRIGHT CREAMY WHITE FOREGROUND LIGHT THEME
    ============================================================================ */
 
-/* 1. Base Canvas & Page Background */
+/* 1. Base Canvas & Page Background (Subtle Soft Off-White, not overly dull) */
 html.light,
 html.light body,
 html.light #application-root {
-  background-color: #f2ece1 !important; /* Warm Alabaster / Creamy Linen canvas */
+  background-color: #f5f3ee !important; /* Clean, bright soft off-white canvas */
   color: #1c1917 !important; /* Deep Espresso Stone Ink */
 }
 
-/* 2. Elevated Card & Container Surfaces (Little Creamy White instead of pure white) */
+/* 2. Elevated Card & Container Surfaces (Bright Creamy White) */
 html.light .bg-black {
-  background-color: #faf6ee !important; /* Soft Creamy White card surface */
+  background-color: #fdfbf7 !important; /* Bright Creamy White card surface */
   color: #1c1917 !important;
 }
 
 html.light .bg-white:not(.text-black) {
-  background-color: #faf6ee !important; /* Creamy White for standalone white containers */
+  background-color: #fdfbf7 !important; /* Bright Creamy White for standalone white containers */
 }
 
 html.light .bg-zinc-950 {
-  background-color: #f5efe4 !important; /* Soft Warm Cream Parchment panel */
+  background-color: #f8f5ef !important; /* Soft Warm Cream panel */
   color: #1c1917 !important;
 }
 
 html.light .bg-zinc-900 {
-  background-color: #ebe4d6 !important; /* Warm Sand recessed surface / button */
+  background-color: #efeae0 !important; /* Subtle Warm recessed surface / button */
   color: #1c1917 !important;
 }
 
 html.light .bg-zinc-800 {
-  background-color: #dfd7c6 !important; /* Deeper Warm Sand */
+  background-color: #e4ded2 !important; /* Soft Warm Sand */
   color: #1c1917 !important;
 }
 
 html.light .bg-zinc-900\/98,
 html.light .bg-black\/95 {
-  background-color: rgba(250, 246, 238, 0.96) !important;
+  background-color: rgba(253, 251, 247, 0.96) !important;
 }
 
 /* 3. Translucent Alert & Status Surfaces */
 html.light [class*="bg-red-950"] {
-  background-color: #faf0ee !important;
+  background-color: #fcf2f0 !important;
   border-color: #f87171 !important;
 }
 
 html.light [class*="bg-emerald-950"] {
-  background-color: #eef6f1 !important;
+  background-color: #f0f9f4 !important;
   border-color: #34d399 !important;
 }
 
 html.light [class*="bg-amber-950"] {
-  background-color: #faf4e4 !important;
+  background-color: #fcf7ea !important;
   border-color: #fbbf24 !important;
 }
 
 html.light [class*="bg-zinc-900/"],
 html.light [class*="bg-zinc-950/"] {
-  background-color: #efe9de !important;
+  background-color: #f2ede3 !important;
 }
 
 /* 4. Borders & Dividers */
 html.light .border-zinc-800,
 html.light .border-zinc-700,
 html.light .border-zinc-600 {
-  border-color: #d5cfc2 !important; /* Warm Stone border */
+  border-color: #dcd6c8 !important; /* Clean warm border */
 }
 
 html.light .border-black,
@@ -288,20 +273,20 @@ html.light .text-zinc-600 {
 /* 6. Primary Inverted CTAs, Active Tabs & Launch Buttons (.bg-white.text-black) */
 html.light .bg-white.text-black {
   background-color: #1c1917 !important; /* Deep Espresso Charcoal button */
-  color: #faf6ee !important; /* Creamy White text */
+  color: #fdfbf7 !important; /* Creamy White text */
   border-color: #1c1917 !important;
 }
 
 html.light .bg-white.text-black:hover,
 html.light .group:hover .group-hover\:bg-zinc-200.bg-white.text-black {
   background-color: #332e2a !important;
-  color: #faf6ee !important;
+  color: #fdfbf7 !important;
 }
 
 html.light .bg-white.text-black span,
 html.light .bg-white.text-black svg,
 html.light .bg-white.text-black div {
-  color: #faf6ee !important;
+  color: #fdfbf7 !important;
 }
 
 /* Keep amber highlights vivid inside selected preset cards */
@@ -312,7 +297,7 @@ html.light .bg-white.text-black .text-amber-600 {
 /* 7. Preserve Creamy White Icons/Text on Solid Colored Buttons & Module Icon Badges */
 html.light .bg-red-600 {
   background-color: #dc2626 !important;
-  color: #faf6ee !important;
+  color: #fdfbf7 !important;
   border-color: #b91c1c !important;
 }
 
@@ -320,7 +305,7 @@ html.light .bg-red-600 svg,
 html.light .bg-red-600 span,
 .module-icon-badge,
 .module-icon-badge svg {
-  color: #faf6ee !important;
+  color: #fdfbf7 !important;
 }
 
 html.light .bg-red-600:hover {
@@ -373,7 +358,7 @@ html.light .text-indigo-400 {
 
 /* 9. Tactile Brutalist Shadows Tuned for Light Theme */
 html.light .shadow-\[2px_2px_0_0_\#27272a\] {
-  box-shadow: 2px 2px 0 0 #d5cfc2 !important;
+  box-shadow: 2px 2px 0 0 #dcd6c8 !important;
 }
 
 html.light .hover\:shadow-\[3px_3px_0_0_\#ffffff\]:hover,
@@ -384,27 +369,27 @@ html.light .hover\:shadow-\[4px_4px_0_0_\#ffffff\]:hover {
 html.light .shadow-\[1px_1px_0_0_\#ffffff\],
 html.light .shadow-\[2px_2px_0_0_\#ffffff\],
 html.light .shadow-\[2px_2px_0px_0px_\#ffffff\] {
-  box-shadow: 2px 2px 0 0 #a8a090 !important;
+  box-shadow: 2px 2px 0 0 #b5ad9e !important;
 }
 
 html.light .shadow-\[3px_3px_0px_0px_\#ffffff\] {
-  box-shadow: 3px 3px 0 0 #a8a090 !important;
+  box-shadow: 3px 3px 0 0 #b5ad9e !important;
 }
 
 /* 10. Form Inputs, Selects & Textareas */
 html.light input,
 html.light textarea,
 html.light select {
-  background-color: #faf6ee !important;
+  background-color: #fdfbf7 !important; /* Bright Creamy White input surface */
   color: #1c1917 !important;
-  border-color: #c7bfb0 !important;
+  border-color: #d4cdc0 !important;
 }
 
 html.light input:focus,
 html.light textarea:focus,
 html.light select:focus {
   border-color: #1c1917 !important;
-  background-color: #fcf9f2 !important; /* Soft Creamy White on focus, never stark #ffffff */
+  background-color: #fefcf9 !important;
 }
 
 html.light input::placeholder,
@@ -414,28 +399,28 @@ html.light textarea::placeholder {
 
 /* 11. Structural Header, Navigation & Footer */
 html.light #site-header {
-  background-color: rgba(250, 246, 238, 0.96) !important;
+  background-color: rgba(253, 251, 247, 0.96) !important; /* Bright Creamy White header */
   border-bottom-color: #1c1917 !important;
 }
 
 html.light #tools-navigation {
-  background-color: #ebe4d6 !important;
+  background-color: #f3efe6 !important; /* Soft Warm White navigation bar */
   border-bottom-color: #1c1917 !important;
 }
 
 html.light #application-footer {
-  background-color: #ebe4d6 !important;
+  background-color: #f3efe6 !important; /* Soft Warm White footer */
   border-top-color: #1c1917 !important;
   color: #292524 !important;
 }
 
 /* 12. Interactive Hover States */
 html.light .hover\:bg-zinc-950:hover {
-  background-color: #fcf9f2 !important; /* Soft Creamy White on card hover, never stark #ffffff */
+  background-color: #fefcf9 !important;
 }
 
 html.light .hover\:bg-zinc-800:hover {
-  background-color: #dfd7c6 !important;
+  background-color: #e4ded2 !important;
 }
 
 html.light .hover\:border-white:hover,
@@ -445,36 +430,41 @@ html.light .hover\:border-zinc-500:hover {
 }
 
 /* ============================================================================
-   PURE Z-BLACK (100% NEUTRAL PITCH BLACK, ZERO BLUE TINT) DARK THEME PALETTE
+   DARK THEME PALETTE WITH CREAMY WHITE FOREGROUND & SOFT WHITE BUTTONS
    ============================================================================ */
 
-/* 1. Base Canvas & Page Background (True Z-Black #000000, zero blue tint) */
+/* 1. Base Canvas & Page Background */
 html.dark,
 html.dark body,
 html.dark #application-root {
-  background-color: #000000 !important; /* Pure Z-Black canvas */
-  color: #f5f5f5 !important; /* Crisp Neutral White ink */
+  background-color: #000000 !important;
+  color: #fdfbf7 !important; /* Bright Creamy White ink */
 }
 
-/* 2. Elevated Card & Container Surfaces (100% Neutral R=G=B Carbon Hierarchy) */
+/* 2. Elevated Card & Container Surfaces */
 html.dark .bg-black {
-  background-color: #080808 !important; /* Deep Z-Black card surface */
-  color: #f5f5f5 !important;
+  background-color: #080808 !important;
+  color: #fdfbf7 !important;
+}
+
+html.dark .bg-white:not(.text-black) {
+  background-color: #f4f1ea !important; /* Soft Off-White for standalone white surfaces */
+  color: #141210 !important;
 }
 
 html.dark .bg-zinc-950 {
-  background-color: #0e0e0e !important; /* Neutral Dark Carbon panel */
-  color: #f5f5f5 !important;
+  background-color: #0e0e0e !important;
+  color: #fdfbf7 !important;
 }
 
 html.dark .bg-zinc-900 {
-  background-color: #161616 !important; /* Neutral Graphite control surface */
-  color: #f5f5f5 !important;
+  background-color: #161616 !important;
+  color: #fdfbf7 !important;
 }
 
 html.dark .bg-zinc-800 {
-  background-color: #202020 !important; /* Elevated Neutral Graphite */
-  color: #f5f5f5 !important;
+  background-color: #202020 !important;
+  color: #fdfbf7 !important;
 }
 
 html.dark .bg-zinc-900\/98,
@@ -482,100 +472,100 @@ html.dark .bg-black\/95 {
   background-color: rgba(6, 6, 6, 0.96) !important;
 }
 
-/* 3. Borders & Dividers (100% Neutral Grayscale Lines, zero blue tint) */
+/* 3. Borders & Dividers */
 html.dark .border-zinc-800 {
-  border-color: #242424 !important; /* Crisp neutral dark border */
+  border-color: #242424 !important;
 }
 
 html.dark .border-zinc-700,
 html.dark .border-zinc-600 {
-  border-color: #333333 !important; /* Medium neutral border */
+  border-color: #333333 !important;
 }
 
 html.dark .border-black {
-  border-color: #1e1e1e !important; /* Structural section divider */
+  border-color: #1e1e1e !important;
 }
 
 html.dark .border-white {
-  border-color: #e6e6e6 !important; /* Neutral crisp white border */
+  border-color: #f3efe6 !important;
 }
 
-/* 4. Distinct Typographic Hierarchy (100% Neutral Grayscale, zero blue) */
+/* 4. Distinct Typographic Hierarchy (Creamy White tones) */
 html.dark .text-white,
 html.dark .text-zinc-100 {
-  color: #f5f5f5 !important; /* Crisp neutral white for headings */
+  color: #fdfbf7 !important; /* Bright Creamy White for headings & primary text */
 }
 
 html.dark .text-zinc-200,
 html.dark .text-zinc-300 {
-  color: #d6d6d6 !important; /* Light neutral silver for subheadings & labels */
+  color: #e6e0d4 !important;
 }
 
 html.dark .text-zinc-400 {
-  color: #a3a3a3 !important; /* Balanced neutral gray for descriptions & body copy */
+  color: #a8a298 !important;
 }
 
 html.dark .text-zinc-500,
 html.dark .text-zinc-600 {
-  color: #737373 !important; /* Muted neutral gray for metadata & counters */
+  color: #78736a !important;
 }
 
-/* 5. Primary CTAs, Active Tabs & Launch Buttons (.bg-white.text-black) */
+/* 5. Primary CTAs, Active Tabs & Open Buttons (.bg-white.text-black) */
 html.dark .bg-white.text-black {
-  background-color: #efefef !important; /* Crisp Neutral White button */
-  color: #080808 !important; /* Deep Z-Black ink */
-  border-color: #efefef !important;
+  background-color: #f4f1ea !important; /* Soft Off-White button background */
+  color: #080808 !important;
+  border-color: #f4f1ea !important;
 }
 
 html.dark .bg-white.text-black:hover,
 html.dark .group:hover .group-hover\:bg-zinc-200.bg-white.text-black {
-  background-color: #ffffff !important;
+  background-color: #fdfbf7 !important; /* Bright Creamy White on hover */
   color: #000000 !important;
-  border-color: #ffffff !important;
+  border-color: #fdfbf7 !important;
 }
 
-/* 6. Tactile Brutalist Shadows Tuned for Z-Black Theme */
+/* 6. Tactile Brutalist Shadows Tuned for Creamy/Dull White */
 html.dark .shadow-\[2px_2px_0_0_\#27272a\] {
   box-shadow: 2px 2px 0 0 #202020 !important;
 }
 
 html.dark .hover\:shadow-\[3px_3px_0_0_\#ffffff\]:hover,
 html.dark .hover\:shadow-\[4px_4px_0_0_\#ffffff\]:hover {
-  box-shadow: 4px 4px 0 0 #d6d6d6 !important;
+  box-shadow: 4px 4px 0 0 #dfd7c6 !important;
 }
 
 html.dark .shadow-\[1px_1px_0_0_\#ffffff\],
 html.dark .shadow-\[2px_2px_0_0_\#ffffff\],
 html.dark .shadow-\[2px_2px_0px_0px_\#ffffff\] {
-  box-shadow: 2px 2px 0 0 #525252 !important;
+  box-shadow: 2px 2px 0 0 #5c574f !important;
 }
 
 html.dark .shadow-\[3px_3px_0px_0px_\#ffffff\] {
-  box-shadow: 3px 3px 0 0 #525252 !important;
+  box-shadow: 3px 3px 0 0 #5c574f !important;
 }
 
-/* 7. Form Inputs, Selects & Textareas in Z-Black Theme */
+/* 7. Form Inputs, Selects & Textareas in Dark Theme */
 html.dark input,
 html.dark textarea,
 html.dark select {
   background-color: #080808 !important;
-  color: #f5f5f5 !important;
+  color: #faf3e3 !important;
   border-color: #262626 !important;
 }
 
 html.dark input:focus,
 html.dark textarea:focus,
 html.dark select:focus {
-  border-color: #a3a3a3 !important;
+  border-color: #dfd7c6 !important;
   background-color: #0e0e0e !important;
 }
 
 html.dark input::placeholder,
 html.dark textarea::placeholder {
-  color: #737373 !important;
+  color: #787268 !important;
 }
 
-/* 8. Structural Header, Navigation & Footer in Z-Black Theme */
+/* 8. Structural Header, Navigation & Footer in Dark Theme */
 html.dark #site-header {
   background-color: rgba(4, 4, 4, 0.96) !important;
   border-bottom-color: #242424 !important;
@@ -589,10 +579,10 @@ html.dark #tools-navigation {
 html.dark #application-footer {
   background-color: #050505 !important;
   border-top-color: #242424 !important;
-  color: #a3a3a3 !important;
+  color: #a8a196 !important;
 }
 
-/* 9. Interactive Hover States in Z-Black Theme */
+/* 9. Interactive Hover States in Dark Theme */
 html.dark .hover\:bg-zinc-950:hover {
   background-color: #111111 !important;
 }
@@ -602,12 +592,12 @@ html.dark .hover\:bg-zinc-800:hover {
 }
 
 html.dark .hover\:border-white:hover {
-  border-color: #d6d6d6 !important;
+  border-color: #faf3e3 !important;
 }
 
 html.dark .hover\:border-zinc-600:hover,
 html.dark .hover\:border-zinc-500:hover {
-  border-color: #525252 !important;
+  border-color: #5c574f !important;
 }
 
 /* ============================================================================

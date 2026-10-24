@@ -27,45 +27,56 @@ export interface PdfCompressOptions {
   askPassword?: (reason?: "wrong" | "required") => Promise<string | null>;
 }
 
+let cachedSafePdfJsLib: any = null;
+
 /**
- * Loads PDF.js from local bundled asset strictly without external CDN connections.
+ * Loads modern PDF.js from npm `pdfjs-dist` with Vite-hashed worker bundle
+ * and enforces `isEvalSupported: false` on every `getDocument` call (mitigating CVE-2024-4367).
  */
 export async function loadPdfJsLibrary(): Promise<any> {
-  let globalPdfjs = (window as any).pdfjsLib;
-  if (globalPdfjs) {
-    return globalPdfjs;
+  if (cachedSafePdfJsLib) {
+    return cachedSafePdfJsLib;
   }
 
-  const loadScript = (url: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = url;
-      script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error(`Failed to load local PDF script: ${url}`));
-      document.head.appendChild(script);
-    });
-  };
-
   try {
-    await loadScript("/pdf.min.js");
-    globalPdfjs = (window as any).pdfjsLib;
+    const pdfjsModule = await import("pdfjs-dist");
+    const pdfjsLib: any = (pdfjsModule as any).default || pdfjsModule;
+    const workerSrc = new URL(
+      "pdfjs-dist/build/pdf.worker.min.mjs",
+      import.meta.url
+    ).toString();
+
+    if (pdfjsLib.GlobalWorkerOptions) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+    }
+
+    cachedSafePdfJsLib = {
+      ...pdfjsLib,
+      getDocument: (src: any) => {
+        if (
+          src &&
+          typeof src === "object" &&
+          !(src instanceof Uint8Array) &&
+          !(src instanceof ArrayBuffer) &&
+          !ArrayBuffer.isView(src)
+        ) {
+          return pdfjsLib.getDocument({
+            ...src,
+            isEvalSupported: false,
+          });
+        }
+        return pdfjsLib.getDocument({
+          data: src,
+          isEvalSupported: false,
+        });
+      },
+    };
+
+    return cachedSafePdfJsLib;
   } catch (err) {
-    logger.error("Local pdf.min.js failed to load:", err);
-    throw new Error("Local PDF processing engine failed to load. Please verify /pdf.min.js is present.");
+    logger.error("Failed to initialize pdfjs-dist engine:", err);
+    throw new Error("Local PDF processing engine failed to initialize.");
   }
-
-  if (!globalPdfjs) {
-    throw new Error("Local PDF viewer engine failed to initialize.");
-  }
-
-  try {
-    globalPdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
-  } catch (workerErr) {
-    logger.warn("Worker registration error:", workerErr);
-  }
-
-  return globalPdfjs;
 }
 
 /**

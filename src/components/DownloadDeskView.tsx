@@ -10,7 +10,6 @@ import { getFileSync, clearFile, StoredFileData } from "../utils/db";
 import { createTrackedObjectURL, revokeTrackedObjectURL } from "../utils/urlTracker";
 import { sanitizeFilename } from "../utils/sanitizer";
 import { RetroView } from "../types";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 
 interface DownloadDeskViewProps {
   toolKey: string;
@@ -117,7 +116,7 @@ export default function DownloadDeskView({ toolKey, sourceView, onAnotherFile, o
   };
 
   if (!data) {
-    return <ToolSkeletonLoader variant="download_desk" />;
+    return null;
   }
 
   const originalSize = data.originalSize || data.size;
@@ -184,11 +183,32 @@ export default function DownloadDeskView({ toolKey, sourceView, onAnotherFile, o
             <div className="flex justify-between">
               <span className="text-zinc-400">SAVINGS / DELTA:</span>
               <strong className="text-emerald-400 font-bold">
-                {isSmaller ? `-${savingsPct}% (${formatBytes(data.originalSize - data.size)} saved)` : "Optimal"}
+                {isSmaller ? `-${savingsPct}% (${formatBytes(originalSize - data.size)} saved)` : "Optimal"}
               </strong>
             </div>
           </div>
         </div>
+
+        {(data.statusNote || data.targetKB) && (
+          <div
+            role="status"
+            className={`border rounded-lg p-3 text-xs font-mono flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 ${
+              data.hitTarget === false
+                ? "bg-amber-950/30 border-amber-500/50 text-amber-300"
+                : "bg-emerald-950/30 border-emerald-500/50 text-emerald-300"
+            }`}
+          >
+            <span className="font-bold uppercase">
+              {data.statusNote ||
+                `Achieved ${(data.size / 1024).toFixed(1)} KB / Target ${
+                  data.minKB ? `${data.minKB}–${data.targetKB}` : data.targetKB
+                } KB`}
+            </span>
+            <span className="text-[10px] uppercase opacity-80">
+              {data.hitTarget === false ? "LIMIT WARNING" : "TARGET VERIFIED"}
+            </span>
+          </div>
+        )}
 
         {/* Custom Filename Field */}
         <div className="space-y-1.5">

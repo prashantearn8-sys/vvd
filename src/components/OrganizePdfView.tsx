@@ -26,7 +26,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface OrganizePdfViewProps {
@@ -563,18 +562,6 @@ export default function OrganizePdfView({
             SELECT_PDF_FILE
           </button>
         </div>
-      ) : isProcessing || isLoadingPages ? (
-        <ToolSkeletonLoader
-          variant="organize_pdf"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          fileCount={pageItems.length || 4}
-          targetInfo={`ORGANIZE ${pageItems.length || sourcePageCount} PAGES`}
-          statusMessage={
-            progressMsg ||
-            (isLoadingPages ? "MOUNTING_PDF_PAGE_THUMBNAILS..." : "ORGANIZING_PDF_DOCUMENT...")
-          }
-        />
       ) : (
         <div className="space-y-6">
           {/* Top Control Bar & Batch Operations */}

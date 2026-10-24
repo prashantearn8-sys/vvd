@@ -23,7 +23,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface WatermarkPdfViewProps {
@@ -575,17 +574,6 @@ export default function WatermarkPdfView({
             SELECT_PDF_FILE
           </button>
         </div>
-      ) : isParsing || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="watermark_pdf"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={`${pageCount} PAGES`}
-          statusMessage={
-            progressMsg ||
-            (isParsing ? "RENDERING_PDF_PREVIEW..." : "STAMPING_WATERMARK_LAYER...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Live Page & Watermark Overlay Preview */}

@@ -22,17 +22,14 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import {
-  collection,
-  doc,
-  getDoc,
-  setDoc,
-  deleteDoc,
-  onSnapshot,
-  query,
-  where,
-  serverTimestamp,
-} from "firebase/firestore";
+import "@fontsource/alex-brush/400.css";
+import "@fontsource/allura/400.css";
+import "@fontsource/caveat/600.css";
+import "@fontsource/caveat/700.css";
+import "@fontsource/dancing-script/600.css";
+import "@fontsource/dancing-script/700.css";
+import "@fontsource/great-vibes/400.css";
+import "@fontsource/sacramento/400.css";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes, yieldFrame } from "../utils/imageProcessor";
 import { saveFile } from "../utils/db";
@@ -41,9 +38,8 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { useAuth, UID_MAX_LENGTH, UID_PATTERN } from "../context/AuthContext";
-import { db, handleFirestoreError, OperationType } from "../firebase";
+import { getFirebaseServices, handleFirestoreError, OperationType } from "../firebase";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 import { processSignatureBuffer } from "../modules/signature-extractor/signatureProcessor";
 import {
@@ -944,8 +940,10 @@ export default function SignPdfView({
         "great_vibes";
 
       const sigDocPath = `users/${uid}/signatures/${safeSigId}`;
-      const sigDocRef = doc(db, "users", uid, "signatures", safeSigId);
       try {
+        const { db, firestoreMod } = await getFirebaseServices();
+        const { doc, getDoc, setDoc, serverTimestamp } = firestoreMod;
+        const sigDocRef = doc(db, "users", uid, "signatures", safeSigId);
         const existingSnap = await getDoc(sigDocRef);
         if (existingSnap.exists()) {
           return;
@@ -989,77 +987,87 @@ export default function SignPdfView({
       return;
     }
 
-    const colPath = `users/${uid}/signatures`;
-    const sigsQuery = query(
-      collection(db, "users", uid, "signatures"),
-      where("uid", "==", uid)
-    );
-    const unsub = onSnapshot(
-      sigsQuery,
-      (snap) => {
-        const cloudTemplates: SavedSignatureTemplate[] = snap.docs
-          .map((docSnap) => {
-            const d = docSnap.data();
-            const mode: SignatureSourceMode =
-              d.sigMode === "DRAW" || d.sigMode === "TYPE" || d.sigMode === "UPLOAD"
-                ? d.sigMode
-                : "UPLOAD";
-            const url = String(d.dataUrl || "");
-            const idStr = String(d.sigId || docSnap.id);
-            syncedSigIdsRef.current.add(`${uid}:${idStr}`);
-            return {
-              id: idStr,
-              dataUrl: url,
-              sigMode: mode,
-              inkColor: (d.inkColor as InkColor) || "#000000",
-              label: String(d.label || "SAVED SIGNATURE"),
-              typedName: String(d.typedName || ""),
-              fontId: (d.fontId as SignatureFontId) || "great_vibes",
-              includeDateStamp: false,
-              includeFlourish: false,
-              rawUploadDataUrl: mode === "UPLOAD" ? url : null,
-              removeBg: true,
-              bgThreshold: 55,
-              inkContrast: 10,
-              strokeBoost: 0,
-              recolorUploadInk: false,
-            };
-          })
-          .filter((item) => item.dataUrl.length >= SIG_DATA_URL_MIN_LENGTH);
+    let unsub: (() => void) | null = null;
+    let cancelled = false;
 
-        const cloudIds = new Set(cloudTemplates.map((c) => c.id));
-        const cloudUrls = new Set(cloudTemplates.map((c) => c.dataUrl));
-        const localUnsynced = savedSignaturesRef.current.filter((p) => {
-          const safeId = p.id
-            .replace(/[^a-zA-Z0-9_\-]/g, "_")
-            .slice(0, SIG_ID_MAX_LENGTH);
-          return (
-            !cloudIds.has(p.id) &&
-            !cloudIds.has(safeId) &&
-            !cloudUrls.has(p.dataUrl) &&
-            !syncedSigIdsRef.current.has(`${uid}:${safeId}`)
-          );
-        });
-        for (const unsynced of localUnsynced) {
-          void persistSignatureToFirestore(unsynced);
-        }
+    void getFirebaseServices().then(({ db, firestoreMod }) => {
+      if (cancelled) return;
+      const { collection, query, where, onSnapshot } = firestoreMod;
+      const colPath = `users/${uid}/signatures`;
+      const sigsQuery = query(
+        collection(db, "users", uid, "signatures"),
+        where("uid", "==", uid)
+      );
+      unsub = onSnapshot(
+        sigsQuery,
+        (snap) => {
+          const cloudTemplates: SavedSignatureTemplate[] = snap.docs
+            .map((docSnap) => {
+              const d = docSnap.data();
+              const mode: SignatureSourceMode =
+                d.sigMode === "DRAW" || d.sigMode === "TYPE" || d.sigMode === "UPLOAD"
+                  ? d.sigMode
+                  : "UPLOAD";
+              const url = String(d.dataUrl || "");
+              const idStr = String(d.sigId || docSnap.id);
+              syncedSigIdsRef.current.add(`${uid}:${idStr}`);
+              return {
+                id: idStr,
+                dataUrl: url,
+                sigMode: mode,
+                inkColor: (d.inkColor as InkColor) || "#000000",
+                label: String(d.label || "SAVED SIGNATURE"),
+                typedName: String(d.typedName || ""),
+                fontId: (d.fontId as SignatureFontId) || "great_vibes",
+                includeDateStamp: false,
+                includeFlourish: false,
+                rawUploadDataUrl: mode === "UPLOAD" ? url : null,
+                removeBg: true,
+                bgThreshold: 55,
+                inkContrast: 10,
+                strokeBoost: 0,
+                recolorUploadInk: false,
+              };
+            })
+            .filter((item) => item.dataUrl.length >= SIG_DATA_URL_MIN_LENGTH);
 
-        const merged = [...cloudTemplates, ...localUnsynced];
-        setSavedSignatures(merged);
-        if (merged.length > 0 && !signatureDataUrl && placedSignatures.length === 0) {
-          setIsStudioOpen(false);
-        }
-      },
-      (error) => {
-        try {
-          handleFirestoreError(error, OperationType.LIST, colPath);
-        } catch {
-          // Handled and logged
-        }
-      }
-    );
+          const cloudIds = new Set(cloudTemplates.map((c) => c.id));
+          const cloudUrls = new Set(cloudTemplates.map((c) => c.dataUrl));
+          const localUnsynced = savedSignaturesRef.current.filter((p) => {
+            const safeId = p.id
+              .replace(/[^a-zA-Z0-9_\-]/g, "_")
+              .slice(0, SIG_ID_MAX_LENGTH);
+            return (
+              !cloudIds.has(p.id) &&
+              !cloudIds.has(safeId) &&
+              !cloudUrls.has(p.dataUrl) &&
+              !syncedSigIdsRef.current.has(`${uid}:${safeId}`)
+            );
+          });
+          for (const unsynced of localUnsynced) {
+            void persistSignatureToFirestore(unsynced);
+          }
 
-    return () => unsub();
+          const merged = [...cloudTemplates, ...localUnsynced];
+          setSavedSignatures(merged);
+          if (merged.length > 0 && !signatureDataUrl && placedSignatures.length === 0) {
+            setIsStudioOpen(false);
+          }
+        },
+        (error) => {
+          try {
+            handleFirestoreError(error, OperationType.LIST, colPath);
+          } catch {
+            // Handled and logged
+          }
+        }
+      );
+    });
+
+    return () => {
+      cancelled = true;
+      if (unsub) unsub();
+    };
   }, [isAuthReady, user, persistSignatureToFirestore]);
 
   // Save the currently created signature in the studio, close the studio, and show Recent Signatures
@@ -1394,12 +1402,14 @@ export default function SignPdfView({
         .slice(0, SIG_ID_MAX_LENGTH);
       if (uid && safeSigId && SIG_ID_PATTERN.test(safeSigId)) {
         const sigDocPath = `users/${uid}/signatures/${safeSigId}`;
-        deleteDoc(doc(db, "users", uid, "signatures", safeSigId)).catch((err) => {
-          try {
-            handleFirestoreError(err, OperationType.DELETE, sigDocPath);
-          } catch {
-            // Handled and logged
-          }
+        void getFirebaseServices().then(({ db, firestoreMod }) => {
+          firestoreMod.deleteDoc(firestoreMod.doc(db, "users", uid, "signatures", safeSigId)).catch((err) => {
+            try {
+              handleFirestoreError(err, OperationType.DELETE, sigDocPath);
+            } catch {
+              // Handled and logged
+            }
+          });
         });
       }
     }
@@ -2312,10 +2322,10 @@ export default function SignPdfView({
             id="sign-pdf-heading"
             className="text-xl font-bold uppercase tracking-tight text-white font-sans"
           >
-            SIGN PDF DOCUMENT // SIGN_PDF.PRG
+            Sign PDF Document
           </h1>
           <p className="text-xs text-zinc-400 font-mono">
-            Draw, type with calligraphic fonts, or upload &amp; extract signature images. Save signatures &amp; place them on any page with 1 click.
+            Draw, type with calligraphic fonts, or upload &amp; extract signature images. Note: This tool stamps a visual signature image onto the PDF and does not apply a cryptographic (PKI/X.509) certificate.
           </p>
         </div>
       </div>
@@ -2383,20 +2393,6 @@ export default function SignPdfView({
             SELECT_PDF_FILE
           </button>
         </div>
-      ) : isLoadingPdf || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="sign_pdf"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          fileCount={totalPages || 1}
-          targetInfo="SIGNED PDF"
-          statusMessage={
-            progressMsg ||
-            (isLoadingPdf
-              ? "MOUNTING_PDF_CANVAS..."
-              : "APPLYING_SIGNATURE_TO_PDF...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left: Interactive Page Placement Viewport */}

@@ -22,7 +22,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface UnlockPdfViewProps {
@@ -376,17 +375,6 @@ export default function UnlockPdfView({
             SELECT_PROTECTED_PDF
           </button>
         </div>
-      ) : isParsing || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="unlock_pdf"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo="UNENCRYPTED PDF"
-          statusMessage={
-            progressMsg ||
-            (isParsing ? "AUTHENTICATING_PDF_KEY..." : "RECONSTRUCTING_UNLOCKED_PDF...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Unlocked Document Preview */}

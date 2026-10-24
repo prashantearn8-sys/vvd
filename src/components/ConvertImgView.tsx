@@ -13,7 +13,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface ConvertImgViewProps {
@@ -240,14 +239,6 @@ export default function ConvertImgView({ onSuccess, initialFile }: ConvertImgVie
             </button>
           </div>
         </div>
-      ) : isProcessing ? (
-        <ToolSkeletonLoader
-          variant="convert_img"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={`FORMAT: ${targetFmt}`}
-          statusMessage={`TRANSCODING_TO_${targetFmt}...`}
-        />
       ) : (
         <div className="max-w-3xl mx-auto space-y-6">
           {previewUrl && (

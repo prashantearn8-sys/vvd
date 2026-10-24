@@ -26,7 +26,6 @@ import { useFileDrop } from "../context/FileDropContext";
 import { formatBytes, yieldFrame } from "../utils/imageProcessor";
 import { saveFile } from "../utils/db";
 import { sanitizeFilename } from "../utils/sanitizer";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface PassportPhotoViewProps {
@@ -768,26 +767,16 @@ export default function PassportPhotoView({
     }
   };
 
-  if (isProcessing) {
-    return (
-      <ToolSkeletonLoader
-        variant="passport_photo"
-        fileName={selectedFile?.name}
-        fileSize={selectedFile ? formatBytes(selectedFile.size) : undefined}
-      />
-    );
-  }
-
   return (
     <section className="space-y-8" aria-label="Passport Photo Maker Tool">
       {/* HEADER MATCHING ALL OTHER TOOLS */}
       <div className="border-b-2 border-zinc-800 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="font-sans font-bold text-2xl uppercase tracking-tight text-white">
-            PASSPORT_PHOTO.PRG
+            Passport &amp; ID Photo Maker
           </h1>
           <p className="text-xs font-mono text-zinc-400 mt-1">
-            Automatically remove portrait background, switch solid passport backdrop color (White default), and export 300 DPI biometric photos.
+            Crop biometric photos (US 2×2", UK/EU/India 35×45mm, China 33×48mm, Canada 50×70mm) at 300 DPI. Background replacement uses colour-cluster flood fill + manual brush touch-up (best on plain walls). Warning: Many passport and visa authorities reject digitally altered backgrounds or attire—keep original backgrounds when required by official rules.
           </p>
         </div>
 

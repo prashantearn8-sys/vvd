@@ -14,7 +14,7 @@ const TERMS_SECTIONS = [
   {
     title: "1. ACCEPTANCE OF TERMS & SCOPE OF SERVICE",
     content:
-      "By accessing or using MONO-TRANSCODER, you agree to be bound by these Terms of Service. MONO-TRANSCODER provides 18 browser-based utilities for PDF manipulation, electronic signature placement, Office document conversion (Word, Excel, PowerPoint), image compression/transcoding, and biometric passport photo preparation for personal or commercial use.",
+      "By accessing or using MONO-TRANSCODER, you agree to be bound by these Terms of Service. MONO-TRANSCODER provides 20 browser-based utilities for PDF manipulation, visual signature placement, Office document conversion (Word, Excel, PowerPoint), image compression/transcoding, and biometric passport photo preparation for personal or commercial use.",
   },
   {
     title: "2. LOCAL EXECUTION & HARDWARE RESPONSIBILITY",

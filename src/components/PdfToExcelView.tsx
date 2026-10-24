@@ -19,7 +19,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface PdfToExcelViewProps {
@@ -647,17 +646,6 @@ export default function PdfToExcelView({
             SELECT_PDF_FILE
           </button>
         </div>
-      ) : isParsing || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="pdf_to_excel"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={exportFormat === "XLSX" ? "EXCEL (.XLSX)" : "CSV (.CSV)"}
-          statusMessage={
-            progressMsg ||
-            (isParsing ? "CLUSTERING_TABLE_COORDINATES..." : "PACKING_EXCEL_WORKBOOK...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Extracted Table Grid Preview */}

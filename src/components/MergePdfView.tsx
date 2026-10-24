@@ -12,7 +12,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface MergePdfViewProps {
@@ -224,14 +223,6 @@ export default function MergePdfView({ onSuccess, initialFiles }: MergePdfViewPr
             SELECT_PDF_FILES
           </button>
         </div>
-      ) : isProcessing ? (
-        <ToolSkeletonLoader
-          variant="merge_pdf"
-          fileCount={files.length}
-          fileSize={formatBytes(totalBytes)}
-          targetInfo={`MERGE ${files.length} PDFS`}
-          statusMessage={`MERGING_${files.length}_DOCUMENTS...`}
-        />
       ) : (
         <div className="space-y-6 max-w-3xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 bg-zinc-950 border-2 border-zinc-800 p-4 rounded-xl">

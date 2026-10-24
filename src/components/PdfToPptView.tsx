@@ -19,7 +19,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface PdfToPptViewProps {
@@ -793,17 +792,6 @@ export default function PdfToPptView({
             SELECT_PDF_FILE
           </button>
         </div>
-      ) : isParsing || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="pdf_to_ppt"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={`${slidePreviews.length} SLIDES (.PPTX)`}
-          statusMessage={
-            progressMsg ||
-            (isParsing ? "SCANNING_PDF_PAGES..." : "BUILDING_PPTX_ARCHIVE...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Slide Thumbnail & Text Preview */}

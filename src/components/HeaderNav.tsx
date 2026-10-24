@@ -34,7 +34,7 @@ interface NavModuleItem {
 const NAV_ITEMS: NavModuleItem[] = [
   {
     view: "sign_pdf",
-    label: "SIGN_PDF",
+    label: "Sign PDF",
     title: "Sign PDF",
     category: "SIGN",
     path: "/sign-pdf",
@@ -42,7 +42,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "lock_pdf",
-    label: "LOCK_PDF",
+    label: "Lock PDF",
     title: "Lock PDF",
     category: "SIGN",
     path: "/lock-pdf",
@@ -50,7 +50,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "unlock_pdf",
-    label: "UNLOCK_PDF",
+    label: "Unlock PDF",
     title: "Unlock PDF",
     category: "SIGN",
     path: "/unlock-pdf",
@@ -58,7 +58,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "passport_photo",
-    label: "PASSPORT_PHOTO",
+    label: "Passport Photo",
     title: "Passport Photo",
     category: "SIGN",
     path: "/passport-photo",
@@ -66,15 +66,15 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "compress_img",
-    label: "COMPRESS_IMG",
-    title: "Compress Img",
+    label: "Compress Image",
+    title: "Compress Image",
     category: "IMAGE",
     path: "/compress-image",
     iconBg: "#3b8a6e",
   },
   {
     view: "convert_img",
-    label: "CONVERT_IMG",
+    label: "Convert Image",
     title: "Convert Image",
     category: "IMAGE",
     path: "/convert-image",
@@ -82,7 +82,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "compress_pdf",
-    label: "COMPRESS_PDF",
+    label: "Compress PDF",
     title: "Compress PDF",
     category: "PDF",
     path: "/compress-pdf",
@@ -90,7 +90,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "image_to_pdf",
-    label: "IMAGE_TO_PDF",
+    label: "Image to PDF",
     title: "Image to PDF",
     category: "PDF",
     path: "/image-to-pdf",
@@ -98,7 +98,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "merge_pdf",
-    label: "MERGE_PDF",
+    label: "Merge PDF",
     title: "Merge PDF",
     category: "PDF",
     path: "/merge-pdf",
@@ -106,7 +106,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "pdf_to_images",
-    label: "PDF_TO_IMAGES",
+    label: "PDF to Images",
     title: "PDF to Images",
     category: "PDF",
     path: "/pdf-to-images",
@@ -114,7 +114,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "remove_pdf_pages",
-    label: "REMOVE_PAGES",
+    label: "Remove Pages",
     title: "Remove Pages",
     category: "PDF",
     path: "/remove-pdf-pages",
@@ -122,7 +122,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "organize_pdf",
-    label: "ORGANIZE_PDF",
+    label: "Organize PDF",
     title: "Organize PDF",
     category: "PDF",
     path: "/organize-pdf",
@@ -130,7 +130,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "watermark_pdf",
-    label: "WATERMARK_PDF",
+    label: "Watermark PDF",
     title: "Watermark PDF",
     category: "PDF",
     path: "/watermark-pdf",
@@ -138,7 +138,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "word_to_pdf",
-    label: "WORD_TO_PDF",
+    label: "Word to PDF",
     title: "Word to PDF",
     category: "WORD",
     path: "/word-to-pdf",
@@ -146,15 +146,15 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "word_to_jpg",
-    label: "WORD_TO_IMG",
-    title: "Word to Img",
+    label: "Word to Image",
+    title: "Word to Image",
     category: "WORD",
     path: "/word-to-jpg",
     iconBg: "#5c64a8",
   },
   {
     view: "pdf_to_word",
-    label: "PDF_TO_WORD",
+    label: "PDF to Word",
     title: "PDF to Word",
     category: "WORD",
     path: "/pdf-to-word",
@@ -162,7 +162,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "excel_to_pdf",
-    label: "EXCEL_TO_PDF",
+    label: "Excel to PDF",
     title: "Excel to PDF",
     category: "WORD",
     path: "/excel-to-pdf",
@@ -170,7 +170,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "pdf_to_excel",
-    label: "PDF_TO_EXCEL",
+    label: "PDF to Excel",
     title: "PDF to Excel",
     category: "WORD",
     path: "/pdf-to-excel",
@@ -178,7 +178,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "ppt_to_pdf",
-    label: "PPT_TO_PDF",
+    label: "PowerPoint to PDF",
     title: "PowerPoint to PDF",
     category: "WORD",
     path: "/powerpoint-to-pdf",
@@ -186,7 +186,7 @@ const NAV_ITEMS: NavModuleItem[] = [
   },
   {
     view: "pdf_to_ppt",
-    label: "PDF_TO_PPT",
+    label: "PDF to PowerPoint",
     title: "PDF to PowerPoint",
     category: "WORD",
     path: "/pdf-to-powerpoint",
@@ -324,10 +324,10 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
     <div ref={containerRef} className="sticky top-0 z-40">
       {/* ALWAYS VISIBLE STICKY SITE HEADER */}
       <header
-        className="border-b-2 border-black bg-black/95 backdrop-blur-md py-2 sm:py-2.5 px-3 sm:px-4 md:px-6 shrink-0 shadow-md relative z-20"
+        className="border-b-2 border-black bg-black/95 backdrop-blur-md py-2 sm:py-2.5 px-3 sm:px-5 lg:px-8 shrink-0 shadow-md relative z-20"
         id="site-header"
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
+        <div className="w-full flex items-center justify-between gap-3 sm:gap-4">
           <a
             href="/"
             onClick={(e) => {
@@ -513,7 +513,7 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
         </div>
       </header>
 
-      {/* COMPACT CATEGORIZED TOOL NAVIGATION BAR */}
+      {/* COMPACT CATEGORIZED TOOL NAVIGATION BAR (CATEGORIES IN COLUMNS) */}
       <div
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -528,49 +528,44 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
             id="tools-navigation"
             aria-label="Tool Navigation"
             aria-hidden={!isNavOpen}
-            className="border-b-2 border-black bg-zinc-950/98 backdrop-blur-md py-3 px-3 sm:px-4 md:px-6 shadow-2xl max-h-[calc(100dvh-52px)] overflow-y-auto overscroll-contain"
+            className="border-b-2 border-black bg-zinc-950/98 backdrop-blur-md py-4 px-3 sm:px-5 lg:px-8 shadow-2xl max-h-[calc(100dvh-52px)] overflow-y-auto overscroll-contain"
           >
-            <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 lg:gap-5 pb-4">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 pb-2 items-start">
               {(
                 [
                   {
                     key: "PDF" as const,
                     title: "PDF TOOLS",
-                    colSpan: "sm:col-span-2 lg:col-span-4",
-                    gridCols: "grid-cols-1 sm:grid-cols-2",
                   },
                   {
                     key: "WORD" as const,
                     title: "WORD & OFFICE",
-                    colSpan: "sm:col-span-2 lg:col-span-4",
-                    gridCols: "grid-cols-1 sm:grid-cols-2",
-                  },
-                  {
-                    key: "SIGN" as const,
-                    title: "SIGN & SECURITY",
-                    colSpan: "lg:col-span-2",
-                    gridCols: "grid-cols-1",
                   },
                   {
                     key: "IMAGE" as const,
                     title: "IMAGE TOOLS",
-                    colSpan: "lg:col-span-2",
-                    gridCols: "grid-cols-1",
+                  },
+                  {
+                    key: "SIGN" as const,
+                    title: "SIGN & SECURITY",
                   },
                 ]
               ).map((group) => {
                 const groupItems = NAV_ITEMS.filter((i) => i.category === group.key);
                 return (
-                  <div key={group.key} className={`${group.colSpan} space-y-1.5`}>
-                    <div className="flex items-center gap-1.5 px-1 pb-1 border-b border-zinc-800">
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400">
+                  <div
+                    key={group.key}
+                    className="flex flex-col gap-2 bg-black/40 border border-zinc-800/80 rounded-xl p-3"
+                  >
+                    <div className="flex items-center justify-between pb-2 border-b border-zinc-800 px-1">
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-200">
                         {group.title}
                       </span>
                       <span className="text-[10px] font-mono text-zinc-500">
                         ({groupItems.length})
                       </span>
                     </div>
-                    <div className={`grid ${group.gridCols} gap-1.5`}>
+                    <div className="flex flex-col gap-1.5">
                       {groupItems.map((item) => {
                         const isActive =
                           currentView === item.view ||
@@ -586,8 +581,8 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
                               onSelectView(item.view);
                             }}
                             aria-current={isActive ? "page" : undefined}
-                            aria-label={`Launch ${item.title} tool`}
-                            className={`group min-h-[42px] px-2.5 py-2 rounded-lg text-xs font-mono font-bold uppercase border transition-all duration-200 cursor-pointer no-underline flex items-center gap-2.5 hover:-translate-y-0.5 active:scale-[0.98] ${
+                            aria-label={`Open ${item.title} tool`}
+                            className={`group min-h-[38px] px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold border transition-all duration-200 cursor-pointer no-underline flex items-center gap-2.5 hover:translate-x-0.5 active:scale-[0.98] ${
                               isActive
                                 ? "bg-white text-black border-white shadow-[1px_1px_0_0_#ffffff]"
                                 : "bg-black text-zinc-100 border-zinc-800 hover:border-white hover:bg-zinc-900"

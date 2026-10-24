@@ -12,6 +12,10 @@ export interface StoredFileData {
   format: string;
   originalName?: string;
   originalSize?: number;
+  targetKB?: number;
+  minKB?: number;
+  hitTarget?: boolean;
+  statusNote?: string;
 }
 
 /**

@@ -20,7 +20,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface WordToJpgViewProps {
@@ -970,17 +969,6 @@ export default function WordToJpgView({ onSuccess, initialFile }: WordToJpgViewP
             SELECT_WORD_FILE
           </button>
         </div>
-      ) : isParsing || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="word_to_jpg"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={`${DPI_SCALE_MAP[dpiPreset].label} JPG`}
-          statusMessage={
-            progressMsg ||
-            (isParsing ? "PARSING_OPENXML_ARCHIVE..." : "RASTERIZING_WORD_TO_JPG...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Document Preview & Extracted Structure */}

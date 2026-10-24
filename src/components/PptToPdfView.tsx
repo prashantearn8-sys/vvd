@@ -21,7 +21,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 import {
   parseAndRenderPptxDeck,
@@ -354,10 +353,10 @@ export default function PptToPdfView({ onSuccess, initialFile }: PptToPdfViewPro
             id="ppt-to-pdf-heading"
             className="text-xl font-bold uppercase tracking-tight text-white font-sans"
           >
-            POWERPOINT TO PDF CONVERTER // PPT_TO_PDF.PRG
+            PowerPoint to PDF (Basic Slide Conversion)
           </h1>
           <p className="text-xs text-zinc-400 font-mono">
-            Renders every PowerPoint (.pptx) slide as a high-definition visual screenshot and compiles them into a full-bleed PDF deck.
+            Basic client-side rendering of PowerPoint (.pptx) text boxes, shapes, and embedded images into a PDF deck. Complex SmartArt, custom fonts, animations, transitions, and embedded audio/video are not preserved.
           </p>
         </div>
       </div>
@@ -424,19 +423,6 @@ export default function PptToPdfView({ onSuccess, initialFile }: PptToPdfViewPro
             SELECT_PPTX_FILE
           </button>
         </div>
-      ) : isParsing || isProcessing ? (
-        <ToolSkeletonLoader
-          variant="ppt_to_pdf"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo={`${slides.length || "..."} SLIDE SCREENSHOTS`}
-          statusMessage={
-            progressMsg ||
-            (isParsing
-              ? "CAPTURING_SLIDE_SCREENSHOTS..."
-              : "EMBEDDING_SLIDE_SCREENSHOTS_INTO_PDF...")
-          }
-        />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left: Live Slide Screenshot Viewer + Filmstrip */}

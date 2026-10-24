@@ -60,13 +60,14 @@ export function normalizeSupportedEncodeFormat(mimeType?: string): ImageFormat {
 }
 
 /**
- * Loads an image directly from a File/Blob using an ephemeral object URL (zero Base64 memory overhead)
- * Enforces file size ceilings and image decompression bomb guards (max 16,384px / 100MP)
+ * Loads an image directly from a File/Blob using an ephemeral object URL (zero Base64 memory overhead).
+ * Enforces mobile-safe canvas resolution limits (max 8,192px per side or 25 Megapixels) and a 150MB file guard.
  */
 export function loadImageFromFile(blobOrFile: Blob | File): Promise<{ img: HTMLImageElement; cleanup: () => void }> {
-  // Guard file size (500 MB safe limit)
-  if (blobOrFile.size && blobOrFile.size > 500 * 1024 * 1024) {
-    return Promise.reject(new Error("File size exceeds 500MB safe in-browser processing limit."));
+  if (blobOrFile.size && blobOrFile.size > 150 * 1024 * 1024) {
+    return Promise.reject(
+      new Error("Image file exceeds the 150MB safe browser memory limit.")
+    );
   }
 
   const url = URL.createObjectURL(blobOrFile);
@@ -74,15 +75,19 @@ export function loadImageFromFile(blobOrFile: Blob | File): Promise<{ img: HTMLI
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      // Decompression bomb guard: block images with absurd resolutions designed to crash browser memory
-      const MAX_SAFE_DIM = 16384;
-      const MAX_SAFE_PIXELS = 100_000_000; // 100 Megapixels
-      if (img.width > MAX_SAFE_DIM || img.height > MAX_SAFE_DIM || img.width * img.height > MAX_SAFE_PIXELS) {
+      // Mobile-safe canvas limit: iOS Safari & mid-range Android devices cap canvas area around 16.7–25MP
+      const MAX_SAFE_DIM = 8192;
+      const MAX_SAFE_PIXELS = 25_000_000; // 25 Megapixels
+      if (
+        img.width > MAX_SAFE_DIM ||
+        img.height > MAX_SAFE_DIM ||
+        img.width * img.height > MAX_SAFE_PIXELS
+      ) {
         URL.revokeObjectURL(url);
         img.src = "";
         reject(
           new Error(
-            `Image resolution (${img.width}×${img.height}) exceeds safe processing limits (max 16,384px or 100MP) to prevent memory exhaustion.`
+            `Image resolution (${img.width}×${img.height}) exceeds mobile-safe browser canvas limits (max 8,192px or 25MP).`
           )
         );
         return;
@@ -150,7 +155,6 @@ export async function processImageClientSide(
       throw new Error("Could not retrieve 2D context from canvas");
     }
 
-    // White background for formats without transparency (JPEG)
     if (targetFormat === "image/jpeg") {
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, targetWidth, targetHeight);
@@ -264,16 +268,70 @@ export async function processImageLossless(
 }
 
 /**
- * Compresses an image attempting to match a user-defined target size in Kilobytes (KB)
+ * Compresses an image to match a user-defined target size in Kilobytes (KB),
+ * or within a [minKB, targetKB] portal window.
+ *
+ * Strategy:
+ * 1. Binary-searches quality (7 steps across [0.08, 0.96]) at full resolution, aiming for 90–100% of targetKB (or [minKB, targetKB]).
+ * 2. If even low quality exceeds targetKB, scales dimensions progressively using area-ratio estimation and binary-searches quality at the scaled dimensions.
+ * 3. Reports exact achieved KB vs target KB (`hitTarget` + `statusNote`).
  */
 export async function compressToTargetSizeKB(
   file: File,
   targetKB: number,
   targetFormat: ImageFormat,
-  maxDimension?: string | number
+  maxDimension?: string | number,
+  minKB?: number
 ): Promise<ImageProcessResult> {
   const verifiedFormat = normalizeSupportedEncodeFormat(targetFormat);
   const { img, cleanup } = await loadImageFromFile(file);
+
+  const safeMaxKB = Math.max(1, targetKB);
+  const hasMinWindow = typeof minKB === "number" && minKB > 0 && minKB < safeMaxKB;
+  const lowerBoundKB = hasMinWindow ? minKB! : safeMaxKB * 0.9;
+
+  const buildResult = (
+    blob: Blob,
+    width: number,
+    height: number,
+    fmt: ImageFormat
+  ): ImageProcessResult => {
+    const achievedKB = Number((blob.size / 1024).toFixed(1));
+    const withinMax = blob.size <= safeMaxKB * 1024;
+    const withinMin = !hasMinWindow || blob.size >= minKB! * 1024;
+    const hitTarget = withinMax && withinMin;
+
+    let statusNote: string;
+    if (hasMinWindow) {
+      if (hitTarget) {
+        statusNote = `Achieved ${achievedKB} KB / Target ${minKB}–${safeMaxKB} KB window`;
+      } else if (!withinMax) {
+        statusNote = `Achieved ${achievedKB} KB (exceeds ${safeMaxKB} KB max limit — try a lower resolution or JPG/WebP format)`;
+      } else {
+        statusNote = `Achieved ${achievedKB} KB (below ${minKB} KB minimum — source image is already highly compact)`;
+      }
+    } else {
+      const pct = Math.round((achievedKB / safeMaxKB) * 100);
+      if (withinMax) {
+        statusNote = `Achieved ${achievedKB} KB / Target ${safeMaxKB} KB (${pct}%)`;
+      } else {
+        statusNote = `Achieved ${achievedKB} KB / Target ${safeMaxKB} KB (minimum possible size for this format & resolution)`;
+      }
+    }
+
+    return {
+      url: "",
+      size: blob.size,
+      width,
+      height,
+      format: fmt,
+      blob,
+      targetKB: safeMaxKB,
+      minKB: hasMinWindow ? minKB : undefined,
+      hitTarget,
+      statusNote,
+    };
+  };
 
   try {
     let initialScale = 1.0;
@@ -309,7 +367,23 @@ export async function compressToTargetSizeKB(
     ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, baseWidth, baseHeight);
 
     const encodeBlob = (c: HTMLCanvasElement, fmt: string, q?: number): Promise<Blob> =>
-      new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error("Canvas encoding failed"))), fmt, q));
+      new Promise((res, rej) =>
+        c.toBlob(
+          (b) => {
+            if (!b) {
+              rej(new Error("Canvas encoding failed"));
+              return;
+            }
+            if (b.type && b.type !== fmt) {
+              rej(new Error(`Browser could not encode ${fmt} (fell back to ${b.type}).`));
+              return;
+            }
+            res(b);
+          },
+          fmt,
+          q
+        )
+      );
 
     const scanvas = document.createElement("canvas");
     const sctx = scanvas.getContext("2d");
@@ -332,115 +406,176 @@ export async function compressToTargetSizeKB(
     };
 
     try {
-      // Lossless PNG: Direct area-ratio scale estimation
+      // Lossless PNG: binary-search dimension scale since PNG ignores the quality parameter
       if (verifiedFormat === "image/png") {
-        const currentKB = file.size / 1024;
-        if (currentKB <= targetKB) {
-          const blob = await encodeBlob(canvas, verifiedFormat);
-          if (blob.size / 1024 <= targetKB) {
-            return {
-              url: "",
-              size: blob.size,
-              width: baseWidth,
-              height: baseHeight,
-              format: verifiedFormat,
-              blob,
-            };
+        const fullBlob = await encodeBlob(canvas, verifiedFormat);
+        const fullKB = fullBlob.size / 1024;
+        if (fullKB <= safeMaxKB && (!hasMinWindow || fullKB >= minKB!)) {
+          return buildResult(fullBlob, baseWidth, baseHeight, verifiedFormat);
+        }
+
+        let lowScale = 0.08;
+        let highScale = fullKB > safeMaxKB ? 1.0 : 1.6;
+        let bestUnder: { blob: Blob; w: number; h: number } | null =
+          fullKB <= safeMaxKB ? { blob: fullBlob, w: baseWidth, h: baseHeight } : null;
+        let smallest: { blob: Blob; w: number; h: number } = {
+          blob: fullBlob,
+          w: baseWidth,
+          h: baseHeight,
+        };
+
+        for (let step = 0; step < 6; step++) {
+          const midScale = (lowScale + highScale) / 2;
+          const { sw, sh } = drawScaled(midScale, false);
+          const blob = await encodeBlob(scanvas, verifiedFormat);
+          const sizeKB = blob.size / 1024;
+
+          if (blob.size < smallest.blob.size) {
+            smallest = { blob, w: sw, h: sh };
+          }
+
+          if (sizeKB <= safeMaxKB) {
+            if (!bestUnder || blob.size > bestUnder.blob.size) {
+              bestUnder = { blob, w: sw, h: sh };
+            }
+            if (sizeKB >= lowerBoundKB) {
+              return buildResult(blob, sw, sh, verifiedFormat);
+            }
+            lowScale = midScale;
+          } else {
+            highScale = midScale;
           }
         }
 
-        let scale = Math.max(0.1, Math.min(0.9, Math.sqrt(targetKB / Math.max(1, currentKB)) * 0.92));
-        let bestBlob: Blob | null = null;
-        let finalW = baseWidth;
-        let finalH = baseHeight;
-
-        for (let attempt = 0; attempt < 2; attempt++) {
-          const { sw, sh } = drawScaled(scale, false);
-          const blob = await encodeBlob(scanvas, verifiedFormat);
-          bestBlob = blob;
-          finalW = sw;
-          finalH = sh;
-          const sizeKB = blob.size / 1024;
-          if (sizeKB <= targetKB) break;
-          scale = Math.max(0.08, scale * Math.sqrt(targetKB / sizeKB) * 0.88);
-        }
-
-        return {
-          url: "",
-          size: bestBlob!.size,
-          width: finalW,
-          height: finalH,
-          format: verifiedFormat,
-          blob: bestBlob!,
-        };
+        const chosen = bestUnder || smallest;
+        return buildResult(chosen.blob, chosen.w, chosen.h, verifiedFormat);
       }
 
-      // Lossy formats (JPEG, WEBP, AVIF): Fast 1-to-3 pass adaptive encoder
+      // Lossy formats (JPEG, WEBP, AVIF):
+      // Helper that binary-searches quality on a given canvas in 7 steps
       const lossyFormat = verifiedFormat as "image/jpeg" | "image/webp" | "image/avif";
-      const probe72 = await encodeBlob(canvas, lossyFormat, 0.72);
-      const size72KB = probe72.size / 1024;
 
-      if (size72KB <= targetKB) {
-        if (size72KB >= targetKB * 0.65) {
-          return {
-            url: "",
-            size: probe72.size,
-            width: baseWidth,
-            height: baseHeight,
-            format: verifiedFormat,
-            blob: probe72,
-          };
+      const binarySearchQualityOnCanvas = async (
+        targetCanvas: HTMLCanvasElement,
+        steps = 7
+      ): Promise<{
+        bestUnder: Blob | null;
+        smallest: Blob;
+        largest: Blob;
+      }> => {
+        let lowQ = 0.08;
+        let highQ = 0.96;
+        let bestUnder: Blob | null = null;
+        let smallest: Blob | null = null;
+        let largest: Blob | null = null;
+
+        for (let i = 0; i < steps; i++) {
+          const midQ = Number(((lowQ + highQ) / 2).toFixed(4));
+          const blob = await encodeBlob(targetCanvas, lossyFormat, midQ);
+          const sizeKB = blob.size / 1024;
+
+          if (!smallest || blob.size < smallest.size) smallest = blob;
+          if (!largest || blob.size > largest.size) largest = blob;
+
+          if (sizeKB <= safeMaxKB) {
+            if (!bestUnder || blob.size > bestUnder.size) {
+              bestUnder = blob;
+            }
+            // If we landed inside the sweet spot [90%..100% of targetKB] (or [minKB..targetKB]), we can stop early if close to upper bound
+            if (sizeKB >= Math.max(lowerBoundKB, safeMaxKB * 0.93)) {
+              break;
+            }
+            lowQ = midQ;
+          } else {
+            highQ = midQ;
+          }
         }
-        const probe88 = await encodeBlob(canvas, lossyFormat, 0.88);
-        const best = probe88.size / 1024 <= targetKB ? probe88 : probe72;
+
         return {
-          url: "",
-          size: best.size,
-          width: baseWidth,
-          height: baseHeight,
-          format: verifiedFormat,
-          blob: best,
+          bestUnder,
+          smallest: smallest!,
+          largest: largest!,
         };
-      }
-
-      const probe42 = await encodeBlob(canvas, lossyFormat, 0.42);
-      const size42KB = probe42.size / 1024;
-
-      if (size42KB <= targetKB) {
-        return {
-          url: "",
-          size: probe42.size,
-          width: baseWidth,
-          height: baseHeight,
-          format: verifiedFormat,
-          blob: probe42,
-        };
-      }
-
-      let scale = Math.max(0.12, Math.min(0.9, Math.sqrt(targetKB / size42KB) * 0.92));
-      let bestBlob = probe42;
-      let finalWidth = baseWidth;
-      let finalHeight = baseHeight;
-
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const { sw, sh } = drawScaled(scale, lossyFormat === "image/jpeg");
-        const blob = await encodeBlob(scanvas, lossyFormat, 0.68);
-        bestBlob = blob;
-        finalWidth = sw;
-        finalHeight = sh;
-        const sizeKB = blob.size / 1024;
-        if (sizeKB <= targetKB) break;
-        scale = Math.max(0.1, scale * Math.sqrt(targetKB / sizeKB) * 0.88);
-      }
-
-      return {
-        url: "",
-        size: bestBlob.size,
-        width: finalWidth,
-        height: finalHeight,
-        format: verifiedFormat,
-        blob: bestBlob,
       };
+
+      // Step 1: Binary-search quality at 100% base dimensions
+      const fullResSearch = await binarySearchQualityOnCanvas(canvas, 7);
+
+      // Case A: Full resolution found a match under safeMaxKB that also satisfies lowerBoundKB (or no downscaling needed)
+      if (fullResSearch.bestUnder) {
+        const bestKB = fullResSearch.bestUnder.size / 1024;
+        if (bestKB >= lowerBoundKB) {
+          return buildResult(fullResSearch.bestUnder, baseWidth, baseHeight, verifiedFormat);
+        }
+        // If bestUnder at q ~ 0.96 is still below lowerBoundKB, check if q = 0.99 or slight upscale helps when minKB is required
+        if (hasMinWindow && bestKB < minKB!) {
+          const q99 = await encodeBlob(canvas, lossyFormat, 0.99);
+          if (q99.size / 1024 <= safeMaxKB && q99.size > fullResSearch.bestUnder.size) {
+            if (q99.size / 1024 >= minKB!) {
+              return buildResult(q99, baseWidth, baseHeight, verifiedFormat);
+            }
+            // Try gentle upscale (up to 1.75x) if portal requires a minimum KB floor
+            const upscaleRatio = Math.min(1.75, Math.sqrt(minKB! / Math.max(1, q99.size / 1024)) * 1.05);
+            if (upscaleRatio > 1.05) {
+              const { sw, sh } = drawScaled(upscaleRatio, lossyFormat === "image/jpeg");
+              const upSearch = await binarySearchQualityOnCanvas(scanvas, 5);
+              if (upSearch.bestUnder && upSearch.bestUnder.size > q99.size) {
+                return buildResult(upSearch.bestUnder, sw, sh, verifiedFormat);
+              }
+            }
+            return buildResult(q99, baseWidth, baseHeight, verifiedFormat);
+          }
+        }
+        // Otherwise bestUnder at full resolution (highest quality <= targetKB) is optimal
+        return buildResult(fullResSearch.bestUnder, baseWidth, baseHeight, verifiedFormat);
+      }
+
+      // Case B: Even lowest quality (q ~ 0.08) at full resolution exceeded safeMaxKB.
+      // Progressively scale down dimensions and binary-search quality at the scaled resolution.
+      let currentScale = Math.max(
+        0.1,
+        Math.min(0.88, Math.sqrt(safeMaxKB / Math.max(1, fullResSearch.smallest.size / 1024)) * 0.95)
+      );
+      let bestScaled: { blob: Blob; w: number; h: number } | null = null;
+      let smallestScaled: { blob: Blob; w: number; h: number } = {
+        blob: fullResSearch.smallest,
+        w: baseWidth,
+        h: baseHeight,
+      };
+
+      for (let scaleAttempt = 0; scaleAttempt < 4; scaleAttempt++) {
+        const { sw, sh } = drawScaled(currentScale, lossyFormat === "image/jpeg");
+        // Probe moderate quality (0.55) first to check if this scale can reach targetKB
+        const probeMid = await encodeBlob(scanvas, lossyFormat, 0.55);
+        const probeMidKB = probeMid.size / 1024;
+
+        if (probeMid.size < smallestScaled.blob.size) {
+          smallestScaled = { blob: probeMid, w: sw, h: sh };
+        }
+
+        if (probeMidKB <= safeMaxKB * 1.35) {
+          // Run binary search on quality at this scaled dimension to land at 90–100% of targetKB
+          const scaledSearch = await binarySearchQualityOnCanvas(scanvas, 6);
+          if (scaledSearch.smallest.size < smallestScaled.blob.size) {
+            smallestScaled = { blob: scaledSearch.smallest, w: sw, h: sh };
+          }
+          if (scaledSearch.bestUnder) {
+            bestScaled = { blob: scaledSearch.bestUnder, w: sw, h: sh };
+            const achievedKB = scaledSearch.bestUnder.size / 1024;
+            if (achievedKB >= lowerBoundKB) {
+              return buildResult(scaledSearch.bestUnder, sw, sh, verifiedFormat);
+            }
+            break;
+          }
+        }
+
+        // Still over targetKB: step scale down proportionally
+        const refKB = Math.max(1, smallestScaled.blob.size / 1024);
+        currentScale = Math.max(0.08, currentScale * Math.sqrt(safeMaxKB / refKB) * 0.85);
+      }
+
+      const finalChoice = bestScaled || smallestScaled;
+      return buildResult(finalChoice.blob, finalChoice.w, finalChoice.h, verifiedFormat);
     } finally {
       scanvas.width = 0;
       scanvas.height = 0;

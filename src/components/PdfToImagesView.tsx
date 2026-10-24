@@ -14,7 +14,6 @@ import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
-import ToolSkeletonLoader from "./ToolSkeletonLoader";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface PdfToImagesViewProps {
@@ -324,14 +323,6 @@ export default function PdfToImagesView({ onSuccess, askPassword, initialFile }:
             SELECT_PDF_FILE
           </button>
         </div>
-      ) : isProcessing ? (
-        <ToolSkeletonLoader
-          variant="pdf_to_images"
-          fileName={file.name}
-          fileSize={formatBytes(file.size)}
-          targetInfo="HIGH-DPI JPG/ZIP"
-          statusMessage={progressMsg || "RASTERIZING_PDF_PAGES..."}
-        />
       ) : (
         <div className="max-w-3xl mx-auto space-y-6">
           <div

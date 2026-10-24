@@ -2,46 +2,196 @@
   command = "npm run build"
   publish = "dist"
 
-[[edge_functions]]
-  path = "/*"
-  function = "canonical-redirect"
-
-[[redirects]]
-  from = "https://monotranscoder.netlify.app/*"
-  to = "https://monotranscoder.runs-on.dev/:splat"
-  status = 301
-  force = true
-
+# Force canonical redirect from default Netlify subdomain to custom domain
 [[redirects]]
   from = "https://mono-transcoder.netlify.app/*"
   to = "https://monotranscoder.runs-on.dev/:splat"
   status = 301
   force = true
 
+# 301 Redirects for legacy underscore & alias URLs
+[[redirects]]
+  from = "/compress_img"
+  to = "/compress-image"
+  status = 301
+
+[[redirects]]
+  from = "/compress_pdf"
+  to = "/compress-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/convert_img"
+  to = "/convert-image"
+  status = 301
+
+[[redirects]]
+  from = "/image_to_pdf"
+  to = "/image-to-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/img_to_pdf"
+  to = "/image-to-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/jpg-to-pdf"
+  to = "/image-to-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/merge_pdf"
+  to = "/merge-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/pdf_to_images"
+  to = "/pdf-to-images"
+  status = 301
+
+[[redirects]]
+  from = "/pdf_to_img"
+  to = "/pdf-to-images"
+  status = 301
+
+[[redirects]]
+  from = "/pdf-to-jpg"
+  to = "/pdf-to-images"
+  status = 301
+
+[[redirects]]
+  from = "/remove_pdf_pages"
+  to = "/remove-pdf-pages"
+  status = 301
+
+[[redirects]]
+  from = "/split_pdf"
+  to = "/remove-pdf-pages"
+  status = 301
+
+[[redirects]]
+  from = "/split-pdf"
+  to = "/remove-pdf-pages"
+  status = 301
+
+[[redirects]]
+  from = "/organize_pdf"
+  to = "/organize-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/reorder_pdf"
+  to = "/organize-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/reorder-pdf"
+  to = "/organize-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/rotate_pdf"
+  to = "/organize-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/rotate-pdf"
+  to = "/organize-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/watermark_pdf"
+  to = "/watermark-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/word_to_pdf"
+  to = "/word-to-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/word_to_jpg"
+  to = "/word-to-jpg"
+  status = 301
+
+[[redirects]]
+  from = "/word_to_img"
+  to = "/word-to-jpg"
+  status = 301
+
+[[redirects]]
+  from = "/pdf_to_word"
+  to = "/pdf-to-word"
+  status = 301
+
+[[redirects]]
+  from = "/excel_to_pdf"
+  to = "/excel-to-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/pdf_to_excel"
+  to = "/pdf-to-excel"
+  status = 301
+
+[[redirects]]
+  from = "/ppt_to_pdf"
+  to = "/powerpoint-to-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/ppt-to-pdf"
+  to = "/powerpoint-to-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/pdf_to_ppt"
+  to = "/pdf-to-powerpoint"
+  status = 301
+
+[[redirects]]
+  from = "/lock_pdf"
+  to = "/lock-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/unlock_pdf"
+  to = "/unlock-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/sign_pdf"
+  to = "/sign-pdf"
+  status = 301
+
+[[redirects]]
+  from = "/passport_photo"
+  to = "/passport-photo"
+  status = 301
+
+[[redirects]]
+  from = "/passport-photo-maker"
+  to = "/passport-photo"
+  status = 301
+
+[[redirects]]
+  from = "/donate"
+  to = "/support"
+  status = 301
+
+# Explicit 404 fallback so unknown URLs return HTTP 404 instead of Soft 404 (200)
 [[redirects]]
   from = "/*"
-  to = "/index.html"
-  status = 200
+  to = "/404.html"
+  status = 404
 
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/BingSiteAuth.xml"
-  [headers.values]
-    Content-Type = "application/xml; charset=utf-8"
-    Cache-Control = "public, max-age=3600"
-
-[[headers]]
-  for = "/sitemap.xml"
-  [headers.values]
-    Content-Type = "application/xml; charset=utf-8"
-
+# Security & SEO Headers
 [[headers]]
   for = "/*"
   [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=()"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://apis.google.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' blob: data: https://*.googleapis.com https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'self';"
