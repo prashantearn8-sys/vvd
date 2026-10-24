@@ -197,6 +197,15 @@ export default function BuyMeCoffeeSection({ onContactClick, isContactOpen }: Bu
     );
   };
 
+  const [isMobileDevice, setIsMobileDevice] = useState<boolean>(() => isMobilePlatform());
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobileDevice(isMobilePlatform());
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const isAndroid = () => {
     if (typeof navigator === "undefined") return false;
     return /Android/i.test(navigator.userAgent);
@@ -534,65 +543,75 @@ export default function BuyMeCoffeeSection({ onContactClick, isContactOpen }: Bu
             </div>
           </div>
 
-          {/* Action buttons: App Redirects & QR Launcher */}
+          {/* Action buttons: App Redirects (Mobile only) & QR Launcher */}
           <div className="pt-3 border-t border-zinc-800 space-y-3">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {/* Google Pay Button */}
-              <button
-                type="button"
-                disabled={isPayDisabled}
-                onClick={() => handleLaunchApp("gpay", "Google Pay")}
-                aria-label="Pay using Google Pay"
-                className={`py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
-                  isPayDisabled
-                    ? "opacity-40 cursor-not-allowed pointer-events-none"
-                    : "hover:border-emerald-400 hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#34A853] active:translate-y-0.5"
-                }`}
-              >
-                <GooglePayIcon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
-                <span className="truncate group-hover:text-emerald-300 transition-colors">
-                  GPay
-                </span>
-              </button>
+            <div
+              className={
+                isMobileDevice
+                  ? "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-1 gap-2"
+                  : "grid grid-cols-1 gap-2"
+              }
+            >
+              {isMobileDevice && (
+                <>
+                  {/* Google Pay Button (Mobile Only) */}
+                  <button
+                    type="button"
+                    disabled={isPayDisabled}
+                    onClick={() => handleLaunchApp("gpay", "Google Pay")}
+                    aria-label="Pay using Google Pay"
+                    className={`md:hidden py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
+                      isPayDisabled
+                        ? "opacity-40 cursor-not-allowed pointer-events-none"
+                        : "hover:border-emerald-400 hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#34A853] active:translate-y-0.5"
+                    }`}
+                  >
+                    <GooglePayIcon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
+                    <span className="truncate group-hover:text-emerald-300 transition-colors">
+                      GPay
+                    </span>
+                  </button>
 
-              {/* PhonePe Button (Enhanced Intent & Scheme Launch) */}
-              <button
-                type="button"
-                id="phonepe-pay-button"
-                disabled={isPayDisabled}
-                onClick={() => handleLaunchApp("phonepe", "PhonePe")}
-                aria-label="Pay using PhonePe"
-                className={`py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
-                  isPayDisabled
-                    ? "opacity-40 cursor-not-allowed pointer-events-none"
-                    : "hover:border-purple-500 hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#5F259F] active:translate-y-0.5"
-                }`}
-              >
-                <PhonePeIcon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
-                <span className="truncate group-hover:text-purple-300 transition-colors">
-                  PhonePe
-                </span>
-              </button>
+                  {/* PhonePe Button (Mobile Only) */}
+                  <button
+                    type="button"
+                    id="phonepe-pay-button"
+                    disabled={isPayDisabled}
+                    onClick={() => handleLaunchApp("phonepe", "PhonePe")}
+                    aria-label="Pay using PhonePe"
+                    className={`md:hidden py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
+                      isPayDisabled
+                        ? "opacity-40 cursor-not-allowed pointer-events-none"
+                        : "hover:border-purple-500 hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#5F259F] active:translate-y-0.5"
+                    }`}
+                  >
+                    <PhonePeIcon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
+                    <span className="truncate group-hover:text-purple-300 transition-colors">
+                      PhonePe
+                    </span>
+                  </button>
 
-              {/* Paytm Button */}
-              <button
-                type="button"
-                disabled={isPayDisabled}
-                onClick={() => handleLaunchApp("paytm", "Paytm")}
-                aria-label="Pay using Paytm"
-                className={`py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
-                  isPayDisabled
-                    ? "opacity-40 cursor-not-allowed pointer-events-none"
-                    : "hover:border-[#00BAF2] hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#00BAF2] active:translate-y-0.5"
-                }`}
-              >
-                <PaytmIcon className="w-5 h-3.5 shrink-0 transition-transform group-hover:scale-110" />
-                <span className="truncate group-hover:text-cyan-300 transition-colors">
-                  Paytm
-                </span>
-              </button>
+                  {/* Paytm Button (Mobile Only) */}
+                  <button
+                    type="button"
+                    disabled={isPayDisabled}
+                    onClick={() => handleLaunchApp("paytm", "Paytm")}
+                    aria-label="Pay using Paytm"
+                    className={`md:hidden py-2.5 px-2 bg-black border-2 border-zinc-800 rounded-lg flex items-center justify-center gap-1.5 text-white font-mono text-xs font-bold transition-all group ${
+                      isPayDisabled
+                        ? "opacity-40 cursor-not-allowed pointer-events-none"
+                        : "hover:border-[#00BAF2] hover:bg-zinc-900 cursor-pointer shadow-[1px_1px_0px_0px_#27272a] hover:shadow-[2px_2px_0px_0px_#00BAF2] active:translate-y-0.5"
+                    }`}
+                  >
+                    <PaytmIcon className="w-5 h-3.5 shrink-0 transition-transform group-hover:scale-110" />
+                    <span className="truncate group-hover:text-cyan-300 transition-colors">
+                      Paytm
+                    </span>
+                  </button>
+                </>
+              )}
 
-              {/* Mobile QR Button: Dedicated trigger to instantly reveal the QR code */}
+              {/* QR Button: Dedicated trigger to reveal the QR code */}
               <button
                 type="button"
                 id="mobile-show-qr-button"

@@ -198,55 +198,59 @@ select {
 html.light,
 html.light body,
 html.light #application-root {
-  background-color: #f4efe6 !important; /* Warm Alabaster / Creamy Linen canvas */
+  background-color: #f2ece1 !important; /* Warm Alabaster / Creamy Linen canvas */
   color: #1c1917 !important; /* Deep Espresso Stone Ink */
 }
 
-/* 2. Elevated Card & Container Surfaces */
+/* 2. Elevated Card & Container Surfaces (Little Creamy White instead of pure white) */
 html.light .bg-black {
-  background-color: #fdfbf7 !important; /* Crisp Creamy Ivory card surface */
+  background-color: #faf6ee !important; /* Soft Creamy White card surface */
   color: #1c1917 !important;
 }
 
+html.light .bg-white:not(.text-black) {
+  background-color: #faf6ee !important; /* Creamy White for standalone white containers */
+}
+
 html.light .bg-zinc-950 {
-  background-color: #f8f5ee !important; /* Soft Warm Parchment panel */
+  background-color: #f5efe4 !important; /* Soft Warm Cream Parchment panel */
   color: #1c1917 !important;
 }
 
 html.light .bg-zinc-900 {
-  background-color: #ebe5d8 !important; /* Warm Sand recessed surface / button */
+  background-color: #ebe4d6 !important; /* Warm Sand recessed surface / button */
   color: #1c1917 !important;
 }
 
 html.light .bg-zinc-800 {
-  background-color: #dfd8c8 !important; /* Deeper Warm Sand */
+  background-color: #dfd7c6 !important; /* Deeper Warm Sand */
   color: #1c1917 !important;
 }
 
 html.light .bg-zinc-900\/98,
 html.light .bg-black\/95 {
-  background-color: rgba(253, 251, 247, 0.96) !important;
+  background-color: rgba(250, 246, 238, 0.96) !important;
 }
 
 /* 3. Translucent Alert & Status Surfaces */
 html.light [class*="bg-red-950"] {
-  background-color: #fef2f2 !important;
+  background-color: #faf0ee !important;
   border-color: #f87171 !important;
 }
 
 html.light [class*="bg-emerald-950"] {
-  background-color: #ecfdf5 !important;
+  background-color: #eef6f1 !important;
   border-color: #34d399 !important;
 }
 
 html.light [class*="bg-amber-950"] {
-  background-color: #fffbeb !important;
+  background-color: #faf4e4 !important;
   border-color: #fbbf24 !important;
 }
 
 html.light [class*="bg-zinc-900/"],
 html.light [class*="bg-zinc-950/"] {
-  background-color: #efeae0 !important;
+  background-color: #efe9de !important;
 }
 
 /* 4. Borders & Dividers */
@@ -284,20 +288,20 @@ html.light .text-zinc-600 {
 /* 6. Primary Inverted CTAs, Active Tabs & Launch Buttons (.bg-white.text-black) */
 html.light .bg-white.text-black {
   background-color: #1c1917 !important; /* Deep Espresso Charcoal button */
-  color: #fdfbf7 !important; /* Creamy White text */
+  color: #faf6ee !important; /* Creamy White text */
   border-color: #1c1917 !important;
 }
 
 html.light .bg-white.text-black:hover,
 html.light .group:hover .group-hover\:bg-zinc-200.bg-white.text-black {
   background-color: #332e2a !important;
-  color: #fdfbf7 !important;
+  color: #faf6ee !important;
 }
 
 html.light .bg-white.text-black span,
 html.light .bg-white.text-black svg,
 html.light .bg-white.text-black div {
-  color: #fdfbf7 !important;
+  color: #faf6ee !important;
 }
 
 /* Keep amber highlights vivid inside selected preset cards */
@@ -305,10 +309,10 @@ html.light .bg-white.text-black .text-amber-600 {
   color: #fbbf24 !important;
 }
 
-/* 7. Preserve White Icons/Text on Solid Colored Buttons & Module Icon Badges */
+/* 7. Preserve Creamy White Icons/Text on Solid Colored Buttons & Module Icon Badges */
 html.light .bg-red-600 {
   background-color: #dc2626 !important;
-  color: #ffffff !important;
+  color: #faf6ee !important;
   border-color: #b91c1c !important;
 }
 
@@ -316,7 +320,7 @@ html.light .bg-red-600 svg,
 html.light .bg-red-600 span,
 .module-icon-badge,
 .module-icon-badge svg {
-  color: #ffffff !important;
+  color: #faf6ee !important;
 }
 
 html.light .bg-red-600:hover {
@@ -391,7 +395,7 @@ html.light .shadow-\[3px_3px_0px_0px_\#ffffff\] {
 html.light input,
 html.light textarea,
 html.light select {
-  background-color: #fdfbf7 !important;
+  background-color: #faf6ee !important;
   color: #1c1917 !important;
   border-color: #c7bfb0 !important;
 }
@@ -400,7 +404,7 @@ html.light input:focus,
 html.light textarea:focus,
 html.light select:focus {
   border-color: #1c1917 !important;
-  background-color: #ffffff !important;
+  background-color: #fcf9f2 !important; /* Soft Creamy White on focus, never stark #ffffff */
 }
 
 html.light input::placeholder,
@@ -410,28 +414,28 @@ html.light textarea::placeholder {
 
 /* 11. Structural Header, Navigation & Footer */
 html.light #site-header {
-  background-color: rgba(253, 251, 247, 0.96) !important;
+  background-color: rgba(250, 246, 238, 0.96) !important;
   border-bottom-color: #1c1917 !important;
 }
 
 html.light #tools-navigation {
-  background-color: #ebe5d8 !important;
+  background-color: #ebe4d6 !important;
   border-bottom-color: #1c1917 !important;
 }
 
 html.light #application-footer {
-  background-color: #ebe5d8 !important;
+  background-color: #ebe4d6 !important;
   border-top-color: #1c1917 !important;
   color: #292524 !important;
 }
 
 /* 12. Interactive Hover States */
 html.light .hover\:bg-zinc-950:hover {
-  background-color: #ffffff !important;
+  background-color: #fcf9f2 !important; /* Soft Creamy White on card hover, never stark #ffffff */
 }
 
 html.light .hover\:bg-zinc-800:hover {
-  background-color: #dfd8c8 !important;
+  background-color: #dfd7c6 !important;
 }
 
 html.light .hover\:border-white:hover,
@@ -637,7 +641,7 @@ html.dark .hover\:border-zinc-500:hover {
 }
 
 .animate-celestial-wash {
-  animation: celestial-wash-fade 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: celestial-wash-fade 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes solar-corona-spin {
@@ -655,7 +659,7 @@ html.dark .hover\:border-zinc-500:hover {
 }
 
 .animate-solar-corona {
-  animation: solar-corona-spin 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: solar-corona-spin 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes solar-mote-fly {
@@ -674,7 +678,7 @@ html.dark .hover\:border-zinc-500:hover {
 }
 
 .animate-solar-mote {
-  animation: solar-mote-fly 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: solar-mote-fly 640ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes lunar-halo-expand {
@@ -689,7 +693,7 @@ html.dark .hover\:border-zinc-500:hover {
 }
 
 .animate-lunar-halo {
-  animation: lunar-halo-expand 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: lunar-halo-expand 640ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes nightfall-star-twinkle {
@@ -712,7 +716,7 @@ html.dark .hover\:border-zinc-500:hover {
 }
 
 .animate-nightfall-star {
-  animation: nightfall-star-twinkle 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: nightfall-star-twinkle 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes shooting-star-streak {
@@ -731,7 +735,7 @@ html.dark .hover\:border-zinc-500:hover {
 }
 
 .animate-shooting-star {
-  animation: shooting-star-streak 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: shooting-star-streak 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* Only suppress color/background transitions during the 1-frame View Transition snapshot */
@@ -746,8 +750,8 @@ html.theme-smooth-fade,
 html.theme-smooth-fade body,
 html.theme-smooth-fade #application-root {
   transition:
-    background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    color 220ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+    background-color 450ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 450ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 

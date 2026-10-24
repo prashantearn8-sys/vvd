@@ -24,33 +24,33 @@ const ThemeContext = createContext<ThemeContextType>({
 // Pre-computed starfield coordinates for Light -> Dark nightfall transition
 const NIGHTFALL_STARS = [
   { cx: 180, cy: 140, r: 2.2, delay: "0ms" },
-  { cx: 340, cy: 95, r: 1.8, delay: "12ms" },
-  { cx: 560, cy: 175, r: 2.6, delay: "24ms" },
-  { cx: 780, cy: 110, r: 2.0, delay: "8ms" },
-  { cx: 1020, cy: 205, r: 2.4, delay: "28ms" },
-  { cx: 1240, cy: 130, r: 2.0, delay: "5ms" },
-  { cx: 260, cy: 360, r: 2.0, delay: "32ms" },
-  { cx: 490, cy: 420, r: 2.4, delay: "20ms" },
-  { cx: 740, cy: 310, r: 1.8, delay: "36ms" },
-  { cx: 960, cy: 450, r: 2.6, delay: "16ms" },
-  { cx: 1180, cy: 340, r: 2.1, delay: "14ms" },
-  { cx: 1360, cy: 390, r: 2.3, delay: "10ms" },
-  { cx: 230, cy: 620, r: 2.3, delay: "40ms" },
-  { cx: 640, cy: 590, r: 2.0, delay: "28ms" },
-  { cx: 890, cy: 650, r: 2.4, delay: "34ms" },
-  { cx: 1150, cy: 580, r: 1.9, delay: "22ms" },
+  { cx: 340, cy: 95, r: 1.8, delay: "25ms" },
+  { cx: 560, cy: 175, r: 2.6, delay: "50ms" },
+  { cx: 780, cy: 110, r: 2.0, delay: "15ms" },
+  { cx: 1020, cy: 205, r: 2.4, delay: "60ms" },
+  { cx: 1240, cy: 130, r: 2.0, delay: "10ms" },
+  { cx: 260, cy: 360, r: 2.0, delay: "70ms" },
+  { cx: 490, cy: 420, r: 2.4, delay: "40ms" },
+  { cx: 740, cy: 310, r: 1.8, delay: "80ms" },
+  { cx: 960, cy: 450, r: 2.6, delay: "35ms" },
+  { cx: 1180, cy: 340, r: 2.1, delay: "30ms" },
+  { cx: 1360, cy: 390, r: 2.3, delay: "20ms" },
+  { cx: 230, cy: 620, r: 2.3, delay: "90ms" },
+  { cx: 640, cy: 590, r: 2.0, delay: "55ms" },
+  { cx: 890, cy: 650, r: 2.4, delay: "75ms" },
+  { cx: 1150, cy: 580, r: 1.9, delay: "45ms" },
 ];
 
 // Pre-computed golden sun motes for Dark -> Light sunrise transition
 const SUNRISE_MOTES = [
   { angle: -165, dist: 220, size: 4.5, delay: "0ms" },
-  { angle: -152, dist: 340, size: 3.5, delay: "10ms" },
-  { angle: -140, dist: 460, size: 5.0, delay: "18ms" },
-  { angle: -128, dist: 280, size: 4.0, delay: "6ms" },
-  { angle: -115, dist: 410, size: 4.5, delay: "14ms" },
-  { angle: -102, dist: 250, size: 3.5, delay: "12ms" },
-  { angle: -175, dist: 380, size: 4.5, delay: "22ms" },
-  { angle: -146, dist: 580, size: 5.0, delay: "26ms" },
+  { angle: -152, dist: 340, size: 3.5, delay: "20ms" },
+  { angle: -140, dist: 460, size: 5.0, delay: "40ms" },
+  { angle: -128, dist: 280, size: 4.0, delay: "12ms" },
+  { angle: -115, dist: 410, size: 4.5, delay: "30ms" },
+  { angle: -102, dist: 250, size: 3.5, delay: "25ms" },
+  { angle: -175, dist: 380, size: 4.5, delay: "48ms" },
+  { angle: -146, dist: 580, size: 5.0, delay: "60ms" },
 ];
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -196,7 +196,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                 ],
               },
               {
-                duration: 320,
+                duration: 580,
                 easing: "cubic-bezier(0.22, 1, 0.36, 1)",
                 pseudoElement: "::view-transition-new(root)",
               }
@@ -219,12 +219,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       applyThemeChange();
       fadeTimerRef.current = window.setTimeout(() => {
         root.classList.remove("theme-smooth-fade");
-      }, 240);
+      }, 480);
     }
 
     fxTimerRef.current = window.setTimeout(() => {
       setCelestialFX(null);
-    }, 420);
+    }, 750);
   };
 
   return (

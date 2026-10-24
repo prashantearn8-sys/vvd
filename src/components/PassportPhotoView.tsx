@@ -27,6 +27,7 @@ import { formatBytes, yieldFrame } from "../utils/imageProcessor";
 import { saveFile } from "../utils/db";
 import { sanitizeFilename } from "../utils/sanitizer";
 import ToolSkeletonLoader from "./ToolSkeletonLoader";
+import ModuleIconBadge from "./ModuleIconBadge";
 
 interface PassportPhotoViewProps {
   initialFile?: File | null;
@@ -744,7 +745,7 @@ export default function PassportPhotoView({
       const baseName = sanitizeFilename(
         selectedFile.name.replace(/\.[^/.]+$/, "")
       );
-      const outName = `${baseName}${suffix}.png`;
+      const outName = `${baseName}_monotranscoder`;
 
       await yieldFrame();
       await saveFile("passport_photo", {
@@ -847,7 +848,9 @@ export default function PassportPhotoView({
           }}
           className="border-2 border-dashed border-zinc-700 hover:border-white rounded-2xl p-10 text-center bg-zinc-950/60 transition-all cursor-pointer"
         >
-          <UserCheck className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
+          <div className="mx-auto mb-3 flex items-center justify-center">
+            <ModuleIconBadge view="passport_photo" size="lg" />
+          </div>
           <p className="font-sans font-bold text-base uppercase text-white mb-1">
             DROP PORTRAIT PHOTO HERE OR CLICK TO BROWSE
           </p>

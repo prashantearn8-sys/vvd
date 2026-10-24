@@ -22,6 +22,17 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import {
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  where,
+  serverTimestamp,
+} from "firebase/firestore";
 import { PDFDocument } from "pdf-lib";
 import { formatBytes, yieldFrame } from "../utils/imageProcessor";
 import { saveFile } from "../utils/db";
@@ -29,14 +40,27 @@ import { loadPdfJsLibrary } from "../utils/pdfProcessor";
 import { sanitizeFilename } from "../utils/sanitizer";
 import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
+import { useAuth, UID_MAX_LENGTH, UID_PATTERN } from "../context/AuthContext";
+import { db, handleFirestoreError, OperationType } from "../firebase";
 import { logger } from "../utils/logger";
 import ToolSkeletonLoader from "./ToolSkeletonLoader";
+import ModuleIconBadge from "./ModuleIconBadge";
 import { processSignatureBuffer } from "../modules/signature-extractor/signatureProcessor";
 import {
   NormalizedCropRect,
   DEFAULT_PROCESSING_PARAMS,
   ThresholdMethod,
 } from "../modules/signature-extractor/types";
+
+// Validation constants synchronized verbatim with firebase-blueprint.json (UserSignature)
+const SIG_ID_MAX_LENGTH = 128;
+const SIG_ID_PATTERN = /^[a-zA-Z0-9_\-]+$/;
+const SIG_LABEL_MAX_LENGTH = 100;
+const SIG_DATA_URL_MIN_LENGTH = 20;
+const SIG_DATA_URL_MAX_LENGTH = 250000;
+const SIG_INK_COLOR_MAX_LENGTH = 20;
+const SIG_TYPED_NAME_MAX_LENGTH = 120;
+const SIG_FONT_ID_MAX_LENGTH = 40;
 
 interface SignPdfViewProps {
   onSuccess: () => void;
@@ -293,6 +317,40 @@ async function processMergedSignatureImage(
   });
 }
 
+async function compactSignatureDataUrl(dataUrl: string): Promise<string> {
+  if (dataUrl.length <= SIG_DATA_URL_MAX_LENGTH) {
+    return dataUrl;
+  }
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 520;
+      const maxH = 200;
+      const w = img.naturalWidth || 400;
+      const h = img.naturalHeight || 160;
+      const scale = Math.min(1, maxW / Math.max(1, w), maxH / Math.max(1, h));
+      const cw = Math.max(1, Math.round(w * scale));
+      const ch = Math.max(1, Math.round(h * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = cw;
+      canvas.height = ch;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.drawImage(img, 0, 0, cw, ch);
+        const compressed = canvas.toDataURL("image/png");
+        canvas.width = 0;
+        canvas.height = 0;
+        resolve(compressed.slice(0, SIG_DATA_URL_MAX_LENGTH));
+        return;
+      }
+      resolve(dataUrl.slice(0, SIG_DATA_URL_MAX_LENGTH));
+    };
+    img.onerror = () => resolve(dataUrl.slice(0, SIG_DATA_URL_MAX_LENGTH));
+    img.src = dataUrl;
+  });
+}
+
 type CropDragMode = "none" | "move" | "nw" | "ne" | "sw" | "se";
 
 export default function SignPdfView({
@@ -302,6 +360,7 @@ export default function SignPdfView({
 }: SignPdfViewProps) {
   const { showToast } = useToast();
   const { registerDropHandler } = useFileDrop();
+  const { user, isAuthReady } = useAuth();
 
   const [file, setFile] = useState<File | null>(null);
   const [totalPages, setTotalPages] = useState<number>(0);
@@ -328,7 +387,7 @@ export default function SignPdfView({
   const [includeDateStamp, setIncludeDateStamp] = useState<boolean>(false);
   const [includeFlourish, setIncludeFlourish] = useState<boolean>(false);
 
-  // Merged Image Upload + 9-Step Extractor states (Default removeBg is OFF)
+  // Merged Image Upload + 9-Step Extractor states (Default removeBg is ON)
   const [rawUploadedSigDataUrl, setRawUploadedSigDataUrl] = useState<
     string | null
   >(null);
@@ -340,7 +399,7 @@ export default function SignPdfView({
     width: 0.88,
     height: 0.84,
   });
-  const [removeBg, setRemoveBg] = useState<boolean>(false);
+  const [removeBg, setRemoveBg] = useState<boolean>(true);
   const [bgThreshold, setBgThreshold] = useState<number>(55);
   const [inkContrast, setInkContrast] = useState<number>(10); // Maps to noise removal (0..100)
   const [strokeBoost, setStrokeBoost] = useState<number>(0); // -2 to +2 px
@@ -833,6 +892,176 @@ export default function SignPdfView({
     setRotatingSigId(null);
   }, []);
 
+  // Track signature IDs already synced or in-flight to Firestore for the current user
+  const syncedSigIdsRef = useRef<Set<string>>(new Set());
+  const savedSignaturesRef = useRef<SavedSignatureTemplate[]>([]);
+  useEffect(() => {
+    savedSignaturesRef.current = savedSignatures;
+  }, [savedSignatures]);
+
+  // Persist a saved signature template to Firestore when user is signed in
+  const persistSignatureToFirestore = useCallback(
+    async (template: SavedSignatureTemplate) => {
+      if (!user || !user.emailVerified) return;
+      const uid = user.uid;
+      if (!uid || uid.length > UID_MAX_LENGTH || !UID_PATTERN.test(uid)) return;
+
+      const safeSigId = template.id
+        .replace(/[^a-zA-Z0-9_\-]/g, "_")
+        .slice(0, SIG_ID_MAX_LENGTH);
+      if (!safeSigId || !SIG_ID_PATTERN.test(safeSigId)) return;
+
+      const dedupKey = `${uid}:${safeSigId}`;
+      if (syncedSigIdsRef.current.has(dedupKey)) return;
+      syncedSigIdsRef.current.add(dedupKey);
+
+      const compactUrl = await compactSignatureDataUrl(template.dataUrl);
+      if (
+        compactUrl.length < SIG_DATA_URL_MIN_LENGTH ||
+        compactUrl.length > SIG_DATA_URL_MAX_LENGTH
+      ) {
+        syncedSigIdsRef.current.delete(dedupKey);
+        return;
+      }
+
+      const safeLabel =
+        (template.label || "SAVED SIGNATURE").trim().slice(0, SIG_LABEL_MAX_LENGTH) ||
+        "SAVED SIGNATURE";
+      const safeMode: SignatureSourceMode =
+        template.sigMode === "DRAW" ||
+        template.sigMode === "TYPE" ||
+        template.sigMode === "UPLOAD"
+          ? template.sigMode
+          : "UPLOAD";
+      const safeInkColor =
+        (template.inkColor || "#000000").trim().slice(0, SIG_INK_COLOR_MAX_LENGTH) ||
+        "#000000";
+      const safeTypedName = (template.typedName || "")
+        .trim()
+        .slice(0, SIG_TYPED_NAME_MAX_LENGTH);
+      const safeFontId =
+        (template.fontId || "great_vibes").trim().slice(0, SIG_FONT_ID_MAX_LENGTH) ||
+        "great_vibes";
+
+      const sigDocPath = `users/${uid}/signatures/${safeSigId}`;
+      const sigDocRef = doc(db, "users", uid, "signatures", safeSigId);
+      try {
+        const existingSnap = await getDoc(sigDocRef);
+        if (existingSnap.exists()) {
+          return;
+        }
+        await setDoc(sigDocRef, {
+          uid,
+          sigId: safeSigId,
+          label: safeLabel,
+          dataUrl: compactUrl,
+          sigMode: safeMode,
+          inkColor: safeInkColor,
+          typedName: safeTypedName,
+          fontId: safeFontId,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      } catch (error) {
+        syncedSigIdsRef.current.delete(dedupKey);
+        try {
+          handleFirestoreError(error, OperationType.WRITE, sigDocPath);
+        } catch {
+          // Handled and logged
+        }
+      }
+    },
+    [user]
+  );
+
+  // Real-time listener to load user's saved signatures from Firestore when signed in
+  useEffect(() => {
+    if (!isAuthReady) {
+      return;
+    }
+    if (!user) {
+      syncedSigIdsRef.current.clear();
+      setSavedSignatures([]);
+      return;
+    }
+    const uid = user.uid;
+    if (!uid || uid.length > UID_MAX_LENGTH || !UID_PATTERN.test(uid)) {
+      return;
+    }
+
+    const colPath = `users/${uid}/signatures`;
+    const sigsQuery = query(
+      collection(db, "users", uid, "signatures"),
+      where("uid", "==", uid)
+    );
+    const unsub = onSnapshot(
+      sigsQuery,
+      (snap) => {
+        const cloudTemplates: SavedSignatureTemplate[] = snap.docs
+          .map((docSnap) => {
+            const d = docSnap.data();
+            const mode: SignatureSourceMode =
+              d.sigMode === "DRAW" || d.sigMode === "TYPE" || d.sigMode === "UPLOAD"
+                ? d.sigMode
+                : "UPLOAD";
+            const url = String(d.dataUrl || "");
+            const idStr = String(d.sigId || docSnap.id);
+            syncedSigIdsRef.current.add(`${uid}:${idStr}`);
+            return {
+              id: idStr,
+              dataUrl: url,
+              sigMode: mode,
+              inkColor: (d.inkColor as InkColor) || "#000000",
+              label: String(d.label || "SAVED SIGNATURE"),
+              typedName: String(d.typedName || ""),
+              fontId: (d.fontId as SignatureFontId) || "great_vibes",
+              includeDateStamp: false,
+              includeFlourish: false,
+              rawUploadDataUrl: mode === "UPLOAD" ? url : null,
+              removeBg: true,
+              bgThreshold: 55,
+              inkContrast: 10,
+              strokeBoost: 0,
+              recolorUploadInk: false,
+            };
+          })
+          .filter((item) => item.dataUrl.length >= SIG_DATA_URL_MIN_LENGTH);
+
+        const cloudIds = new Set(cloudTemplates.map((c) => c.id));
+        const cloudUrls = new Set(cloudTemplates.map((c) => c.dataUrl));
+        const localUnsynced = savedSignaturesRef.current.filter((p) => {
+          const safeId = p.id
+            .replace(/[^a-zA-Z0-9_\-]/g, "_")
+            .slice(0, SIG_ID_MAX_LENGTH);
+          return (
+            !cloudIds.has(p.id) &&
+            !cloudIds.has(safeId) &&
+            !cloudUrls.has(p.dataUrl) &&
+            !syncedSigIdsRef.current.has(`${uid}:${safeId}`)
+          );
+        });
+        for (const unsynced of localUnsynced) {
+          void persistSignatureToFirestore(unsynced);
+        }
+
+        const merged = [...cloudTemplates, ...localUnsynced];
+        setSavedSignatures(merged);
+        if (merged.length > 0 && !signatureDataUrl && placedSignatures.length === 0) {
+          setIsStudioOpen(false);
+        }
+      },
+      (error) => {
+        try {
+          handleFirestoreError(error, OperationType.LIST, colPath);
+        } catch {
+          // Handled and logged
+        }
+      }
+    );
+
+    return () => unsub();
+  }, [isAuthReady, user, persistSignatureToFirestore]);
+
   // Save the currently created signature in the studio, close the studio, and show Recent Signatures
   const handleSaveSignatureFromStudio = () => {
     if (!signatureDataUrl) {
@@ -850,17 +1079,16 @@ export default function SignPdfView({
         ? `TYPED (${typedName.trim().slice(0, 12) || "TEXT"})`
         : "IMAGE";
 
-    setSavedSignatures((prev) => {
-      const existingIdx = prev.findIndex((s) => s.dataUrl === signatureDataUrl);
-      if (existingIdx !== -1) {
-        return prev;
-      }
+    const currentSaved = savedSignaturesRef.current;
+    const alreadyExists = currentSaved.some((s) => s.dataUrl === signatureDataUrl);
+    if (!alreadyExists) {
+      const uniqueSuffix = Math.random().toString(36).slice(2, 7);
       const newSaved: SavedSignatureTemplate = {
-        id: `saved_sig_${Date.now()}_${prev.length + 1}`,
+        id: `saved_sig_${Date.now()}_${uniqueSuffix}`,
         dataUrl: signatureDataUrl,
         sigMode,
         inkColor,
-        label: `SIG #${prev.length + 1} • ${modeTag}`,
+        label: `SIG #${currentSaved.length + 1} - ${modeTag}`,
         typedName,
         fontId: selectedFontId,
         includeDateStamp,
@@ -872,8 +1100,13 @@ export default function SignPdfView({
         strokeBoost,
         recolorUploadInk: removeBg ? recolorUploadInk : false,
       };
-      return [...prev, newSaved];
-    });
+      setSavedSignatures((prev) =>
+        prev.some((s) => s.dataUrl === signatureDataUrl)
+          ? prev
+          : [...prev, newSaved]
+      );
+      void persistSignatureToFirestore(newSaved);
+    }
 
     setIsStudioOpen(false);
   };
@@ -888,7 +1121,7 @@ export default function SignPdfView({
     setTypedName("");
     setRawUploadedSigDataUrl(null);
     setUploadSourceImg(null);
-    setRemoveBg(false);
+    setRemoveBg(true);
     setRecolorUploadInk(false);
     setSignatureDataUrl(null);
     hasDrawnStrokesRef.current = false;
@@ -1053,60 +1286,86 @@ export default function SignPdfView({
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === "string") {
-          const dataUrl = reader.result;
-          const newId = `sig_${Date.now()}_${placedSignatures.length + 1}`;
-          const newItem: PlacedSignatureItem = {
-            id: newId,
-            pageNumber: currentPage,
-            targetScope: "CURRENT_PAGE",
-            posX: dropX,
-            posY: dropY,
-            widthRatio: 0.28,
-            rotation: 0,
-            dataUrl,
-            sigMode: "UPLOAD",
-            inkColor: "#000000",
-            typedName: "",
-            fontId: "great_vibes",
-            includeDateStamp: false,
-            includeFlourish: false,
-            rawUploadDataUrl: dataUrl,
-            removeBg: false,
-            bgThreshold: 55,
-            inkContrast: 10,
-            strokeBoost: 0,
-            recolorUploadInk: false,
+          const rawUrl = reader.result;
+          const defaultCrop: NormalizedCropRect = {
+            x: 0.06,
+            y: 0.08,
+            width: 0.88,
+            height: 0.84,
           };
-          isSwitchingActiveSigRef.current = true;
-          lastEditedSigIdRef.current = newId;
-          setPlacedSignatures((prev) => [...prev, newItem]);
-          setSavedSignatures((prev) => [
-            ...prev,
-            {
-              id: `saved_sig_${Date.now()}_${prev.length + 1}`,
-              dataUrl,
+          processMergedSignatureImage(
+            rawUrl,
+            defaultCrop,
+            true,
+            55,
+            0,
+            10,
+            "otsu",
+            true,
+            false,
+            "#000000"
+          ).then((processedDataUrl) => {
+            const newId = `sig_${Date.now()}_${placedSignatures.length + 1}`;
+            const newItem: PlacedSignatureItem = {
+              id: newId,
+              pageNumber: currentPage,
+              targetScope: "CURRENT_PAGE",
+              posX: dropX,
+              posY: dropY,
+              widthRatio: 0.28,
+              rotation: 0,
+              dataUrl: processedDataUrl,
               sigMode: "UPLOAD",
               inkColor: "#000000",
-              label: `SIG #${prev.length + 1} • IMAGE`,
               typedName: "",
               fontId: "great_vibes",
               includeDateStamp: false,
               includeFlourish: false,
-              rawUploadDataUrl: dataUrl,
-              removeBg: false,
+              rawUploadDataUrl: rawUrl,
+              removeBg: true,
               bgThreshold: 55,
               inkContrast: 10,
               strokeBoost: 0,
               recolorUploadInk: false,
-            },
-          ]);
-          setActiveSigId(newId);
-          setPosX(dropX);
-          setPosY(dropY);
-          setWidthRatio(0.28);
-          setRotation(0);
-          requestAnimationFrame(() => {
-            isSwitchingActiveSigRef.current = false;
+            };
+            isSwitchingActiveSigRef.current = true;
+            lastEditedSigIdRef.current = newId;
+            setPlacedSignatures((prev) => [...prev, newItem]);
+            const currentSaved = savedSignaturesRef.current;
+            if (!currentSaved.some((s) => s.dataUrl === processedDataUrl)) {
+              const uniqueSuffix = Math.random().toString(36).slice(2, 7);
+              const droppedTemplate: SavedSignatureTemplate = {
+                id: `saved_sig_${Date.now()}_${uniqueSuffix}`,
+                dataUrl: processedDataUrl,
+                sigMode: "UPLOAD",
+                inkColor: "#000000",
+                label: `SIG #${currentSaved.length + 1} - IMAGE`,
+                typedName: "",
+                fontId: "great_vibes",
+                includeDateStamp: false,
+                includeFlourish: false,
+                rawUploadDataUrl: rawUrl,
+                removeBg: true,
+                bgThreshold: 55,
+                inkContrast: 10,
+                strokeBoost: 0,
+                recolorUploadInk: false,
+              };
+              setSavedSignatures((prev) =>
+                prev.some((s) => s.dataUrl === processedDataUrl)
+                  ? prev
+                  : [...prev, droppedTemplate]
+              );
+              void persistSignatureToFirestore(droppedTemplate);
+            }
+            setActiveSigId(newId);
+            setPosX(dropX);
+            setPosY(dropY);
+            setWidthRatio(0.28);
+            setRotation(0);
+            requestAnimationFrame(() => {
+              isSwitchingActiveSigRef.current = false;
+            });
           });
         }
       };
@@ -1114,7 +1373,7 @@ export default function SignPdfView({
     }
   };
 
-  // Delete a saved signature template from the Recent Signatures list
+  // Delete a saved signature template from the Recent Signatures list (and Firestore if signed in)
   const handleDeleteSavedSignature = (
     e: React.MouseEvent,
     templateId: string
@@ -1127,6 +1386,23 @@ export default function SignPdfView({
       }
       return next;
     });
+
+    if (user && user.emailVerified) {
+      const uid = user.uid;
+      const safeSigId = templateId
+        .replace(/[^a-zA-Z0-9_\-]/g, "_")
+        .slice(0, SIG_ID_MAX_LENGTH);
+      if (uid && safeSigId && SIG_ID_PATTERN.test(safeSigId)) {
+        const sigDocPath = `users/${uid}/signatures/${safeSigId}`;
+        deleteDoc(doc(db, "users", uid, "signatures", safeSigId)).catch((err) => {
+          try {
+            handleFirestoreError(err, OperationType.DELETE, sigDocPath);
+          } catch {
+            // Handled and logged
+          }
+        });
+      }
+    }
   };
 
   // Remove a placed signature from the PDF page
@@ -1721,6 +1997,56 @@ export default function SignPdfView({
   const handleApplySignatureAndExport = async () => {
     if (!file || validPlacedSignatures.length === 0 || isProcessing) return;
 
+    // Automatically save any placed signatures that haven't been saved yet
+    const newlyAutoSaved: SavedSignatureTemplate[] = [];
+    const existingList = [...savedSignaturesRef.current];
+    for (const sig of validPlacedSignatures) {
+      if (
+        !existingList.some((existing) => existing.dataUrl === sig.dataUrl) &&
+        !newlyAutoSaved.some((added) => added.dataUrl === sig.dataUrl)
+      ) {
+        const modeTag =
+          sig.sigMode === "DRAW"
+            ? "DRAWN"
+            : sig.sigMode === "TYPE"
+            ? `TYPED (${sig.typedName.trim().slice(0, 12) || "TEXT"})`
+            : "IMAGE";
+        const uniqueSuffix = Math.random().toString(36).slice(2, 7);
+        const autoSaved: SavedSignatureTemplate = {
+          id: `saved_sig_${Date.now()}_${uniqueSuffix}`,
+          dataUrl: sig.dataUrl,
+          sigMode: sig.sigMode,
+          inkColor: sig.inkColor,
+          label: `SIG #${existingList.length + newlyAutoSaved.length + 1} - ${modeTag}`,
+          typedName: sig.typedName,
+          fontId: sig.fontId,
+          includeDateStamp: sig.includeDateStamp,
+          includeFlourish: sig.includeFlourish,
+          rawUploadDataUrl: sig.rawUploadDataUrl,
+          removeBg: sig.removeBg,
+          bgThreshold: sig.bgThreshold,
+          inkContrast: sig.inkContrast,
+          strokeBoost: sig.strokeBoost,
+          recolorUploadInk: sig.recolorUploadInk,
+        };
+        newlyAutoSaved.push(autoSaved);
+      }
+    }
+    if (newlyAutoSaved.length > 0) {
+      setSavedSignatures((prev) => {
+        const next = [...prev];
+        for (const item of newlyAutoSaved) {
+          if (!next.some((existing) => existing.dataUrl === item.dataUrl)) {
+            next.push(item);
+          }
+        }
+        return next;
+      });
+      for (const item of newlyAutoSaved) {
+        void persistSignatureToFirestore(item);
+      }
+    }
+
     setIsProcessing(true);
     setProgressMsg("EMBEDDING_DIGITAL_INK_SIGNATURES...");
 
@@ -1947,7 +2273,7 @@ export default function SignPdfView({
 
       const outBlob = new Blob([outputPdfBytes], { type: "application/pdf" });
       const cleanName = sanitizeFilename(file.name.replace(/\.[^/.]+$/, ""));
-      const defaultFilename = `${cleanName}_signed_monotranscoder`;
+      const defaultFilename = `${cleanName}_monotranscoder`;
 
       await saveFile("sign_pdf", {
         blob: outBlob,
@@ -2036,8 +2362,8 @@ export default function SignPdfView({
             className="hidden"
             aria-label="Select PDF Document"
           />
-          <div className="mx-auto w-12 h-12 border-2 border-zinc-700 bg-zinc-900 flex items-center justify-center text-white mb-4 rounded">
-            <PenTool className="w-6 h-6" />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <ModuleIconBadge view="sign_pdf" size="lg" />
           </div>
           <h3 className="font-sans font-bold text-base uppercase mb-1 text-white">
             DRAG AND DROP OR BROWSE PDF TO SIGN
@@ -2721,7 +3047,7 @@ export default function SignPdfView({
                             <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
                               {removeBg
                                 ? "9-step Otsu/Adaptive ink extractor active."
-                                : "Default Off: using cropped signature image as-is."}
+                                : "Off: using cropped signature image as-is."}
                             </p>
                           </div>
                           <button
@@ -3016,10 +3342,10 @@ export default function SignPdfView({
                           type="button"
                           onClick={(e) => handleDeleteSavedSignature(e, item.id)}
                           title="Delete saved signature"
-                          className="p-1.5 bg-zinc-900 hover:bg-red-600 text-zinc-400 hover:text-white border border-zinc-700 hover:border-red-500 rounded cursor-pointer transition-colors"
+                          className="p-1.5 bg-zinc-900 hover:!bg-red-600 text-zinc-400 hover:!text-white border border-zinc-700 hover:!border-red-500 rounded cursor-pointer transition-colors"
                           aria-label={`Remove ${item.label}`}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5 text-current" />
                         </button>
                       </div>
                     </div>

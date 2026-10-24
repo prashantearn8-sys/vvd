@@ -1,0 +1,12 @@
+{
+  "projectId": "monotranscoder",
+  "appId": "1:600720583557:web:c19ca7b5a41736d8b932ec",
+  "apiKey": "AIzaSyCvHGxxy76KlSuwPTsu7qSKhVw_HtbvFFI",
+  "authDomain": "monotranscoder.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-fileconvertercom-a555b197-603b-4799-87a4-e11fded8a920",
+  "storageBucket": "monotranscoder.firebasestorage.app",
+  "messagingSenderId": "600720583557",
+  "measurementId": "",
+  "oAuthClientId": "600720583557-8o5td1b0pq484pbbgmg8mrn0cccq7f24.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
+}

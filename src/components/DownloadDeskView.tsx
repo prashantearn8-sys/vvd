@@ -25,7 +25,7 @@ export default function DownloadDeskView({ toolKey, sourceView, onAnotherFile, o
   const [downloadUrl, setDownloadUrl] = useState<string>("");
   const [customFilename, setCustomFilename] = useState<string>(() => {
     const initial = getFileSync(toolKey);
-    return sanitizeFilename(initial?.filename || "output");
+    return sanitizeFilename(initial?.filename || "output_monotranscoder");
   });
   const [downloaded, setDownloaded] = useState<boolean>(false);
 
@@ -33,7 +33,7 @@ export default function DownloadDeskView({ toolKey, sourceView, onAnotherFile, o
     const item = getFileSync(toolKey);
     if (!item) return;
     setData(item);
-    setCustomFilename(sanitizeFilename(item.filename || "output"));
+    setCustomFilename(sanitizeFilename(item.filename || "output_monotranscoder"));
     const activeUrl = createTrackedObjectURL(item.blob);
     setDownloadUrl(activeUrl);
 
@@ -79,12 +79,13 @@ export default function DownloadDeskView({ toolKey, sourceView, onAnotherFile, o
       ext = data.format.toLowerCase();
     }
 
-    let baseName = sanitizeFilename(customFilename.trim() || "output");
+    let baseName = sanitizeFilename(customFilename.trim() || "output_monotranscoder");
     if (baseName.toLowerCase().endsWith(`.${ext.toLowerCase()}`)) {
       baseName = baseName.slice(0, -(ext.length + 1));
     }
     if (!baseName) {
-      baseName = sanitizeFilename(data.originalName?.replace(/\.[^/.]+$/, "") || "output");
+      const origBase = sanitizeFilename(data.originalName?.replace(/\.[^/.]+$/, "") || "output");
+      baseName = `${origBase}_monotranscoder`;
     }
 
     const downloadName = `${baseName}.${ext}`;
@@ -134,12 +135,12 @@ export default function DownloadDeskView({ toolKey, sourceView, onAnotherFile, o
       </div>
 
       <div className="bg-zinc-950 border-2 border-zinc-800 rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-6">
-        <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-row items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 border-2 border-white bg-zinc-900 text-white flex items-center justify-center rounded shadow-[2px_2px_0px_0px_#ffffff] shrink-0">
               <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h3 className="font-bold text-sm sm:text-base uppercase text-emerald-400 font-sans">
                 PROCESS EXECUTION COMPLETE
               </h3>
@@ -154,7 +155,7 @@ export default function DownloadDeskView({ toolKey, sourceView, onAnotherFile, o
             id="download-desk-back-btn"
             onClick={handleBackClick}
             aria-label="Back to parameters configuration page"
-            className="group self-end xs:self-center flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-red-400 border-2 border-zinc-700 hover:border-red-500/50 rounded-lg font-mono text-xs font-bold uppercase transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,0.15)] cursor-pointer active:translate-y-0.5"
+            className="group shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-red-400 border-2 border-zinc-700 hover:border-red-500/50 rounded-lg font-mono text-xs font-bold uppercase transition-all shadow-[2px_2px_0px_0px_rgba(255,255,255,0.15)] cursor-pointer active:translate-y-0.5"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-white group-hover:text-red-400 transition-colors" />
             <span>BACK</span>

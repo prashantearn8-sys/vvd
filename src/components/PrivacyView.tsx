@@ -12,29 +12,34 @@ interface PrivacyViewProps {
 
 const PRIVACY_SECTIONS = [
   {
-    title: "1. 100% LOCAL CLIENT-SIDE COMPUTATION",
+    title: "1. 100% LOCAL CLIENT-SIDE DOCUMENT & IMAGE PROCESSING",
     content:
-      "All file operations, including image compression, PDF rasterization, format conversion, and PDF merging, occur strictly inside your local browser sandbox using WebAssembly, HTML5 Canvas APIs, and client-side libraries. Your files are never uploaded to any external server.",
+      "All file operations across our 18 tools—including Sign PDF, Compress Image, Compress PDF, Convert Image Format, Image to PDF, Merge PDF, PDF to Images, Remove PDF Pages, Organize PDF Pages, Watermark PDF, Word to PDF, Word to JPG, PDF to Word, Excel to PDF, PDF to Excel, PowerPoint to PDF, PDF to PowerPoint, Lock PDF, Unlock PDF, and Passport Photo Maker—execute strictly inside your local browser sandbox using WebAssembly, HTML5 Canvas APIs, PDF.js, and client-side OpenXML engines. Your documents, spreadsheets, presentations, and photos are never uploaded to any external server.",
   },
   {
-    title: "2. NO ANALYTICS OR TRACKING SCRIPTS",
+    title: "2. OPTIONAL GOOGLE SIGN-IN & CLOUD SIGNATURE SYNC",
     content:
-      "Your files never leave your device, and MONO-TRANSCODER does not run analytics, advertising pixels, fingerprinting scripts, or third-party telemetry.",
+      "Signing in with Google (powered by Firebase Authentication) is completely optional; all file tools work without an account. When you sign in, MONO-TRANSCODER stores your Google display name, profile photo URL, and verified email address (kept in an owner-only private record) and synchronizes the reusable signature templates you create in Sign PDF across your computers and mobile devices via Google Cloud Firestore. Your actual PDF files are never uploaded—only your saved signature templates are synced so you can reuse them anywhere.",
   },
   {
-    title: "3. EPHEMERAL IN-MEMORY BUFFER",
+    title: "3. EPHEMERAL IN-MEMORY FILE BUFFERS",
     content:
-      "Processed outputs are held temporarily in a local JavaScript in-memory Map solely so you can review and download them. Nothing is written to disk or IndexedDB, and closing or reloading your browser tab purges all active memory buffers immediately.",
+      "Processed output files (defaulting to filename_monotranscoder) are held temporarily in a local JavaScript in-memory Map solely so you can review and download them. Source and output files are never written to remote servers, and closing or reloading your browser tab immediately purges all active file memory buffers.",
   },
   {
-    title: "4. SAME-ORIGIN BUNDLED ASSETS & CSP",
+    title: "4. ZERO ADVERTISING PIXELS OR THIRD-PARTY TRACKERS",
     content:
-      "All processing scripts and workers (including PDF.js) are served from same-origin local assets. A strict Content Security Policy (connect-src 'self' blob:) enforces that the browser blocks outbound data requests.",
+      "MONO-TRANSCODER does not run third-party advertising networks, behavioral tracking pixels, cross-site fingerprinting, or data brokerage scripts. Interface preferences such as Light and Dark theme selection are stored exclusively in your browser's local storage.",
   },
   {
-    title: "5. CONTACT & INQUIRIES",
+    title: "5. STRICT OWNER-ONLY CLOUD SECURITY RULES",
     content:
-      "If you have inquiries, bug reports, or feature requests regarding MONO-TRANSCODER, contact us at burnster1826@gmail.com.",
+      "For users who opt into Google Sign-In, all Cloud Firestore records (profile metadata and saved signatures) are enforced by strict Security Rules requiring authenticated, email-verified ownership. Only your authenticated account can read, create, or delete your saved signatures.",
+  },
+  {
+    title: "6. DATA DELETION, USER CONTROL & CONTACT",
+    content:
+      "You can permanently delete any saved signature at any time using the delete button in the Sign PDF workspace, which immediately removes it from Cloud Firestore across all your devices. For privacy inquiries, bug reports, or account data deletion requests, contact us at burnster1826@gmail.com.",
   },
 ];
 

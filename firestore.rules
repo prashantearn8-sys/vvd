@@ -1,0 +1,233 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 1 & Phase 4.1: Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Hardened Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Pillar 2: Validation Blueprints (Anti-Update-Gap)
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'photoURL', 'favoriteTools', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'displayName', 'photoURL', 'favoriteTools', 'createdAt', 'updatedAt'])
+        && data.uid is string
+        && data.uid.size() >= 1
+        && data.uid.size() <= 128
+        && data.uid.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.uid == request.auth.uid
+        && data.displayName is string
+        && data.displayName.size() >= 1
+        && data.displayName.size() <= 100
+        && data.photoURL is string
+        && data.photoURL.size() >= 0
+        && data.photoURL.size() <= 500
+        && data.favoriteTools is string
+        && data.favoriteTools.size() >= 0
+        && data.favoriteTools.size() <= 500
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidUserPrivateInfo(data) {
+      return data.keys().hasAll(['uid', 'email', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'updatedAt'])
+        && data.uid is string
+        && data.uid.size() >= 1
+        && data.uid.size() <= 128
+        && data.uid.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.uid == request.auth.uid
+        && data.email is string
+        && data.email.size() >= 3
+        && data.email.size() <= 254
+        && data.email == request.auth.token.email
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidUserSignature(data) {
+      return data.keys().hasAll(['uid', 'sigId', 'label', 'dataUrl', 'sigMode', 'inkColor', 'typedName', 'fontId', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'sigId', 'label', 'dataUrl', 'sigMode', 'inkColor', 'typedName', 'fontId', 'createdAt', 'updatedAt'])
+        && data.uid is string
+        && data.uid.size() >= 1
+        && data.uid.size() <= 128
+        && data.uid.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.uid == request.auth.uid
+        && data.sigId is string
+        && data.sigId.size() >= 1
+        && data.sigId.size() <= 128
+        && data.sigId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.label is string
+        && data.label.size() >= 1
+        && data.label.size() <= 100
+        && data.dataUrl is string
+        && data.dataUrl.size() >= 20
+        && data.dataUrl.size() <= 250000
+        && data.sigMode is string
+        && data.sigMode.size() >= 4
+        && data.sigMode.size() <= 10
+        && (data.sigMode == 'DRAW' || data.sigMode == 'TYPE' || data.sigMode == 'UPLOAD')
+        && data.inkColor is string
+        && data.inkColor.size() >= 4
+        && data.inkColor.size() <= 20
+        && data.typedName is string
+        && data.typedName.size() >= 0
+        && data.typedName.size() <= 120
+        && data.fontId is string
+        && data.fontId.size() >= 1
+        && data.fontId.size() <= 40
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Collection 1: /users/{userId} (Public/Preference Profile — No PII)
+    match /users/{userId} {
+      allow get: if isSignedIn()
+        && isValidId(userId)
+        && isOwner(userId);
+
+      allow create: if isVerifiedUser()
+        && isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if (
+        isVerifiedUser()
+        && isValidId(userId)
+        && isValidUserProfile(incoming())
+        && isOwner(userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action: UpdateProfilePreferences
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'favoriteTools', 'updatedAt'])
+        )
+      );
+
+      allow delete: if isVerifiedUser()
+        && isValidId(userId)
+        && isOwner(userId);
+
+      // Collection 2: /users/{userId}/private/{infoId} (PII Isolation — Split Collection)
+      match /private/{infoId} {
+        allow get: if isSignedIn()
+          && isValidId(userId)
+          && isValidId(infoId)
+          && isOwner(userId)
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow create: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(infoId)
+          && isOwner(userId)
+          && isValidUserPrivateInfo(incoming())
+          && incoming().updatedAt == request.time
+          && existsAfter(/databases/$(database)/documents/users/$(userId))
+          && getAfter(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow update: if (
+          isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(infoId)
+          && isValidUserPrivateInfo(incoming())
+          && isOwner(userId)
+          && incoming().uid == existing().uid
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid
+          && (
+            // Action: SyncPrivateEmail
+            incoming().diff(existing()).affectedKeys().hasOnly(['email', 'updatedAt'])
+          )
+        );
+
+        allow delete: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(infoId)
+          && isOwner(userId)
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+      }
+
+      // Collection 3: /users/{userId}/signatures/{signatureId} (Saved PDF Signatures)
+      match /signatures/{signatureId} {
+        allow get: if isSignedIn()
+          && isValidId(userId)
+          && isValidId(signatureId)
+          && isOwner(userId)
+          && resource.data.uid == request.auth.uid
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow list: if isSignedIn()
+          && isOwner(userId)
+          && resource.data.uid == request.auth.uid;
+
+        allow create: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(signatureId)
+          && isOwner(userId)
+          && isValidUserSignature(incoming())
+          && incoming().sigId == signatureId
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow update: if (
+          isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(signatureId)
+          && isValidUserSignature(incoming())
+          && isOwner(userId)
+          && incoming().uid == existing().uid
+          && incoming().sigId == existing().sigId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid
+          && (
+            // Action: UpdateSavedSignature
+            incoming().diff(existing()).affectedKeys().hasOnly(['label', 'dataUrl', 'sigMode', 'inkColor', 'typedName', 'fontId', 'updatedAt'])
+          )
+        );
+
+        allow delete: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(signatureId)
+          && isOwner(userId)
+          && resource.data.uid == request.auth.uid
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+      }
+    }
+  }
+}

@@ -23,6 +23,7 @@ import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
 import ToolSkeletonLoader from "./ToolSkeletonLoader";
+import ModuleIconBadge from "./ModuleIconBadge";
 
 interface RemovePdfPagesViewProps {
   onSuccess: () => void;
@@ -483,7 +484,7 @@ export default function RemovePdfPagesView({
 
       const outBlob = new Blob([outputPdfBytes], { type: "application/pdf" });
       const cleanName = sanitizeFilename(file.name.replace(/\.[^/.]+$/, ""));
-      const defaultFilename = `${cleanName}_pages_removed_monotranscoder`;
+      const defaultFilename = `${cleanName}_monotranscoder`;
 
       await saveFile("remove_pdf_pages", {
         blob: outBlob,
@@ -570,8 +571,8 @@ export default function RemovePdfPagesView({
             className="hidden"
             aria-label="Select PDF Document"
           />
-          <div className="mx-auto w-12 h-12 border-2 border-zinc-700 bg-zinc-900 flex items-center justify-center text-white mb-4 rounded">
-            <FileMinus className="w-6 h-6" />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <ModuleIconBadge view="remove_pdf_pages" size="lg" />
           </div>
           <h3 className="font-sans font-bold text-base uppercase mb-1 text-white">
             DRAG AND DROP OR BROWSE PDF DOCUMENT

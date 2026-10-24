@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
 Sitemap: https://monotranscoder.runs-on.dev/sitemap.xml

@@ -1,0 +1,174 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile and preferences for MONO-TRANSCODER.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique Firebase Auth UID of the user.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The display name of the user.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Profile avatar URL from Google Sign-In.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "favoriteTools": {
+          "type": "string",
+          "description": "Comma-separated list of pinned tool IDs.",
+          "minLength": 0,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the user profile was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the user profile was last updated."
+        }
+      },
+      "required": ["uid", "displayName", "photoURL", "favoriteTools", "createdAt", "updatedAt"]
+    },
+    "UserPrivateInfo": {
+      "title": "UserPrivateInfo",
+      "description": "Isolated PII record storing the user's verified email address.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique Firebase Auth UID of the owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Verified email address of the user.",
+          "minLength": 3,
+          "maxLength": 254
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the private info was last updated."
+        }
+      },
+      "required": ["uid", "email", "updatedAt"]
+    },
+    "UserSignature": {
+      "title": "UserSignature",
+      "description": "Saved digital signature template created by an authenticated user for reuse in Sign PDF.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique Firebase Auth UID of the signature owner.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "sigId": {
+          "type": "string",
+          "description": "Unique identifier of the saved signature document.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "label": {
+          "type": "string",
+          "description": "Human-readable label for the saved signature.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "dataUrl": {
+          "type": "string",
+          "description": "Transparent PNG data URL of the processed signature.",
+          "minLength": 20,
+          "maxLength": 250000
+        },
+        "sigMode": {
+          "type": "string",
+          "description": "Creation mode of the signature (DRAW, TYPE, or UPLOAD).",
+          "enum": ["DRAW", "TYPE", "UPLOAD"],
+          "minLength": 4,
+          "maxLength": 10
+        },
+        "inkColor": {
+          "type": "string",
+          "description": "Hex color of the signature ink.",
+          "minLength": 4,
+          "maxLength": 20
+        },
+        "typedName": {
+          "type": "string",
+          "description": "Typed text if created in TYPE mode.",
+          "minLength": 0,
+          "maxLength": 120
+        },
+        "fontId": {
+          "type": "string",
+          "description": "Selected calligraphic font ID.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the signature was saved."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the signature was last updated."
+        }
+      },
+      "required": [
+        "uid",
+        "sigId",
+        "label",
+        "dataUrl",
+        "sigMode",
+        "inkColor",
+        "typedName",
+        "fontId",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores user profile and tool preferences keyed by Firebase Auth UID."
+    },
+    "/users/{userId}/private/{infoId}": {
+      "schema": {
+        "$ref": "#/entities/UserPrivateInfo"
+      },
+      "description": "Isolated subcollection storing private PII (email) accessible exclusively by the owner."
+    },
+    "/users/{userId}/signatures/{signatureId}": {
+      "schema": {
+        "$ref": "#/entities/UserSignature"
+      },
+      "description": "Subcollection storing a user's saved PDF signatures for future reuse across sessions."
+    }
+  }
+}

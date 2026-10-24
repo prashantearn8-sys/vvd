@@ -41,6 +41,7 @@ const TermsView = lazy(() => import("./components/TermsView"));
 const NotFoundView = lazy(() => import("./components/NotFoundView"));
 import { cleanupAllTrackedURLs } from "./utils/urlTracker";
 import { ToastProvider } from "./context/ToastContext";
+import { AuthProvider } from "./context/AuthContext";
 import { FileDropProvider } from "./context/FileDropContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { PATH_TO_VIEW_MAP, VIEW_TO_PATH_MAP } from "./utils/routesConfig";
@@ -140,6 +141,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
+        <AuthProvider>
         <FileDropProvider currentView={currentView} onRouteWithFiles={handleRouteWithFiles}>
         <div
           className="min-h-screen bg-black text-zinc-100 flex flex-col font-sans transition-colors duration-200 relative"
@@ -441,19 +443,20 @@ export default function App() {
           </main>
 
         {/* FOOTER */}
-        <footer className="border-t-3 border-black bg-zinc-950 py-6 sm:py-8 px-3 sm:px-4 md:px-8 shrink-0 text-zinc-400 font-mono text-xs mt-8 sm:mt-12" id="application-footer">
-          <div className="max-w-[1800px] mx-auto flex flex-col md:flex-row justify-between items-center gap-5 sm:gap-6">
-            <div className="flex flex-col items-center md:items-start gap-1 text-center md:text-left">
-              <span className="font-bold text-white uppercase tracking-wider text-[11px] sm:text-xs">
+        <footer className="border-t-2 border-black bg-zinc-950 py-2.5 sm:py-3 px-3 sm:px-4 md:px-6 shrink-0 text-zinc-400 font-mono text-[10px] sm:text-[11px] mt-4 sm:mt-6" id="application-footer">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 sm:gap-3">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2 gap-y-0.5 text-center md:text-left">
+              <span className="font-bold text-white uppercase tracking-wider text-[10px] sm:text-[11px]">
                 MONO-TRANSCODER // VER 2.5.0
               </span>
-              <span className="text-[10px] sm:text-[11px] text-zinc-500">
-                100% Client-Side In-Memory File Processing Engine // Zero-Telemetry
+              <span className="hidden sm:inline text-zinc-600" aria-hidden="true">—</span>
+              <span className="text-[9px] sm:text-[10px] text-zinc-500">
+                100% Client-Side In-Memory File Processing // Zero-Telemetry
               </span>
             </div>
 
-            <div className="flex flex-col items-center md:items-end gap-2.5 w-full md:w-auto">
-              <nav aria-label="Footer Navigation" className="flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-3 gap-y-1.5 text-[11px] sm:text-xs font-mono font-bold uppercase">
+            <div className="flex flex-col items-center md:items-end gap-1.5 w-full md:w-auto">
+              <nav aria-label="Footer Navigation" className="flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-2.5 gap-y-1 text-[10px] sm:text-[11px] font-mono font-bold uppercase">
                 <button
                   type="button"
                   id="footer-contact-button"
@@ -461,7 +464,7 @@ export default function App() {
                     setIsContactOpen((prev) => !prev);
                     setCopiedEmail(false);
                   }}
-                  className={`cursor-pointer uppercase underline underline-offset-3 transition-all duration-300 ease-in-out py-1 px-1 ${
+                  className={`cursor-pointer uppercase underline underline-offset-3 transition-all duration-300 ease-in-out py-0.5 px-0.5 ${
                     isContactOpen
                       ? "text-emerald-400 font-extrabold decoration-emerald-400"
                       : "text-zinc-400 decoration-zinc-500/30 hover:text-emerald-300 hover:decoration-emerald-300"
@@ -479,7 +482,7 @@ export default function App() {
                     e.preventDefault();
                     handleSelectView("coffee");
                   }}
-                  className={`cursor-pointer uppercase underline underline-offset-3 transition-all duration-300 ease-in-out py-1 px-1 ${
+                  className={`cursor-pointer uppercase underline underline-offset-3 transition-all duration-300 ease-in-out py-0.5 px-0.5 ${
                     currentView === "coffee"
                       ? "text-amber-400 font-extrabold decoration-amber-400"
                       : "text-zinc-400 decoration-zinc-500/30 hover:text-amber-300 hover:decoration-amber-400 active:text-amber-400 active:decoration-amber-400"
@@ -495,7 +498,7 @@ export default function App() {
                     e.preventDefault();
                     handleSelectView("privacy");
                   }}
-                  className="hover:text-white underline cursor-pointer py-1 px-1"
+                  className="hover:text-white underline cursor-pointer py-0.5 px-0.5"
                   aria-label="View Privacy Policy"
                 >
                   PRIVACY_POLICY
@@ -507,7 +510,7 @@ export default function App() {
                     e.preventDefault();
                     handleSelectView("terms");
                   }}
-                  className="hover:text-white underline cursor-pointer py-1 px-1"
+                  className="hover:text-white underline cursor-pointer py-0.5 px-0.5"
                   aria-label="View Terms of Service"
                 >
                   TERMS_OF_SERVICE
@@ -519,7 +522,7 @@ export default function App() {
                     e.preventDefault();
                     handleSelectView("home");
                   }}
-                  className="hover:text-white underline cursor-pointer py-1 px-1"
+                  className="hover:text-white underline cursor-pointer py-0.5 px-0.5"
                   aria-label="Back to System Deck"
                 >
                   SYSTEM_DECK
@@ -530,7 +533,7 @@ export default function App() {
               <div
                 className={`grid transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] max-w-full ${
                   isContactOpen
-                    ? "grid-rows-[1fr] opacity-100 translate-y-0 mt-1 pointer-events-auto"
+                    ? "grid-rows-[1fr] opacity-100 translate-y-0 mt-0.5 pointer-events-auto"
                     : "grid-rows-[0fr] opacity-0 -translate-y-1 mt-0 pointer-events-none"
                 }`}
               >
@@ -538,20 +541,20 @@ export default function App() {
                   <div
                     id="footer-contact-details"
                     aria-hidden={!isContactOpen}
-                    className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-2 p-2 sm:p-2.5 px-3 bg-zinc-950 border-2 border-zinc-700 rounded-lg text-xs font-mono text-white shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)] max-w-full overflow-hidden"
+                    className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-2 py-1.5 px-2.5 bg-zinc-950 border border-zinc-700 rounded-md text-[11px] font-mono text-white max-w-full overflow-hidden"
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <Mail className="w-3.5 h-3.5 text-white shrink-0" aria-hidden="true" />
+                      <Mail className="w-3 h-3 text-white shrink-0" aria-hidden="true" />
                       <a
                         href="mailto:burnster1826@gmail.com"
                         tabIndex={isContactOpen ? 0 : -1}
-                        className="hover:text-white underline font-bold tracking-tight text-zinc-200 transition-colors truncate max-w-[210px] xs:max-w-none text-[11px] sm:text-xs"
+                        className="hover:text-white underline font-bold tracking-tight text-zinc-200 transition-colors truncate max-w-[200px] xs:max-w-none text-[10px] sm:text-[11px]"
                         title="Click to send email"
                       >
                         burnster1826@gmail.com
                       </a>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         tabIndex={isContactOpen ? 0 : -1}
@@ -564,17 +567,17 @@ export default function App() {
                             // fallback
                           }
                         }}
-                        className="flex items-center gap-1 px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded text-[10px] font-bold cursor-pointer transition-all duration-150 active:scale-95"
+                        className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded text-[9px] font-bold cursor-pointer transition-all duration-150 active:scale-95"
                         title="Copy email to clipboard"
                       >
                         {copiedEmail ? (
                           <>
-                            <Check className="w-3 h-3 text-emerald-400" />
+                            <Check className="w-2.5 h-2.5 text-emerald-400" />
                             <span className="text-emerald-400 font-bold">COPIED</span>
                           </>
                         ) : (
                           <>
-                            <Copy className="w-3 h-3" />
+                            <Copy className="w-2.5 h-2.5" />
                             <span>COPY</span>
                           </>
                         )}
@@ -582,11 +585,11 @@ export default function App() {
                       <a
                         href="mailto:burnster1826@gmail.com"
                         tabIndex={isContactOpen ? 0 : -1}
-                        className="p-1 hover:text-white text-zinc-400 transition-colors"
+                        className="p-0.5 hover:text-white text-zinc-400 transition-colors"
                         title="Open mail client"
                         aria-label="Open mail client"
                       >
-                        <ExternalLink className="w-3.5 h-3.5" />
+                        <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
                   </div>
@@ -594,52 +597,10 @@ export default function App() {
               </div>
             </div>
           </div>
-
-          {/* CRAWLABLE INTERNAL TOOL LINKS FOR SEARCH ENGINE INDEXING */}
-          <div className="max-w-[1800px] mx-auto mt-6 pt-5 border-t border-zinc-900/80">
-            <nav aria-label="All File Conversion & Compression Tools" className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1.5 text-[10px] text-zinc-500">
-              <span className="text-zinc-400 font-bold uppercase tracking-wider mr-1">TOOLS_INDEX:</span>
-              {[
-                { label: "Image Compressor (KB)", view: "compress_img" as RetroView, href: "/compress-image" },
-                { label: "Compress PDF", view: "compress_pdf" as RetroView, href: "/compress-pdf" },
-                { label: "Merge PDF", view: "merge_pdf" as RetroView, href: "/merge-pdf" },
-                { label: "Sign PDF", view: "sign_pdf" as RetroView, href: "/sign-pdf" },
-                { label: "JPG to PDF", view: "image_to_pdf" as RetroView, href: "/image-to-pdf" },
-                { label: "Convert Image", view: "convert_img" as RetroView, href: "/convert-image" },
-                { label: "PDF to JPG", view: "pdf_to_images" as RetroView, href: "/pdf-to-images" },
-                { label: "Remove PDF Pages", view: "remove_pdf_pages" as RetroView, href: "/remove-pdf-pages" },
-                { label: "Organize PDF", view: "organize_pdf" as RetroView, href: "/organize-pdf" },
-                { label: "Word to PDF", view: "word_to_pdf" as RetroView, href: "/word-to-pdf" },
-                { label: "Word to JPG", view: "word_to_jpg" as RetroView, href: "/word-to-jpg" },
-                { label: "PDF to Word", view: "pdf_to_word" as RetroView, href: "/pdf-to-word" },
-                { label: "Excel to PDF", view: "excel_to_pdf" as RetroView, href: "/excel-to-pdf" },
-                { label: "PowerPoint to PDF", view: "ppt_to_pdf" as RetroView, href: "/powerpoint-to-pdf" },
-                { label: "PDF to PowerPoint", view: "pdf_to_ppt" as RetroView, href: "/pdf-to-powerpoint" },
-                { label: "PDF to Excel", view: "pdf_to_excel" as RetroView, href: "/pdf-to-excel" },
-                { label: "Watermark PDF", view: "watermark_pdf" as RetroView, href: "/watermark-pdf" },
-                { label: "Lock PDF", view: "lock_pdf" as RetroView, href: "/lock-pdf" },
-                { label: "Unlock PDF", view: "unlock_pdf" as RetroView, href: "/unlock-pdf" },
-                { label: "Passport Photo Maker", view: "passport_photo" as RetroView, href: "/passport-photo" },
-              ].map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleSelectView(item.view);
-                  }}
-                  className={`hover:text-zinc-200 transition-colors underline decoration-zinc-800 hover:decoration-zinc-400 underline-offset-2 ${
-                    currentView === item.view ? "text-white font-bold decoration-white" : ""
-                  }`}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-          </div>
         </footer>
         </div>
       </FileDropProvider>
+      </AuthProvider>
     </ToastProvider>
   </ThemeProvider>
 );

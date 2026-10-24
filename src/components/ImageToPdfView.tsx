@@ -14,6 +14,7 @@ import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
 import ToolSkeletonLoader from "./ToolSkeletonLoader";
+import ModuleIconBadge from "./ModuleIconBadge";
 
 interface ImageToPdfViewProps {
   onSuccess: () => void;
@@ -288,8 +289,8 @@ export default function ImageToPdfView({ onSuccess, initialFiles }: ImageToPdfVi
             className="hidden"
             aria-label="Select images"
           />
-          <div className="mx-auto w-12 h-12 border-2 border-zinc-700 bg-zinc-900 flex items-center justify-center text-white mb-4 rounded">
-            <ImageIcon className="w-6 h-6" />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <ModuleIconBadge view="image_to_pdf" size="lg" />
           </div>
           <h3 className="font-sans font-bold text-base uppercase mb-1 text-white">
             DRAG & DROP, BROWSE, OR PASTE (CTRL+V) TARGET IMAGES

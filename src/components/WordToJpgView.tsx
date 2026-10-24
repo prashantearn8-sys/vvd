@@ -21,6 +21,7 @@ import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
 import ToolSkeletonLoader from "./ToolSkeletonLoader";
+import ModuleIconBadge from "./ModuleIconBadge";
 
 interface WordToJpgViewProps {
   onSuccess: () => void;
@@ -862,7 +863,7 @@ export default function WordToJpgView({ onSuccess, initialFile }: WordToJpgViewP
 
         await saveFile("word_to_jpg", {
           blob: zipBlob,
-          filename: `${cleanName}_jpg_pages`,
+          filename: defaultFilename,
           size: zipBlob.size,
           format: "application/zip",
           originalName: sanitizeFilename(file.name),
@@ -948,8 +949,8 @@ export default function WordToJpgView({ onSuccess, initialFile }: WordToJpgViewP
             className="hidden"
             aria-label="Select Word Document"
           />
-          <div className="mx-auto w-12 h-12 border-2 border-zinc-700 bg-zinc-900 flex items-center justify-center text-white mb-4 rounded">
-            <ImageIcon className="w-6 h-6" />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <ModuleIconBadge view="word_to_jpg" size="lg" />
           </div>
           <h3 className="font-sans font-bold text-base uppercase mb-1 text-white">
             DRAG AND DROP OR BROWSE WORD DOCUMENT (.DOCX)

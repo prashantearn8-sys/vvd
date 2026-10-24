@@ -22,6 +22,7 @@ import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
 import ToolSkeletonLoader from "./ToolSkeletonLoader";
+import ModuleIconBadge from "./ModuleIconBadge";
 import {
   parseAndRenderPptxDeck,
   ParsedPresentationDeck,
@@ -403,8 +404,8 @@ export default function PptToPdfView({ onSuccess, initialFile }: PptToPdfViewPro
             className="hidden"
             aria-label="Select PowerPoint File"
           />
-          <div className="mx-auto w-12 h-12 border-2 border-zinc-700 bg-zinc-900 flex items-center justify-center text-white mb-4 rounded">
-            <Presentation className="w-6 h-6" />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <ModuleIconBadge view="ppt_to_pdf" size="lg" />
           </div>
           <h3 className="font-sans font-bold text-base uppercase mb-1 text-white">
             DRAG AND DROP OR BROWSE POWERPOINT DECK (.PPTX)

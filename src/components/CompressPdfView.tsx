@@ -14,6 +14,7 @@ import { useToast } from "../context/ToastContext";
 import { useFileDrop } from "../context/FileDropContext";
 import { logger } from "../utils/logger";
 import ToolSkeletonLoader from "./ToolSkeletonLoader";
+import ModuleIconBadge from "./ModuleIconBadge";
 
 interface CompressPdfViewProps {
   onSuccess: () => void;
@@ -212,8 +213,8 @@ export default function CompressPdfView({ onSuccess, askPassword, initialFile }:
             className="hidden"
             onChange={(e) => e.target.files?.[0] && validateAndSetupFile(e.target.files[0])}
           />
-          <div className="w-12 h-12 border-2 border-zinc-700 rounded-lg mx-auto mb-4 flex items-center justify-center bg-zinc-900 text-white">
-            <FileText className="w-6 h-6" />
+          <div className="mx-auto mb-4 flex items-center justify-center">
+            <ModuleIconBadge view="compress_pdf" size="lg" />
           </div>
           <h3 className="font-sans font-bold text-base uppercase mb-1 text-white">
             DRAG AND DROP OR BROWSE YOUR TARGET PDF

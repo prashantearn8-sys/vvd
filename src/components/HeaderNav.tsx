@@ -9,9 +9,12 @@ import {
   X,
   Sun,
   Moon,
+  LogOut,
+  User as UserIcon,
 } from "lucide-react";
 import { RetroView } from "../types";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 import ModuleIconBadge from "./ModuleIconBadge";
 
 interface HeaderNavProps {
@@ -193,10 +196,22 @@ const NAV_ITEMS: NavModuleItem[] = [
 
 export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps) {
   const { theme, toggleTheme } = useTheme();
+  const {
+    user,
+    profile,
+    privateInfo,
+    isAuthReady,
+    isSigningIn,
+    signInWithGoogle,
+    signOutUser,
+  } = useAuth();
   const [isNavOpen, setIsNavOpen] = useState<boolean>(false);
+  const [isAccountOpen, setIsAccountOpen] = useState<boolean>(false);
+  const [avatarError, setAvatarError] = useState<boolean>(false);
   const suppressHoverRef = useRef<boolean>(false);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
 
   const isHome = currentView === "home";
 
@@ -267,17 +282,52 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
   }, [isNavOpen]);
 
   useEffect(() => {
+    if (!isAccountOpen) return;
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setIsAccountOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsAccountOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown, { passive: true });
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAccountOpen]);
+
+  useEffect(() => {
     return () => clearHoverTimer();
   }, []);
+
+  const displayName =
+    user?.displayName ||
+    profile?.displayName ||
+    user?.email?.split("@")[0] ||
+    "Operator";
+  const displayEmail = privateInfo?.email || user?.email || "";
+  const googleProviderPhoto = user?.providerData?.find((p) => p?.photoURL)?.photoURL || "";
+  const avatarUrl = user?.photoURL || googleProviderPhoto || profile?.photoURL || "";
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [avatarUrl]);
 
   return (
     <div ref={containerRef} className="sticky top-0 z-40">
       {/* ALWAYS VISIBLE STICKY SITE HEADER */}
       <header
-        className="border-b-3 border-black bg-black/95 backdrop-blur-md py-3 sm:py-3.5 md:py-4 px-3 sm:px-4 md:px-8 shrink-0 shadow-lg relative z-20"
+        className="border-b-2 border-black bg-black/95 backdrop-blur-md py-2 sm:py-2.5 px-3 sm:px-4 md:px-6 shrink-0 shadow-md relative z-20"
         id="site-header"
       >
-        <div className="max-w-[1800px] mx-auto flex items-center justify-between gap-3 sm:gap-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
           <a
             href="/"
             onClick={(e) => {
@@ -290,31 +340,31 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
             aria-label="MONO-TRANSCODER — Return to Home System Deck"
           >
             {isHome ? (
-              <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-extrabold uppercase tracking-tight sm:tracking-tighter font-sans leading-none text-white truncate">
+              <h1 className="text-lg xs:text-xl sm:text-2xl font-extrabold uppercase tracking-tight sm:tracking-tighter font-sans leading-none text-white truncate">
                 MONO-TRANSCODER
               </h1>
             ) : (
-              <span className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-extrabold uppercase tracking-tight sm:tracking-tighter font-sans leading-none text-white block truncate">
+              <span className="text-lg xs:text-xl sm:text-2xl font-extrabold uppercase tracking-tight sm:tracking-tighter font-sans leading-none text-white block truncate">
                 MONO-TRANSCODER
               </span>
             )}
-            <p className="text-[9px] xs:text-[10px] sm:text-xs text-zinc-400 font-mono mt-1 uppercase tracking-tight sm:tracking-normal truncate max-w-[210px] xs:max-w-[280px] sm:max-w-none">
+            <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-zinc-400 font-mono mt-0.5 uppercase tracking-tight sm:tracking-normal truncate max-w-[210px] xs:max-w-[280px] sm:max-w-none">
               100% Private File Converter &amp; Compressor // Zero Uploads
             </p>
           </a>
 
-          {/* Header Action Controls (Theme Toggle & 3-Line Menu) */}
+          {/* Header Action Controls (Theme Toggle, Sign-In / Google Profile Photo, 3-Line Menu) */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Light / Dark Theme Toggle Button (Animated Dual-Icon Morph) */}
+            {/* 1. Light / Dark Theme Toggle Button (Animated Dual-Icon Morph) */}
             <button
               type="button"
               onClick={(e) => toggleTheme(e)}
               aria-label={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
               title={theme === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"}
-              className="w-9 h-9 sm:w-10 sm:h-10 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 shrink-0 relative overflow-hidden"
+              className="w-8 h-8 sm:w-9 sm:h-9 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 shrink-0 relative overflow-hidden"
             >
               <span
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
                   theme === "dark"
                     ? "opacity-100 rotate-0 scale-100"
                     : "opacity-0 -rotate-90 scale-50 pointer-events-none"
@@ -323,7 +373,7 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
                 <Moon className="w-4 h-4 text-indigo-400" />
               </span>
               <span
-                className={`absolute inset-0 flex items-center justify-center transition-all duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
+                className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform ${
                   theme === "light"
                     ? "opacity-100 rotate-0 scale-100"
                     : "opacity-0 rotate-90 scale-50 pointer-events-none"
@@ -333,7 +383,98 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
               </span>
             </button>
 
-            {/* 3-Line Hamburger / Red Close Toggle Button */}
+            {/* 2. Sign-In Logo / Google Account Profile Photo Button */}
+            <div ref={accountMenuRef} className="relative shrink-0">
+              {!user ? (
+                <button
+                  type="button"
+                  id="header-sign-in-button"
+                  onClick={signInWithGoogle}
+                  disabled={!isAuthReady || isSigningIn}
+                  aria-label="Sign in with Google"
+                  title="Sign in with Google"
+                  className="w-8 h-8 sm:w-9 sm:h-9 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 shrink-0 relative overflow-hidden disabled:opacity-60"
+                >
+                  <UserIcon className="w-4 h-4 text-zinc-200" />
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    id="header-account-button"
+                    onClick={() => {
+                      setIsAccountOpen((prev) => !prev);
+                    }}
+                    aria-expanded={isAccountOpen}
+                    aria-label="Open account menu"
+                    title={`Signed in as ${displayName}`}
+                    className="w-8 h-8 sm:w-9 sm:h-9 p-0 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-700 hover:border-zinc-400 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 shrink-0 relative overflow-hidden"
+                  >
+                    {avatarUrl && !avatarError ? (
+                      <img
+                        src={avatarUrl}
+                        alt={displayName}
+                        referrerPolicy="no-referrer"
+                        onError={() => setAvatarError(true)}
+                        className="w-full h-full object-cover block"
+                      />
+                    ) : (
+                      <span className="w-full h-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-xs font-mono font-bold uppercase">
+                        {displayName.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </button>
+
+                  {isAccountOpen && (
+                    <div
+                      className="absolute right-0 mt-2 w-72 sm:w-80 bg-zinc-950 border-2 border-zinc-700 rounded-xl shadow-2xl p-3.5 z-50 font-mono text-xs space-y-3 animate-fade-in"
+                      role="dialog"
+                      aria-label="Account Profile"
+                    >
+                      <div className="flex items-center gap-3 pb-2.5 border-b border-zinc-800">
+                        {avatarUrl && !avatarError ? (
+                          <img
+                            src={avatarUrl}
+                            alt={displayName}
+                            referrerPolicy="no-referrer"
+                            onError={() => setAvatarError(true)}
+                            className="w-10 h-10 rounded-lg object-cover border border-zinc-700 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-700 flex items-center justify-center text-emerald-400 shrink-0">
+                            <UserIcon className="w-5 h-5" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-white truncate text-xs">
+                            {displayName}
+                          </p>
+                          {displayEmail && (
+                            <p className="text-[11px] text-zinc-400 truncate mt-0.5">
+                              {displayEmail}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setIsAccountOpen(false);
+                          await signOutUser();
+                        }}
+                        className="w-full py-2 px-3 bg-zinc-900 hover:bg-red-950/60 text-zinc-200 hover:text-red-300 border border-zinc-800 hover:border-red-800/70 rounded-lg flex items-center justify-center gap-2 font-bold uppercase text-xs cursor-pointer transition-colors"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>SIGN OUT</span>
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* 3. 3-Line Hamburger / Red Close Toggle Button */}
             <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
               <button
                 type="button"
@@ -342,7 +483,7 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
                 aria-controls="tools-navigation"
                 aria-label={isNavOpen ? "Hide Tool Navigation" : "Show Tool Navigation"}
                 title={isNavOpen ? "Close Tool Navigation (Esc)" : "Open Tool Navigation"}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] border active:scale-95 relative overflow-hidden ${
+                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] border active:scale-95 relative overflow-hidden ${
                   isNavOpen
                     ? "bg-red-600 hover:bg-red-500 border-red-500 text-white"
                     : "bg-zinc-900 hover:bg-zinc-800 border-zinc-700 hover:border-zinc-500 text-white"
@@ -387,9 +528,9 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
             id="tools-navigation"
             aria-label="Tool Navigation"
             aria-hidden={!isNavOpen}
-            className="border-b-2 border-black bg-zinc-950/98 backdrop-blur-md py-3 px-3 sm:px-4 md:px-8 shadow-2xl max-h-[calc(100dvh-60px)] overflow-y-auto overscroll-contain"
+            className="border-b-2 border-black bg-zinc-950/98 backdrop-blur-md py-3 px-3 sm:px-4 md:px-6 shadow-2xl max-h-[calc(100dvh-52px)] overflow-y-auto overscroll-contain"
           >
-            <div className="max-w-[1800px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 lg:gap-5 pb-4">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 lg:gap-5 pb-4">
               {(
                 [
                   {
