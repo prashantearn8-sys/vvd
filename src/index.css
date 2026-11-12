@@ -5,7 +5,7 @@
 @theme {
   --font-sans: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --color-white: #faf3e3;
+  --color-white: #faf7f0;
 
   --animate-fade-in: fade-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-slide-up: slide-up 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -69,10 +69,6 @@
     transform: translate3d(0, -3px, 0);
   }
 
-  .module-card-interactive:active {
-    transform: translate3d(0, 0, 0) scale3d(0.988, 0.988, 1);
-  }
-
   /* Subtle colorful cyber-grid canvas */
   .retro-grid-bg {
     background-size: 28px 28px;
@@ -80,8 +76,8 @@
       radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.07), transparent 35%),
       radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.07), transparent 35%),
       radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.06), transparent 40%),
-      linear-gradient(to right, rgba(250, 243, 227, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(250, 243, 227, 0.03) 1px, transparent 1px);
+      linear-gradient(to right, rgba(245, 234, 212, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(245, 234, 212, 0.03) 1px, transparent 1px);
   }
   
   .dark .retro-grid-bg {
@@ -90,8 +86,8 @@
       radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.07), transparent 35%),
       radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.07), transparent 35%),
       radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.06), transparent 40%),
-      linear-gradient(to right, rgba(250, 243, 227, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(250, 243, 227, 0.03) 1px, transparent 1px);
+      linear-gradient(to right, rgba(245, 234, 212, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(245, 234, 212, 0.03) 1px, transparent 1px);
   }
 
   .pixel-borders {
@@ -105,34 +101,6 @@
   }
   .scrollbar-none::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
-  }
-
-  /* Smooth transition animation for footer contact button */
-  #footer-contact-button {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: rgba(161, 161, 170, 0.3);
-    transition: color 300ms cubic-bezier(0.4, 0, 0.2, 1),
-                text-decoration-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
-                text-decoration-thickness 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  #footer-contact-button:hover {
-    text-decoration-color: rgba(52, 211, 153, 1);
-  }
-
-  /* Smooth transition animation for footer coffee link */
-  #footer-coffee-link {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: rgba(161, 161, 170, 0.3);
-    transition: color 300ms cubic-bezier(0.4, 0, 0.2, 1),
-                text-decoration-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
-                text-decoration-thickness 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  #footer-coffee-link:hover {
-    text-decoration-color: rgba(251, 191, 36, 1);
   }
 }
 
@@ -305,7 +273,7 @@ html.light .bg-red-600 svg,
 html.light .bg-red-600 span,
 .module-icon-badge,
 .module-icon-badge svg {
-  color: #fdfbf7 !important;
+  color: #f5ead4 !important;
 }
 
 html.light .bg-red-600:hover {
@@ -368,6 +336,7 @@ html.light .hover\:shadow-\[4px_4px_0_0_\#ffffff\]:hover {
 
 html.light .shadow-\[1px_1px_0_0_\#ffffff\],
 html.light .shadow-\[2px_2px_0_0_\#ffffff\],
+html.light .sm\:shadow-\[2px_2px_0_0_\#ffffff\],
 html.light .shadow-\[2px_2px_0px_0px_\#ffffff\] {
   box-shadow: 2px 2px 0 0 #b5ad9e !important;
 }
@@ -430,41 +399,46 @@ html.light .hover\:border-zinc-500:hover {
 }
 
 /* ============================================================================
-   DARK THEME PALETTE WITH CREAMY WHITE FOREGROUND & SOFT WHITE BUTTONS
+   DARK THEME PALETTE — SUBTLE CREAMY OFF-WHITE (#faf7f0)
    ============================================================================ */
 
-/* 1. Base Canvas & Page Background */
+/* 1. Base Canvas, Selection & Page Background */
 html.dark,
 html.dark body,
 html.dark #application-root {
   background-color: #000000 !important;
-  color: #fdfbf7 !important; /* Bright Creamy White ink */
+  color: #faf7f0 !important; /* Subtle Creamy Off-White ink */
+}
+
+html.dark ::selection {
+  background-color: #faf7f0 !important;
+  color: #080808 !important;
 }
 
 /* 2. Elevated Card & Container Surfaces */
 html.dark .bg-black {
   background-color: #080808 !important;
-  color: #fdfbf7 !important;
+  color: #faf7f0 !important;
 }
 
 html.dark .bg-white:not(.text-black) {
-  background-color: #f4f1ea !important; /* Soft Off-White for standalone white surfaces */
+  background-color: #f7f3eb !important; /* Soft Creamy Off-White for standalone white surfaces */
   color: #141210 !important;
 }
 
 html.dark .bg-zinc-950 {
   background-color: #0e0e0e !important;
-  color: #fdfbf7 !important;
+  color: #faf7f0 !important;
 }
 
 html.dark .bg-zinc-900 {
   background-color: #161616 !important;
-  color: #fdfbf7 !important;
+  color: #faf7f0 !important;
 }
 
 html.dark .bg-zinc-800 {
   background-color: #202020 !important;
-  color: #fdfbf7 !important;
+  color: #faf7f0 !important;
 }
 
 html.dark .bg-zinc-900\/98,
@@ -486,62 +460,74 @@ html.dark .border-black {
   border-color: #1e1e1e !important;
 }
 
-html.dark .border-white {
-  border-color: #f3efe6 !important;
+html.dark .border-white,
+html.dark .border-white\/80 {
+  border-color: #f7f3eb !important;
 }
 
-/* 4. Distinct Typographic Hierarchy (Creamy White tones) */
+/* 4. Distinct Typographic Hierarchy (Subtle Creamy White tones) */
 html.dark .text-white,
-html.dark .text-zinc-100 {
-  color: #fdfbf7 !important; /* Bright Creamy White for headings & primary text */
+html.dark .text-zinc-100,
+html.dark .hover\:text-white:hover {
+  color: #faf7f0 !important; /* Subtle Creamy White for headings & primary text */
 }
 
 html.dark .text-zinc-200,
 html.dark .text-zinc-300 {
-  color: #e6e0d4 !important;
+  color: #e6e2d8 !important;
 }
 
 html.dark .text-zinc-400 {
-  color: #a8a298 !important;
+  color: #a6a198 !important;
 }
 
 html.dark .text-zinc-500,
 html.dark .text-zinc-600 {
-  color: #78736a !important;
+  color: #78746d !important;
 }
 
-/* 5. Primary CTAs, Active Tabs & Open Buttons (.bg-white.text-black) */
+/* 5. Primary CTAs, Active Tabs & Open Buttons (.bg-white / .bg-white.text-black) */
+html.dark .bg-white,
 html.dark .bg-white.text-black {
-  background-color: #f4f1ea !important; /* Soft Off-White button background */
+  background-color: #f7f3eb !important; /* Subtle Creamy White button background */
   color: #080808 !important;
-  border-color: #f4f1ea !important;
+  border-color: #f7f3eb !important;
 }
 
+html.dark .bg-white:hover,
 html.dark .bg-white.text-black:hover,
+html.dark .hover\:bg-zinc-200:hover,
+html.dark .group:hover .group-hover\:bg-zinc-200,
 html.dark .group:hover .group-hover\:bg-zinc-200.bg-white.text-black {
-  background-color: #fdfbf7 !important; /* Bright Creamy White on hover */
+  background-color: #fcfaf5 !important; /* Crisp Creamy White on hover */
   color: #000000 !important;
-  border-color: #fdfbf7 !important;
+  border-color: #fcfaf5 !important;
 }
 
-/* 6. Tactile Brutalist Shadows Tuned for Creamy/Dull White */
+/* 6. Tactile Brutalist Shadows Tuned for Subtle Creamy White */
 html.dark .shadow-\[2px_2px_0_0_\#27272a\] {
-  box-shadow: 2px 2px 0 0 #202020 !important;
+  box-shadow: 2px 2px 0 0 #22211e !important;
 }
 
 html.dark .hover\:shadow-\[3px_3px_0_0_\#ffffff\]:hover,
 html.dark .hover\:shadow-\[4px_4px_0_0_\#ffffff\]:hover {
-  box-shadow: 4px 4px 0 0 #dfd7c6 !important;
+  box-shadow: 3px 3px 0 0 #e6e0d4 !important;
 }
 
 html.dark .shadow-\[1px_1px_0_0_\#ffffff\],
-html.dark .shadow-\[2px_2px_0_0_\#ffffff\],
-html.dark .shadow-\[2px_2px_0px_0px_\#ffffff\] {
-  box-shadow: 2px 2px 0 0 #5c574f !important;
+html.dark .shadow-\[1px_1px_0px_0px_\#ffffff\] {
+  box-shadow: 1px 1px 0 0 #5c5952 !important;
 }
 
-html.dark .shadow-\[3px_3px_0px_0px_\#ffffff\] {
-  box-shadow: 3px 3px 0 0 #5c574f !important;
+html.dark .shadow-\[2px_2px_0_0_\#ffffff\],
+html.dark .sm\:shadow-\[2px_2px_0_0_\#ffffff\],
+html.dark .shadow-\[2px_2px_0px_0px_\#ffffff\] {
+  box-shadow: 2px 2px 0 0 #5c5952 !important;
+}
+
+html.dark .shadow-\[3px_3px_0px_0px_\#ffffff\],
+html.dark .shadow-\[4px_4px_0px_0px_\#ffffff\] {
+  box-shadow: 3px 3px 0 0 #5c5952 !important;
 }
 
 /* 7. Form Inputs, Selects & Textareas in Dark Theme */
@@ -549,20 +535,21 @@ html.dark input,
 html.dark textarea,
 html.dark select {
   background-color: #080808 !important;
-  color: #faf3e3 !important;
+  color: #faf7f0 !important;
   border-color: #262626 !important;
 }
 
 html.dark input:focus,
 html.dark textarea:focus,
-html.dark select:focus {
-  border-color: #dfd7c6 !important;
+html.dark select:focus,
+html.dark .focus\:border-white:focus {
+  border-color: #f7f3eb !important;
   background-color: #0e0e0e !important;
 }
 
 html.dark input::placeholder,
 html.dark textarea::placeholder {
-  color: #787268 !important;
+  color: #78746d !important;
 }
 
 /* 8. Structural Header, Navigation & Footer in Dark Theme */
@@ -579,7 +566,7 @@ html.dark #tools-navigation {
 html.dark #application-footer {
   background-color: #050505 !important;
   border-top-color: #242424 !important;
-  color: #a8a196 !important;
+  color: #a6a198 !important;
 }
 
 /* 9. Interactive Hover States in Dark Theme */
@@ -592,12 +579,111 @@ html.dark .hover\:bg-zinc-800:hover {
 }
 
 html.dark .hover\:border-white:hover {
-  border-color: #faf3e3 !important;
+  border-color: #faf7f0 !important;
 }
 
 html.dark .hover\:border-zinc-600:hover,
 html.dark .hover\:border-zinc-500:hover {
-  border-color: #5c574f !important;
+  border-color: #5c5952 !important;
+}
+
+/* ============================================================================
+   10. FOOTER ACTION LINKS — LIGHT & DARK THEME HOVER / CLICK / ACTIVE COLORS
+   ============================================================================ */
+
+#footer-contact-button,
+#footer-privacy-link,
+#footer-terms-link,
+#footer-coffee-link {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(161, 161, 170, 0.35);
+  transition:
+    color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    text-decoration-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    text-decoration-thickness 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* DARK THEME FOOTER BUTTONS:
+   - Contact -> Green (#34d399)
+   - Privacy Policy & Terms of Service -> White (#faf7f0)
+   - Buy Me a Coffee -> Yellow (#facc15)
+*/
+#footer-contact-button:hover,
+#footer-contact-button:active,
+#footer-contact-button:focus-visible,
+#footer-contact-button.footer-link-active,
+html.dark #footer-contact-button:hover,
+html.dark #footer-contact-button:active,
+html.dark #footer-contact-button:focus-visible,
+html.dark #footer-contact-button.footer-link-active {
+  color: #34d399 !important;
+  text-decoration-color: #34d399 !important;
+}
+
+#footer-privacy-link:hover,
+#footer-privacy-link:active,
+#footer-privacy-link:focus-visible,
+#footer-privacy-link.footer-link-active,
+#footer-terms-link:hover,
+#footer-terms-link:active,
+#footer-terms-link:focus-visible,
+#footer-terms-link.footer-link-active,
+html.dark #footer-privacy-link:hover,
+html.dark #footer-privacy-link:active,
+html.dark #footer-privacy-link:focus-visible,
+html.dark #footer-privacy-link.footer-link-active,
+html.dark #footer-terms-link:hover,
+html.dark #footer-terms-link:active,
+html.dark #footer-terms-link:focus-visible,
+html.dark #footer-terms-link.footer-link-active {
+  color: #faf7f0 !important;
+  text-decoration-color: #faf7f0 !important;
+}
+
+#footer-coffee-link:hover,
+#footer-coffee-link:active,
+#footer-coffee-link:focus-visible,
+#footer-coffee-link.footer-link-active,
+html.dark #footer-coffee-link:hover,
+html.dark #footer-coffee-link:active,
+html.dark #footer-coffee-link:focus-visible,
+html.dark #footer-coffee-link.footer-link-active {
+  color: #facc15 !important;
+  text-decoration-color: #facc15 !important;
+}
+
+/* LIGHT THEME FOOTER BUTTONS:
+   - Contact -> Green (#16a34a)
+   - Privacy Policy & Terms of Service -> Black (#000000)
+   - Buy Me a Coffee -> Yellow (#eab308)
+*/
+html.light #footer-contact-button:hover,
+html.light #footer-contact-button:active,
+html.light #footer-contact-button:focus-visible,
+html.light #footer-contact-button.footer-link-active {
+  color: #16a34a !important;
+  text-decoration-color: #16a34a !important;
+}
+
+html.light #footer-privacy-link:hover,
+html.light #footer-privacy-link:active,
+html.light #footer-privacy-link:focus-visible,
+html.light #footer-privacy-link.footer-link-active,
+html.light #footer-terms-link:hover,
+html.light #footer-terms-link:active,
+html.light #footer-terms-link:focus-visible,
+html.light #footer-terms-link.footer-link-active {
+  color: #000000 !important;
+  text-decoration-color: #000000 !important;
+}
+
+html.light #footer-coffee-link:hover,
+html.light #footer-coffee-link:active,
+html.light #footer-coffee-link:focus-visible,
+html.light #footer-coffee-link.footer-link-active {
+  color: #eab308 !important;
+  text-decoration-color: #eab308 !important;
 }
 
 /* ============================================================================

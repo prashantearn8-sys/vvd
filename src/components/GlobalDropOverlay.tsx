@@ -34,10 +34,19 @@ export default function GlobalDropOverlay({ currentView = "home" }: GlobalDropOv
     "pdf_to_ppt",
     "pdf_to_excel",
     "watermark_pdf",
+    "watermark_remover",
+    "pdf_watermark_remover",
+    "image_watermark_remover",
     "lock_pdf",
     "unlock_pdf",
     "sign_pdf",
     "passport_photo",
+    "audio_converter",
+    "audio_extractor",
+    "audio_editor",
+    "video_converter",
+    "video_extractor",
+    "video_editor",
   ].includes(currentView);
 
   if (!isGlobalDragging || !isProcessingView) return null;

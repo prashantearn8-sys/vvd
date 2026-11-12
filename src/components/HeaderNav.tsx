@@ -26,7 +26,7 @@ interface NavModuleItem {
   view: RetroView;
   label: string;
   title: string;
-  category: "PDF" | "IMAGE" | "WORD" | "SIGN";
+  category: "PDF" | "IMAGE" | "WORD" | "MEDIA" | "SIGN";
   path: string;
   iconBg: string;
 }
@@ -79,6 +79,62 @@ const NAV_ITEMS: NavModuleItem[] = [
     category: "IMAGE",
     path: "/convert-image",
     iconBg: "#d08238",
+  },
+  {
+    view: "image_watermark_remover",
+    label: "Image Watermark Remover",
+    title: "Image Watermark Remover",
+    category: "IMAGE",
+    path: "/remove-image-watermark",
+    iconBg: "#ec4899",
+  },
+  {
+    view: "audio_converter",
+    label: "Audio Converter",
+    title: "Audio Converter",
+    category: "MEDIA",
+    path: "/audio-converter",
+    iconBg: "#10b981",
+  },
+  {
+    view: "audio_extractor",
+    label: "Audio Extractor",
+    title: "Audio Extractor",
+    category: "MEDIA",
+    path: "/audio-extractor",
+    iconBg: "#f59e0b",
+  },
+  {
+    view: "audio_editor",
+    label: "Audio Editor",
+    title: "Audio Editor",
+    category: "MEDIA",
+    path: "/audio-editor",
+    iconBg: "#a855f7",
+  },
+  {
+    view: "video_converter",
+    label: "Video Converter",
+    title: "Video Converter",
+    category: "MEDIA",
+    path: "/video-converter",
+    iconBg: "#0284c7",
+  },
+  {
+    view: "video_extractor",
+    label: "Video Frame Extractor",
+    title: "Video Frame Extractor",
+    category: "MEDIA",
+    path: "/video-extractor",
+    iconBg: "#06b6d4",
+  },
+  {
+    view: "video_editor",
+    label: "Video Editor",
+    title: "Video Editor",
+    category: "MEDIA",
+    path: "/video-editor",
+    iconBg: "#f43f5e",
   },
   {
     view: "compress_pdf",
@@ -135,6 +191,14 @@ const NAV_ITEMS: NavModuleItem[] = [
     category: "PDF",
     path: "/watermark-pdf",
     iconBg: "#46829e",
+  },
+  {
+    view: "pdf_watermark_remover",
+    label: "PDF Watermark Remover",
+    title: "PDF Watermark Remover",
+    category: "PDF",
+    path: "/remove-pdf-watermark",
+    iconBg: "#d946ef",
   },
   {
     view: "word_to_pdf",
@@ -321,34 +385,41 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
   }, [avatarUrl]);
 
   return (
-    <div ref={containerRef} className="sticky top-0 z-40">
+    <div
+      ref={containerRef}
+      className="sticky top-0 z-40 select-none"
+      onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+    >
       {/* ALWAYS VISIBLE STICKY SITE HEADER */}
       <header
-        className="border-b-2 border-black bg-black/95 backdrop-blur-md py-2 sm:py-2.5 px-3 sm:px-5 lg:px-8 shrink-0 shadow-md relative z-20"
+        className="border-b-2 border-black bg-black/95 backdrop-blur-md py-2 sm:py-2.5 px-3 sm:px-5 lg:px-8 shrink-0 shadow-md relative z-20 select-none"
         id="site-header"
       >
         <div className="w-full flex items-center justify-between gap-3 sm:gap-4">
           <a
             href="/"
+            draggable={false}
+            onDragStart={(e) => e.preventDefault()}
             onClick={(e) => {
               e.preventDefault();
               closeMenu();
               onSelectView("home");
             }}
-            className="cursor-pointer text-left hover:opacity-85 transition-opacity block no-underline min-w-0"
+            className="cursor-pointer text-left hover:opacity-85 transition-opacity block no-underline min-w-0 select-none"
             title="MONO-TRANSCODER — Return to Home System Deck"
             aria-label="MONO-TRANSCODER — Return to Home System Deck"
           >
             {isHome ? (
-              <h1 className="text-lg xs:text-xl sm:text-2xl font-extrabold uppercase tracking-tight sm:tracking-tighter font-sans leading-none text-white truncate">
+              <h1 className="text-lg xs:text-xl sm:text-2xl font-extrabold uppercase tracking-tight sm:tracking-tighter font-sans leading-none text-white truncate select-none">
                 MONO-TRANSCODER
               </h1>
             ) : (
-              <span className="text-lg xs:text-xl sm:text-2xl font-extrabold uppercase tracking-tight sm:tracking-tighter font-sans leading-none text-white block truncate">
+              <span className="text-lg xs:text-xl sm:text-2xl font-extrabold uppercase tracking-tight sm:tracking-tighter font-sans leading-none text-white block truncate select-none">
                 MONO-TRANSCODER
               </span>
             )}
-            <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-zinc-400 font-mono mt-0.5 uppercase tracking-tight sm:tracking-normal truncate max-w-[210px] xs:max-w-[280px] sm:max-w-none">
+            <p className="text-[9px] xs:text-[10px] sm:text-[11px] text-zinc-400 font-mono mt-0.5 uppercase tracking-tight sm:tracking-normal truncate max-w-[210px] xs:max-w-[280px] sm:max-w-none select-none">
               100% Private File Converter &amp; Compressor // Zero Uploads
             </p>
           </a>
@@ -530,7 +601,7 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
             aria-hidden={!isNavOpen}
             className="border-b-2 border-black bg-zinc-950/98 backdrop-blur-md py-4 px-3 sm:px-5 lg:px-8 shadow-2xl max-h-[calc(100dvh-52px)] overflow-y-auto overscroll-contain"
           >
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 pb-2 items-start">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5 pb-2 items-start">
               {(
                 [
                   {
@@ -544,6 +615,10 @@ export default function HeaderNav({ currentView, onSelectView }: HeaderNavProps)
                   {
                     key: "IMAGE" as const,
                     title: "IMAGE TOOLS",
+                  },
+                  {
+                    key: "MEDIA" as const,
+                    title: "AUDIO & VIDEO",
                   },
                   {
                     key: "SIGN" as const,

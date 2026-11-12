@@ -20,7 +20,7 @@ interface HomeViewProps {
   onSelectPresetPath?: (path: string) => void;
 }
 
-type CategoryFilter = "ALL" | "PDF" | "IMAGE" | "WORD" | "SIGN";
+type CategoryFilter = "ALL" | "PDF" | "IMAGE" | "WORD" | "MEDIA" | "SIGN";
 
 interface QuickActionItem {
   id: string;
@@ -185,6 +185,86 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     keywords: "add watermark stamp text logo confidential draft",
   },
   {
+    id: "action-pdf-watermark-remover",
+    title: "PDF Watermark Remover",
+    desc: "Erase diagonal stamps, faded text, and watermarks from PDF pages locally while keeping text sharp.",
+    view: "pdf_watermark_remover",
+    path: "/remove-pdf-watermark",
+    category: "PDF",
+    tag: "PDF ERASER",
+    keywords: "remove watermark from pdf pdf watermark remover erase stamp clean document",
+  },
+  {
+    id: "action-image-watermark-remover",
+    title: "Image Watermark Remover",
+    desc: "Remove logos, stamps, and text watermarks from single or bulk images locally with zero-trace inpainting.",
+    view: "image_watermark_remover",
+    path: "/remove-image-watermark",
+    category: "IMAGE",
+    tag: "PHOTO ERASER",
+    keywords: "remove watermark from image photo watermark remover bulk image watermark eraser",
+  },
+  {
+    id: "action-audio-converter",
+    title: "Audio Converter",
+    desc: "Transcode single or bulk MP3, WAV (16/24/8-bit), WebM Opus, OGG, and M4A audio files with custom sample rate and channels.",
+    view: "audio_converter",
+    path: "/audio-converter",
+    category: "MEDIA",
+    tag: "AUDIO TRANSCODER",
+    keywords: "audio converter mp3 to wav wav to mp3 m4a ogg flac bulk audio converter",
+  },
+  {
+    id: "action-audio-extractor",
+    title: "Audio Extractor",
+    desc: "Extract lossless WAV, WebM Opus, OGG, or M4A audio tracks from single or bulk MP4, WebM, MOV, and MKV videos.",
+    view: "audio_extractor",
+    path: "/audio-extractor",
+    category: "MEDIA",
+    tag: "AUDIO DEMUXER",
+    keywords: "extract audio from video video to mp3 video to wav mp4 to wav audio ripper",
+  },
+  {
+    id: "action-audio-editor",
+    title: "Audio Editor",
+    desc: "Trim waveforms, adjust speed/tempo, shape 3-band EQ (Bass/Mid/Treble), apply fades, reverse, and normalize audio locally.",
+    view: "audio_editor",
+    path: "/audio-editor",
+    category: "MEDIA",
+    tag: "AUDIO STUDIO",
+    keywords: "audio editor trim audio equalizer bass boost speed up audio reverse audio normalize",
+  },
+  {
+    id: "action-video-converter",
+    title: "Video Converter",
+    desc: "Convert and compress single or bulk MP4, WebM, MOV, or turn video clips into looping Animated GIFs locally.",
+    view: "video_converter",
+    path: "/video-converter",
+    category: "MEDIA",
+    tag: "VIDEO TRANSCODER",
+    keywords: "video converter mp4 to webm webm to mp4 video to gif compress video resize video bulk video",
+  },
+  {
+    id: "action-video-extractor",
+    title: "Video Frame Extractor",
+    desc: "Extract high-res JPG, PNG, or WebP frame sequences, intervals, or snapshots from videos—with direct download without ZIP.",
+    view: "video_extractor",
+    path: "/video-extractor",
+    category: "MEDIA",
+    tag: "FRAME EXTRACTOR",
+    keywords: "video frame extractor video to jpg extract frames from video thumbnail extractor",
+  },
+  {
+    id: "action-video-editor",
+    title: "Video Editor",
+    desc: "Trim timeline segments, rotate & flip, crop aspect ratios (16:9, 9:16, 1:1), grade colors, change speed, and burn captions.",
+    view: "video_editor",
+    path: "/video-editor",
+    category: "MEDIA",
+    tag: "VIDEO STUDIO",
+    keywords: "video editor trim video crop video rotate video color grade video speed caption",
+  },
+  {
     id: "action-excel-to-pdf",
     title: "Excel to PDF",
     desc: "Basic local conversion of Excel (.xlsx) and CSV spreadsheets into PDF tables.",
@@ -241,6 +321,7 @@ const CATEGORY_TABS: { key: CategoryFilter; label: string }[] = [
   { key: "PDF", label: "PDF TOOLS" },
   { key: "WORD", label: "WORD & OFFICE" },
   { key: "IMAGE", label: "IMAGE TOOLS" },
+  { key: "MEDIA", label: "AUDIO & VIDEO" },
   { key: "SIGN", label: "SIGN & SECURITY" },
 ];
 
@@ -268,14 +349,25 @@ export default function HomeView({
     });
   }, [searchQuery, selectedCategory]);
 
+  const handleCardClick = (e: React.MouseEvent<HTMLAnchorElement>, view: RetroView) => {
+    e.preventDefault();
+    onSelectView(view);
+  };
+
   return (
-    <section className="space-y-4 sm:space-y-5 animate-fade-in" id="home-view" aria-label="System Deck">
+    <section
+      className="space-y-4 sm:space-y-5 animate-fade-in select-none"
+      id="home-view"
+      aria-label="System Deck"
+      onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+    >
       {/* Row 1: Unified Command Deck (Category Tabs + Search + View Switcher) */}
-      <div className="bg-black border-2 border-zinc-800 rounded-xl p-3 sm:p-4 space-y-3">
+      <div className="bg-black border-2 border-zinc-800 rounded-xl p-3 sm:p-4 space-y-3 select-none">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Category Filter Tabs */}
           <div
-            className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 sm:flex-wrap scrollbar-none -mx-1 px-1 touch-pan-x"
+            className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 sm:flex-wrap scrollbar-none -mx-1 px-1 touch-pan-x select-none"
             role="tablist"
             aria-label="Tool Categories"
           >
@@ -288,7 +380,7 @@ export default function HomeView({
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => setSelectedCategory(tab.key)}
-                  className={`whitespace-nowrap shrink-0 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-mono font-bold uppercase rounded-lg border-2 transition-all duration-200 cursor-pointer active:scale-95 ${
+                  className={`whitespace-nowrap shrink-0 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-mono font-bold uppercase rounded-lg border-2 transition-all duration-200 cursor-pointer active:scale-95 select-none ${
                     isActive
                       ? "bg-white text-black border-white shadow-[2px_2px_0_0_#ffffff]"
                       : "bg-black text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-white"
@@ -300,7 +392,7 @@ export default function HomeView({
             })}
           </div>
 
-          {/* Search Input + View Switcher */}
+          {/* Search Input */}
           <div className="flex items-center gap-2 sm:gap-2.5 w-full lg:w-auto lg:min-w-[360px] xl:min-w-[420px]">
             <div className="relative flex-1">
               <input
@@ -308,48 +400,20 @@ export default function HomeView({
                 placeholder="SEARCH TOOLS (PDF, WORD, EXCEL, KB, SIGN)..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
+                onCopy={(e) => e.preventDefault()}
                 className="w-full py-2 px-3 pl-8 sm:pl-9 bg-zinc-950 border-2 border-zinc-800 hover:border-zinc-700 text-white rounded-lg text-xs font-mono placeholder:text-zinc-500 focus:outline-none focus:border-white transition-colors"
                 aria-label="Search available tools and file types"
               />
               <Search
-                className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2"
+                className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 pointer-events-none"
                 aria-hidden="true"
               />
-            </div>
-
-            <div className="flex items-center border-2 border-zinc-800 rounded-lg p-0.5 bg-zinc-950 shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode("grid")}
-                aria-label="Grid View"
-                title="Switch to Grid View"
-                className={`p-1.5 rounded transition-all cursor-pointer ${
-                  viewMode === "grid"
-                    ? "bg-white text-black shadow-sm"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                aria-label="List View"
-                title="Switch to List View"
-                className={`p-1.5 rounded transition-all cursor-pointer ${
-                  viewMode === "list"
-                    ? "bg-white text-black shadow-sm"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                <List className="w-3.5 h-3.5" />
-              </button>
             </div>
           </div>
         </div>
 
         {/* Row 2 inside Command Bar: Privacy Status + Count */}
-        <div className="pt-2.5 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono">
+        <div className="pt-2.5 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] font-mono select-none">
           <span
             className="font-bold text-emerald-400 uppercase flex items-center gap-2 text-[11px]"
             role="status"
@@ -369,40 +433,36 @@ export default function HomeView({
       {viewMode === "grid" ? (
         <div
           key={`grid_${selectedCategory}`}
-          className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4"
+          className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4 select-none"
         >
           {filteredActions.map((action, idx) => {
             return (
               <a
                 key={action.id}
                 href={action.path}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onSelectView(action.view);
-                }}
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+                onClick={(e) => handleCardClick(e, action.view)}
                 style={{
                   animationDelay: `${Math.min(idx * 8, 80)}ms`,
                 }}
                 aria-label={`Open ${action.title}`}
-                className="module-card-interactive animate-card-enter bg-black border-2 border-zinc-800 rounded-xl p-3 sm:p-4 md:p-5 hover:border-white flex flex-col justify-between group cursor-pointer hover:bg-zinc-950 no-underline text-inherit shadow-[2px_2px_0_0_#27272a] hover:shadow-[3px_3px_0_0_#ffffff] active:scale-[0.98]"
+                className="module-card-interactive animate-card-enter bg-black border-2 border-zinc-800 rounded-xl p-3 sm:p-4 md:p-5 hover:border-white flex flex-col justify-between group cursor-pointer hover:bg-zinc-950 no-underline text-inherit shadow-[2px_2px_0_0_#27272a] hover:shadow-[3px_3px_0_0_#ffffff] active:scale-[0.98] select-none"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2.5 sm:mb-3.5">
                     <ModuleIconBadge view={action.view} size="md" />
-                    <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800 truncate max-w-[110px]">
-                      {action.tag}
-                    </span>
                   </div>
-                  <h3 className="font-sans font-bold text-xs sm:text-base tracking-tight text-white mb-1 sm:mb-1.5 transition-colors duration-150 line-clamp-2 min-h-[2rem] sm:min-h-0">
+                  <h3 className="font-sans font-bold text-xs sm:text-base tracking-tight text-white mb-1 sm:mb-1.5 transition-colors duration-150 line-clamp-2 min-h-[2rem] sm:min-h-0 select-none">
                     {action.title}
                   </h3>
-                  <p className="text-[10px] sm:text-xs text-zinc-400 font-mono leading-tight sm:leading-snug mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3">
+                  <p className="text-[10px] sm:text-xs text-zinc-400 font-mono leading-tight sm:leading-snug mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 select-none">
                     {action.desc}
                   </p>
                 </div>
 
                 {/* Action Button */}
-                <div className="w-full text-center py-2 sm:py-2.5 px-2 bg-white text-black group-hover:bg-zinc-200 text-[10px] sm:text-xs font-mono font-bold uppercase border-2 border-white transition-all duration-150 flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg shadow-[1px_1px_0_0_#ffffff] sm:shadow-[2px_2px_0_0_#ffffff]">
+                <div className="w-full text-center py-2 sm:py-2.5 px-2 bg-white text-black group-hover:bg-zinc-200 text-[10px] sm:text-xs font-mono font-bold uppercase border-2 border-white transition-all duration-150 flex items-center justify-center gap-1 sm:gap-1.5 rounded-lg shadow-[1px_1px_0_0_#ffffff] sm:shadow-[2px_2px_0_0_#ffffff] select-none">
                   <span>OPEN TOOL</span>
                   <ArrowRight
                     className="w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform duration-150 group-hover:translate-x-1 shrink-0"
@@ -414,40 +474,39 @@ export default function HomeView({
           })}
         </div>
       ) : (
-        <div key={`list_${selectedCategory}`} className="flex flex-col gap-2 sm:gap-2.5">
+        <div key={`list_${selectedCategory}`} className="flex flex-col gap-2 sm:gap-2.5 select-none">
           {filteredActions.map((action, idx) => {
             return (
               <a
                 key={action.id}
                 href={action.path}
-                onClick={(e) => {
-                  e.preventDefault();
-                  onSelectView(action.view);
-                }}
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+                onClick={(e) => handleCardClick(e, action.view)}
                 style={{
                   animationDelay: `${Math.min(idx * 6, 60)}ms`,
                 }}
                 aria-label={`Open ${action.title}`}
-                className="module-card-interactive animate-card-enter bg-black border-2 border-zinc-800 rounded-xl p-3 sm:p-3.5 hover:border-white flex items-center justify-between gap-3 group cursor-pointer hover:bg-zinc-950 no-underline text-inherit shadow-[2px_2px_0_0_#27272a] hover:shadow-[3px_3px_0_0_#ffffff] active:scale-[0.99]"
+                className="module-card-interactive animate-card-enter bg-black border-2 border-zinc-800 rounded-xl p-3 sm:p-3.5 hover:border-white flex items-center justify-between gap-3 group cursor-pointer hover:bg-zinc-950 no-underline text-inherit shadow-[2px_2px_0_0_#27272a] hover:shadow-[3px_3px_0_0_#ffffff] active:scale-[0.99] select-none"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <ModuleIconBadge view={action.view} size="md" />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-sans font-bold text-xs sm:text-sm md:text-base tracking-tight text-white truncate">
+                      <h3 className="font-sans font-bold text-xs sm:text-sm md:text-base tracking-tight text-white truncate select-none">
                         {action.title}
                       </h3>
-                      <span className="hidden sm:inline-block text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">
+                      <span className="hidden sm:inline-block text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800 select-none">
                         {action.tag}
                       </span>
                     </div>
-                    <p className="text-[10px] sm:text-xs text-zinc-400 font-mono truncate max-w-xs sm:max-w-md md:max-w-xl">
+                    <p className="text-[10px] sm:text-xs text-zinc-400 font-mono truncate max-w-xs sm:max-w-md md:max-w-xl select-none">
                       {action.desc}
                     </p>
                   </div>
                 </div>
 
-                <div className="shrink-0 flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-white text-black text-[10px] sm:text-xs font-mono font-bold uppercase rounded-lg border-2 border-white shadow-[1px_1px_0_0_#ffffff]">
+                <div className="shrink-0 flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-white text-black text-[10px] sm:text-xs font-mono font-bold uppercase rounded-lg border-2 border-white shadow-[1px_1px_0_0_#ffffff] select-none">
                   <span>OPEN TOOL</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </div>
@@ -458,7 +517,7 @@ export default function HomeView({
       )}
 
       {filteredActions.length === 0 && (
-        <div className="p-8 text-center border-2 border-dashed border-zinc-800 rounded-xl font-mono text-xs text-zinc-400">
+        <div className="p-8 text-center border-2 border-dashed border-zinc-800 rounded-xl font-mono text-xs text-zinc-400 select-none">
           NO TOOLS MATCH SEARCH QUERY: "{searchQuery.toUpperCase()}"
         </div>
       )}

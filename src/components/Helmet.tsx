@@ -212,6 +212,42 @@ export const ROUTE_METADATA: Record<string, RouteMetadata> = {
       'Apply and download your watermarked PDF.'
     ]
   },
+  '/remove-pdf-watermark': {
+    title: 'PDF Watermark Remover Online Free — Erase Stamps & Text Locally | MONO-TRANSCODER',
+    description: 'Erase diagonal text stamps, logos, and background watermarks from PDF documents locally in your browser. Apply to all pages at the same coordinates or clean each page manually.',
+    keywords: 'pdf watermark remover, remove watermark from pdf online free, erase pdf stamp, clean pdf watermark',
+    heading: 'PDF Watermark Remover',
+    intro: 'Highlight any watermark, logo, or diagonal text stamp on your PDF pages to erase it across all pages at the exact same coordinates or manually page-by-page locally in your browser.',
+    steps: [
+      'Drop your PDF document into the local canvas workspace.',
+      'Draw a box or brush mask over the watermark and select Apply to All (Same Coordinates) or Manual Every Page.',
+      'Preview the cleaned pages and download your watermark-free PDF.'
+    ]
+  },
+  '/remove-image-watermark': {
+    title: 'Image Watermark Remover Online Free — Bulk & Single Photo Eraser | MONO-TRANSCODER',
+    description: 'Remove watermarks, logos, and date stamps from single or bulk images (JPG, PNG, WebP, AVIF) locally in your browser. Batch process with same coordinates and export as ZIP.',
+    keywords: 'image watermark remover, bulk watermark remover online free, remove logo from photo, batch erase watermark zip',
+    heading: 'Image Watermark Remover (Single & Bulk ZIP)',
+    intro: 'Upload a single photo or bulk images at once. Mark the watermark on one image and apply to all images at the exact same coordinates (exported as a ZIP archive), or manually clean each image individually.',
+    steps: [
+      'Upload one or multiple JPG, PNG, WebP, or AVIF images into the studio.',
+      'Draw over the watermark and choose Apply to All (Same Coordinates) or Manual Every Image.',
+      'Preview the zero-trace output and download your cleaned image or bulk ZIP archive.'
+    ]
+  },
+  '/remove-watermark': {
+    title: 'Remove Watermark from PDF & Images Online Free | MONO-TRANSCODER',
+    description: 'Erase watermarks, faded stamps, and diagonal text from PDF documents and images (JPG, PNG, WebP) locally in your browser. Your files never leave your device.',
+    keywords: 'remove watermark from pdf, image watermark remover free, erase watermark online, clean pdf stamp',
+    heading: 'Watermark Remover for PDF & Images',
+    intro: 'Highlight any watermark, logo, or diagonal text stamp using the box or brush tool to inpaint and erase it across PDF pages and images locally in your browser.',
+    steps: [
+      'Drop your PDF or image into the local canvas workspace.',
+      'Draw a box or brush mask over the watermark (or enable the light stamp filter).',
+      'Preview the cleaned page and download your watermark-free file.'
+    ]
+  },
   '/word-to-pdf': {
     title: 'Word to PDF Converter Online Free — Basic Local DOCX to PDF | MONO-TRANSCODER',
     description: 'Convert Word (.docx, .rtf, .txt) files to PDF locally in your browser with basic layout conversion. Preserves text, headings, tables, and embedded images without server uploads.',
@@ -343,6 +379,48 @@ export const ROUTE_METADATA: Record<string, RouteMetadata> = {
       'Choose your country size preset and align your face to the biometric guide.',
       'Download a single photo or a printable 4×6" multi-photo sheet.'
     ]
+  },
+  '/audio-converter': {
+    title: 'Audio Converter Online Free — MP3, WAV, M4A, OGG & WebM | MONO-TRANSCODER',
+    description: 'Convert single or bulk audio files between WAV (16-bit/24-bit/8-bit), WebM Opus, OGG, and M4A locally in your browser with custom sample rate and stereo/mono channels.',
+    keywords: 'audio converter online free, mp3 to wav, wav converter, bulk audio converter, m4a to wav',
+    heading: 'Audio Format Converter (Single & Bulk)',
+    intro: 'Transcode audio files between uncompressed WAV and compressed WebM/OGG/M4A 100% locally in your browser.',
+  },
+  '/audio-extractor': {
+    title: 'Audio Extractor Online Free — Extract Audio from Video (MP4, WebM, MOV) | MONO-TRANSCODER',
+    description: 'Extract lossless WAV, WebM Opus, OGG, or M4A audio tracks from single or bulk MP4, WebM, MOV, and MKV video files locally in your browser.',
+    keywords: 'audio extractor, extract audio from video, video to wav, mp4 to audio online free',
+    heading: 'Video Audio Extractor',
+    intro: 'Rip and extract high-resolution audio tracks from video files locally on your device.',
+  },
+  '/audio-editor': {
+    title: 'Audio Editor Studio Online Free — Trim, 3-Band EQ, Speed & Normalize | MONO-TRANSCODER',
+    description: 'Edit audio waveforms locally in your browser: trim clips, shape 3-band EQ (Bass, Mid, Treble), adjust playback speed, fade in/out, reverse, and peak normalize.',
+    keywords: 'audio editor online free, audio trimmer, bass boost online, audio speed changer, normalize audio',
+    heading: 'Audio Editor Studio',
+    intro: 'Trim, equalize, speed-adjust, reverse, and normalize audio files in 100% local browser memory.',
+  },
+  '/video-converter': {
+    title: 'Video Converter Online Free — MP4, WebM & Animated GIF (Single & Bulk) | MONO-TRANSCODER',
+    description: 'Convert, compress, resize, and trim single or bulk video files into MP4, WebM, or looping Animated GIF locally in your browser. Zero server uploads.',
+    keywords: 'video converter online free, mp4 to webm, video to gif converter, compress video locally, bulk video converter',
+    heading: 'Video Converter, Compressor & GIF Maker',
+    intro: 'Transcode video clips between MP4, WebM, and Animated GIF directly in your browser with resolution, frame rate, and bitrate controls.',
+  },
+  '/video-extractor': {
+    title: 'Video Frame Extractor Online Free — Video to JPG, PNG & WebP (No ZIP) | MONO-TRANSCODER',
+    description: 'Extract high-resolution JPG, PNG, or WebP frame sequences, timed intervals, or snapshots from single or bulk videos locally—with direct download without ZIP.',
+    keywords: 'video frame extractor, extract frames from video, video to jpg sequence, video thumbnail extractor',
+    heading: 'Video Frame & Thumbnail Extractor',
+    intro: 'Extract frame sequences or manual snapshots from videos and download them individually without ZIP or as a ZIP archive.',
+  },
+  '/video-editor': {
+    title: 'Video Editor Studio Online Free — Trim, Crop, Rotate, Color Grade & Captions | MONO-TRANSCODER',
+    description: 'Trim video segments, rotate & flip, crop aspect ratios (16:9, 9:16, 1:1), adjust brightness/contrast/saturation, change speed, and burn text captions locally.',
+    keywords: 'video editor online free, trim video, crop video 9:16, rotate video, color grade video locally',
+    heading: 'Video Editor Studio',
+    intro: 'Edit, crop, rotate, color-grade, and caption videos directly in your browser with real-time studio monitor preview.',
   },
   '/support': {
     title: 'Support Independent Local-First Software | MONO-TRANSCODER',

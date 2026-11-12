@@ -5,6 +5,16 @@
 
 import { logger } from "./logger";
 
+export interface BulkOutputItem {
+  blob: Blob;
+  filename: string;
+  size: number;
+  format: string;
+  originalName?: string;
+  originalSize?: number;
+  previewUrl?: string;
+}
+
 export interface StoredFileData {
   blob: Blob;
   filename: string;
@@ -16,6 +26,9 @@ export interface StoredFileData {
   minKB?: number;
   hitTarget?: boolean;
   statusNote?: string;
+  previewPages?: string[];
+  originalPreviewPages?: string[];
+  bulkItems?: BulkOutputItem[];
 }
 
 /**

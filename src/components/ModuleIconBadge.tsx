@@ -723,6 +723,249 @@ function render2DCreativeLogo(view: RetroView, maskId: string) {
         </svg>
       );
 
+    case "watermark_remover":
+    case "pdf_watermark_remover":
+      // Soft Fuchsia Stamp Page + Bold Magenta Eraser Sparkle Tile
+      return (
+        <svg viewBox="0 0 40 40" fill="none" className={svgClass} aria-hidden="true">
+          <defs>
+            <mask id={maskId}>
+              <rect width="40" height="40" fill="white" />
+              <rect x="14.5" y="14.5" width="25" height="25" rx="7" fill="black" />
+            </mask>
+          </defs>
+          {/* Back Tile: Soft Fuchsia Page with Faded Diagonal Stamp */}
+          <g mask={`url(#${maskId})`}>
+            <rect x="2.5" y="2.5" width="20.5" height="20.5" rx="5.5" fill="#fae8ff" />
+            <path
+              d="M7.5 14.5L16.5 9M7.5 18L13.5 14"
+              stroke="#a21caf"
+              strokeWidth="2.1"
+              strokeDasharray="2.5 2"
+              strokeLinecap="round"
+            />
+          </g>
+          {/* Front Tile: Vivid Fuchsia Eraser & Sparkle */}
+          <rect x="17" y="17" width="20.5" height="20.5" rx="5.5" fill="#d946ef" />
+          <path
+            d="M22.5 29.5L27.8 24.2C28.6 23.4 29.8 23.4 30.6 24.2L32.3 25.9C33.1 26.7 33.1 27.9 32.3 28.7L28.5 32.5H24.2L22.5 30.8C22 30.3 22 29.9 22.5 29.5Z"
+            stroke="#ffffff"
+            strokeWidth="2.1"
+            strokeLinejoin="round"
+          />
+          <path d="M25.5 26.5L29.8 30.8" stroke="#ffffff" strokeWidth="1.9" strokeLinecap="round" />
+          <path d="M22 32.5H33" stroke="#ffffff" strokeWidth="2.1" strokeLinecap="round" />
+        </svg>
+      );
+
+    case "image_watermark_remover":
+      // Soft Rose Photo Landscape Tile + Bold Rose/Pink Magic Eraser Tile
+      return (
+        <svg viewBox="0 0 40 40" fill="none" className={svgClass} aria-hidden="true">
+          <defs>
+            <mask id={maskId}>
+              <rect width="40" height="40" fill="white" />
+              <rect x="14.5" y="14.5" width="25" height="25" rx="7" fill="black" />
+            </mask>
+          </defs>
+          {/* Back Tile: Soft Pink Landscape Photo */}
+          <g mask={`url(#${maskId})`}>
+            <rect x="2.5" y="2.5" width="20.5" height="20.5" rx="5.5" fill="#fce7f3" />
+            <circle cx="9" cy="9" r="2.1" fill="#be185d" />
+            <path d="M6 17.5L10.5 12L15 17.5H6Z" fill="#be185d" />
+          </g>
+          {/* Front Tile: Vivid Pink Magic Eraser */}
+          <rect x="17" y="17" width="20.5" height="20.5" rx="5.5" fill="#ec4899" />
+          <path
+            d="M22.5 29.5L27.8 24.2C28.6 23.4 29.8 23.4 30.6 24.2L32.3 25.9C33.1 26.7 33.1 27.9 32.3 28.7L28.5 32.5H24.2L22.5 30.8C22 30.3 22 29.9 22.5 29.5Z"
+            stroke="#ffffff"
+            strokeWidth="2.1"
+            strokeLinejoin="round"
+          />
+          <path d="M25.5 26.5L29.8 30.8" stroke="#ffffff" strokeWidth="1.9" strokeLinecap="round" />
+          <path d="M22 32.5H33" stroke="#ffffff" strokeWidth="2.1" strokeLinecap="round" />
+        </svg>
+      );
+
+    case "audio_converter":
+      // Soft Mint Waveform Tile + Vibrant Emerald Musical Note / Equalizer Tile
+      return (
+        <svg viewBox="0 0 40 40" fill="none" className={svgClass} aria-hidden="true">
+          <defs>
+            <mask id={maskId}>
+              <rect width="40" height="40" fill="white" />
+              <rect x="14.5" y="14.5" width="25" height="25" rx="7" fill="black" />
+            </mask>
+          </defs>
+          {/* Back Tile: Soft Mint Waveform */}
+          <g mask={`url(#${maskId})`}>
+            <rect x="2.5" y="2.5" width="20.5" height="20.5" rx="5.5" fill="#d1fae5" />
+            <path
+              d="M6.5 13V10.5M9.5 15.5V8M12.5 16.5V7M15.5 14V9.5"
+              stroke="#047857"
+              strokeWidth="2.1"
+              strokeLinecap="round"
+            />
+          </g>
+          {/* Front Tile: Emerald Audio Studio Note */}
+          <rect x="17" y="17" width="20.5" height="20.5" rx="5.5" fill="#10b981" />
+          <path
+            d="M25.5 30.5V22.5L32 21V29"
+            stroke="#ffffff"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="23.8" cy="30.5" r="2.2" fill="#ffffff" />
+          <circle cx="30.3" cy="29" r="2.2" fill="#ffffff" />
+        </svg>
+      );
+
+    case "video_converter":
+      // Soft Sky Film Frame Tile + Vibrant Cyan/Blue Clapper Play Tile
+      return (
+        <svg viewBox="0 0 40 40" fill="none" className={svgClass} aria-hidden="true">
+          <defs>
+            <mask id={maskId}>
+              <rect width="40" height="40" fill="white" />
+              <rect x="14.5" y="14.5" width="25" height="25" rx="7" fill="black" />
+            </mask>
+          </defs>
+          {/* Back Tile: Soft Sky Film Strip */}
+          <g mask={`url(#${maskId})`}>
+            <rect x="2.5" y="2.5" width="20.5" height="20.5" rx="5.5" fill="#e0f2fe" />
+            <rect x="6" y="7" width="13" height="10" rx="2" stroke="#0369a1" strokeWidth="2" />
+          </g>
+          {/* Front Tile: Vivid Sky Blue Play Triangle */}
+          <rect x="17" y="17" width="20.5" height="20.5" rx="5.5" fill="#0284c7" />
+          <path
+            d="M24.5 22.8L32 27.25L24.5 31.7V22.8Z"
+            fill="#ffffff"
+            stroke="#ffffff"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+
+    case "audio_extractor":
+      // Soft Amber Video Frame Tile + Bold Amber Extracted Soundwave Tile
+      return (
+        <svg viewBox="0 0 40 40" fill="none" className={svgClass} aria-hidden="true">
+          <defs>
+            <mask id={maskId}>
+              <rect width="40" height="40" fill="white" />
+              <rect x="14.5" y="14.5" width="25" height="25" rx="7" fill="black" />
+            </mask>
+          </defs>
+          {/* Back Tile: Soft Amber Video Frame */}
+          <g mask={`url(#${maskId})`}>
+            <rect x="2.5" y="2.5" width="20.5" height="20.5" rx="5.5" fill="#fef3c7" />
+            <path d="M10 8.5L15.5 12L10 15.5V8.5Z" fill="#b45309" />
+          </g>
+          {/* Front Tile: Vivid Amber Audio Waveform */}
+          <rect x="17" y="17" width="20.5" height="20.5" rx="5.5" fill="#f59e0b" />
+          <path
+            d="M21.5 29V25.5M24.5 31.5V23M27.5 33V21.5M30.5 30.5V24M33.5 28.5V26"
+            stroke="#ffffff"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
+
+    case "audio_editor":
+      // Soft Purple Waveform Tile + Vivid Purple Equalizer Faders Tile
+      return (
+        <svg viewBox="0 0 40 40" fill="none" className={svgClass} aria-hidden="true">
+          <defs>
+            <mask id={maskId}>
+              <rect width="40" height="40" fill="white" />
+              <rect x="14.5" y="14.5" width="25" height="25" rx="7" fill="black" />
+            </mask>
+          </defs>
+          {/* Back Tile: Soft Purple Waveform */}
+          <g mask={`url(#${maskId})`}>
+            <rect x="2.5" y="2.5" width="20.5" height="20.5" rx="5.5" fill="#f3e8ff" />
+            <path
+              d="M6.5 13V10.5M9.5 15.5V8M12.5 16.5V7M15.5 14V9.5"
+              stroke="#7e22ce"
+              strokeWidth="2.1"
+              strokeLinecap="round"
+            />
+          </g>
+          {/* Front Tile: Vivid Purple Studio EQ Sliders */}
+          <rect x="17" y="17" width="20.5" height="20.5" rx="5.5" fill="#9333ea" />
+          <path
+            d="M22.5 22V32.5M27.25 22V32.5M32 22V32.5"
+            stroke="#ffffff"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <circle cx="22.5" cy="25.5" r="2" fill="#ffffff" />
+          <circle cx="27.25" cy="29.5" r="2" fill="#ffffff" />
+          <circle cx="32" cy="24.5" r="2" fill="#ffffff" />
+        </svg>
+      );
+
+    case "video_extractor":
+      // Soft Cyan Video Film Tile + Bold Cyan Camera Frame Snapshot Tile
+      return (
+        <svg viewBox="0 0 40 40" fill="none" className={svgClass} aria-hidden="true">
+          <defs>
+            <mask id={maskId}>
+              <rect width="40" height="40" fill="white" />
+              <rect x="14.5" y="14.5" width="25" height="25" rx="7" fill="black" />
+            </mask>
+          </defs>
+          {/* Back Tile: Soft Cyan Video Tile */}
+          <g mask={`url(#${maskId})`}>
+            <rect x="2.5" y="2.5" width="20.5" height="20.5" rx="5.5" fill="#cffafe" />
+            <path d="M9.5 8.5L15 12L9.5 15.5V8.5Z" fill="#0e7490" />
+          </g>
+          {/* Front Tile: Vivid Cyan Frame Extractor */}
+          <rect x="17" y="17" width="20.5" height="20.5" rx="5.5" fill="#0891b2" />
+          <rect
+            x="21.5"
+            y="22.5"
+            width="11.5"
+            height="9.5"
+            rx="2"
+            stroke="#ffffff"
+            strokeWidth="2"
+          />
+          <circle cx="27.25" cy="27.25" r="2.2" fill="#ffffff" />
+        </svg>
+      );
+
+    case "video_editor":
+      // Soft Indigo Film Tile + Vivid Indigo Scissors/Timeline Studio Tile
+      return (
+        <svg viewBox="0 0 40 40" fill="none" className={svgClass} aria-hidden="true">
+          <defs>
+            <mask id={maskId}>
+              <rect width="40" height="40" fill="white" />
+              <rect x="14.5" y="14.5" width="25" height="25" rx="7" fill="black" />
+            </mask>
+          </defs>
+          {/* Back Tile: Soft Indigo Film Strip */}
+          <g mask={`url(#${maskId})`}>
+            <rect x="2.5" y="2.5" width="20.5" height="20.5" rx="5.5" fill="#e0e7ff" />
+            <rect x="6.5" y="7.5" width="12.5" height="9.5" rx="2" stroke="#4338ca" strokeWidth="2" />
+          </g>
+          {/* Front Tile: Vivid Indigo Timeline Trim & Filter Sliders */}
+          <rect x="17" y="17" width="20.5" height="20.5" rx="5.5" fill="#4f46e5" />
+          <path
+            d="M22 24.5H32.5M22 29.8H32.5"
+            stroke="#ffffff"
+            strokeWidth="2.1"
+            strokeLinecap="round"
+          />
+          <circle cx="25.5" cy="24.5" r="2.1" fill="#ffffff" />
+          <circle cx="29.5" cy="29.8" r="2.1" fill="#ffffff" />
+        </svg>
+      );
+
     default:
       return null;
   }

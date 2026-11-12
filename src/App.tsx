@@ -32,6 +32,7 @@ const PdfToImagesView = React.lazy(() => import("./components/PdfToImagesView"))
 const RemovePdfPagesView = React.lazy(() => import("./components/RemovePdfPagesView"));
 const OrganizePdfView = React.lazy(() => import("./components/OrganizePdfView"));
 const WatermarkPdfView = React.lazy(() => import("./components/WatermarkPdfView"));
+const WatermarkRemoverView = React.lazy(() => import("./components/WatermarkRemoverView"));
 const WordToPdfView = React.lazy(() => import("./components/WordToPdfView"));
 const WordToJpgView = React.lazy(() => import("./components/WordToJpgView"));
 const PdfToWordView = React.lazy(() => import("./components/PdfToWordView"));
@@ -43,6 +44,12 @@ const LockPdfView = React.lazy(() => import("./components/LockPdfView"));
 const UnlockPdfView = React.lazy(() => import("./components/UnlockPdfView"));
 const SignPdfView = React.lazy(() => import("./components/SignPdfView"));
 const PassportPhotoView = React.lazy(() => import("./components/PassportPhotoView"));
+const AudioConverterView = React.lazy(() => import("./components/AudioConverterView"));
+const AudioExtractorView = React.lazy(() => import("./components/AudioExtractorView"));
+const AudioEditorView = React.lazy(() => import("./components/AudioEditorView"));
+const VideoConverterView = React.lazy(() => import("./components/VideoConverterView"));
+const VideoExtractorView = React.lazy(() => import("./components/VideoExtractorView"));
+const VideoEditorView = React.lazy(() => import("./components/VideoEditorView"));
 const DownloadDeskView = React.lazy(() => import("./components/DownloadDeskView"));
 const BuyMeCoffeeView = React.lazy(() => import("./components/BuyMeCoffeeView"));
 const PrivacyView = React.lazy(() => import("./components/PrivacyView"));
@@ -159,7 +166,19 @@ export default function App() {
             <Helmet view={currentView} />
             <div
               id="application-root"
-              className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-white selection:text-black"
+              onCopy={(e) => {
+                if (currentView === "home") {
+                  e.preventDefault();
+                }
+              }}
+              onCut={(e) => {
+                if (currentView === "home") {
+                  e.preventDefault();
+                }
+              }}
+              className={`min-h-screen bg-black text-white flex flex-col font-sans selection:bg-white selection:text-black ${
+                currentView === "home" ? "select-none" : ""
+              }`}
             >
               <HeaderNav currentView={currentView} onSelectView={handleSelectView} />
               <GlobalDropOverlay currentView={currentView} onSelectView={handleSelectView} />
@@ -178,6 +197,7 @@ export default function App() {
                     <CompressImgView
                       onSuccess={() => handleSelectView("compress_img_download")}
                       initialFile={routedFiles?.[0] || null}
+                      initialFiles={routedFiles}
                       initialTargetKB={presetTargetKB}
                     />
                   )}
@@ -198,6 +218,7 @@ export default function App() {
                     <ConvertImgView
                       onSuccess={() => handleSelectView("convert_img_download")}
                       initialFile={routedFiles?.[0] || null}
+                      initialFiles={routedFiles}
                     />
                   )}
                   {currentView === "convert_img_download" &&
@@ -260,6 +281,36 @@ export default function App() {
                   )}
                   {currentView === "watermark_pdf_download" &&
                     renderDownloadView("watermark_pdf", "watermark_pdf")}
+
+                  {(currentView === "pdf_watermark_remover" ||
+                    currentView === "watermark_remover") && (
+                    <WatermarkRemoverView
+                      key="pdf_watermark_remover"
+                      mode="pdf"
+                      toolKey="pdf_watermark_remover"
+                      onSuccess={() => handleSelectView("pdf_watermark_remover_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                      initialFiles={routedFiles}
+                    />
+                  )}
+                  {(currentView === "pdf_watermark_remover_download" ||
+                    currentView === "watermark_remover_download") &&
+                    renderDownloadView("pdf_watermark_remover", "pdf_watermark_remover")}
+
+                  {currentView === "image_watermark_remover" && (
+                    <WatermarkRemoverView
+                      key="image_watermark_remover"
+                      mode="image"
+                      toolKey="image_watermark_remover"
+                      onSuccess={() => handleSelectView("image_watermark_remover_download")}
+                      askPassword={askPassword}
+                      initialFile={routedFiles?.[0] || null}
+                      initialFiles={routedFiles}
+                    />
+                  )}
+                  {currentView === "image_watermark_remover_download" &&
+                    renderDownloadView("image_watermark_remover", "image_watermark_remover")}
 
                   {currentView === "word_to_pdf" && (
                     <WordToPdfView
@@ -366,6 +417,64 @@ export default function App() {
                   {currentView === "passport_photo_download" &&
                     renderDownloadView("passport_photo", "passport_photo")}
 
+                  {currentView === "audio_converter" && (
+                    <AudioConverterView
+                      onSuccess={() => handleSelectView("audio_converter_download")}
+                      initialFile={routedFiles?.[0] || null}
+                      initialFiles={routedFiles}
+                    />
+                  )}
+                  {currentView === "audio_converter_download" &&
+                    renderDownloadView("audio_converter", "audio_converter")}
+
+                  {currentView === "audio_extractor" && (
+                    <AudioExtractorView
+                      onSuccess={() => handleSelectView("audio_extractor_download")}
+                      initialFile={routedFiles?.[0] || null}
+                      initialFiles={routedFiles}
+                    />
+                  )}
+                  {currentView === "audio_extractor_download" &&
+                    renderDownloadView("audio_extractor", "audio_extractor")}
+
+                  {currentView === "audio_editor" && (
+                    <AudioEditorView
+                      onSuccess={() => handleSelectView("audio_editor_download")}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "audio_editor_download" &&
+                    renderDownloadView("audio_editor", "audio_editor")}
+
+                  {currentView === "video_converter" && (
+                    <VideoConverterView
+                      onSuccess={() => handleSelectView("video_converter_download")}
+                      initialFile={routedFiles?.[0] || null}
+                      initialFiles={routedFiles}
+                    />
+                  )}
+                  {currentView === "video_converter_download" &&
+                    renderDownloadView("video_converter", "video_converter")}
+
+                  {currentView === "video_extractor" && (
+                    <VideoExtractorView
+                      onSuccess={() => handleSelectView("video_extractor_download")}
+                      initialFile={routedFiles?.[0] || null}
+                      initialFiles={routedFiles}
+                    />
+                  )}
+                  {currentView === "video_extractor_download" &&
+                    renderDownloadView("video_extractor", "video_extractor")}
+
+                  {currentView === "video_editor" && (
+                    <VideoEditorView
+                      onSuccess={() => handleSelectView("video_editor_download")}
+                      initialFile={routedFiles?.[0] || null}
+                    />
+                  )}
+                  {currentView === "video_editor_download" &&
+                    renderDownloadView("video_editor", "video_editor")}
+
                   {currentView === "coffee" && (
                     <BuyMeCoffeeView onBack={() => handleSelectView("home")} />
                   )}
@@ -385,8 +494,13 @@ export default function App() {
               </main>
 
               {/* Footer */}
-              <footer id="application-footer" className="border-t border-zinc-800/80 py-5 px-3 sm:px-5 lg:px-8 mt-auto bg-black">
-                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-zinc-400">
+              <footer
+                id="application-footer"
+                onCopy={(e) => e.preventDefault()}
+                onCut={(e) => e.preventDefault()}
+                className="border-t border-zinc-800/80 py-5 px-3 sm:px-5 lg:px-8 mt-auto bg-black select-none"
+              >
+                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-zinc-400 select-none">
                   <div>
                     MONO-TRANSCODER //YOUR DOCUMENTS &amp; PHOTOS NEVER LEAVE YOUR DEVICE
                   </div>
@@ -395,27 +509,35 @@ export default function App() {
                       type="button"
                       id="footer-contact-button"
                       onClick={() => setIsContactOpen(true)}
-                      className="hover:text-white transition-colors cursor-pointer"
+                      className={`transition-colors cursor-pointer ${
+                        isContactOpen ? "footer-link-active" : ""
+                      }`}
                     >
                       Contact
                     </button>
                     <a
                       href="/privacy"
+                      id="footer-privacy-link"
                       onClick={(e) => {
                         e.preventDefault();
                         handleSelectView("privacy");
                       }}
-                      className="hover:text-white transition-colors"
+                      className={`transition-colors cursor-pointer ${
+                        currentView === "privacy" ? "footer-link-active" : ""
+                      }`}
                     >
                       Privacy Policy
                     </a>
                     <a
                       href="/terms"
+                      id="footer-terms-link"
                       onClick={(e) => {
                         e.preventDefault();
                         handleSelectView("terms");
                       }}
-                      className="hover:text-white transition-colors"
+                      className={`transition-colors cursor-pointer ${
+                        currentView === "terms" ? "footer-link-active" : ""
+                      }`}
                     >
                       Terms of Service
                     </a>
@@ -426,7 +548,9 @@ export default function App() {
                         e.preventDefault();
                         handleSelectView("coffee");
                       }}
-                      className="hover:text-white transition-colors"
+                      className={`transition-colors cursor-pointer ${
+                        currentView === "coffee" ? "footer-link-active" : ""
+                      }`}
                     >
                       Buy Me a Coffee
                     </a>
